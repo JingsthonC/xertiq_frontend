@@ -1,0 +1,148 @@
+# ===================================
+# Global Ignore Rules (Node + Frontend + Backend)
+# ===================================
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Diagnostic reports
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Instrumented libs
+lib-cov
+
+# Coverage reports
+coverage
+*.lcov
+.nyc_output
+
+# Build outputs
+dist
+build
+.output
+.out
+Release/
+
+# Dependency directories
+node_modules/
+jspm_packages/
+bower_components/
+web_modules/
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Cache
+.cache
+.parcel-cache
+.stylelintcache
+.eslintcache
+.npm
+.pnp.*
+.vite/
+
+# Misc
+*.tgz
+.yarn-integrity
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+.node_repl_history
+.tern-port
+.vscode-test
+.vscode/
+
+# dotenv files
+.env
+.env.*
+!.env.example
+
+# ===================================
+# Framework-specific
+# ===================================
+
+# Next.js
+.next
+out
+
+# Nuxt.js
+.nuxt
+
+# Gatsby
+.cache/
+# public  # uncomment if using Gatsby
+
+# VuePress
+.vuepress/dist
+.temp
+
+# SvelteKit
+.svelte-kit/
+
+# VitePress
+**/.vitepress/dist
+**/.vitepress/cache
+
+# Docusaurus
+.docusaurus
+
+# Serverless
+.serverless/
+
+# FuseBox
+.fusebox/
+
+# DynamoDB local
+.dynamodb/
+
+# Firebase
+.firebase/
+
+# ===================================
+# Project-Specific Ignores
+# ===================================
+
+# Smart Contracts (Hardhat/Truffle/Foundry)
+smart-contract/artifacts/
+smart-contract/cache/
+smart-contract/typechain-types/
+
+# Browser Extension
+extension/dist/
+extension/build/
+
+# Docs (generated files)
+docs/*.pdf
+docs/*.docx
+docs/build/
+
+# Backend specific (if builds exist)
+backend/dist/
+backend/build/
+
+# Frontend specific
+frontend/dist/
+frontend/build/
+
+# Temporary files
+*.tmp
+*.swp
+*.swo
+
+# ===================================
+# End of File
+# ===================================
