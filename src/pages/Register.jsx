@@ -1,14 +1,13 @@
 import { useState } from "react";
 import { UserPlus, Eye, EyeOff, Loader, Shield, Check, X } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
-import useWalletStore from "../store/wallet";
 import apiService from "../services/api";
+import { useNavigate } from "react-router-dom";
 
 const Register = () => {
   const navigate = useNavigate();
-  const { setAuth } = useWalletStore();
   const [formData, setFormData] = useState({
-    name: "",
+    firstName: "",
+    lastName: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -16,6 +15,7 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
 
   // Password strength validation
   const passwordValidations = {
@@ -34,6 +34,7 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setSuccess(false);
 
     if (!passwordsMatch) {
       setError("Passwords do not match");
@@ -48,26 +49,31 @@ const Register = () => {
     setIsLoading(true);
 
     try {
-      const response = await apiService.register(
-        formData.name,
-        formData.email,
-        formData.password
-      );
+      const response = await apiService.register({
+        email: formData.email,
+        password: formData.password,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+      });
 
-      if (response.success && response.token && response.user) {
-        // Store auth data in Zustand store
-        setAuth(response.user, response.token);
+      console.log("Registration successful:", response);
 
-        // Set the token in API service for immediate use
-        apiService.setAuthToken(response.token);
+      // Show success notification
+      setSuccess(true);
 
-        console.log("Registration successful:", response);
-
-        // Redirect to dashboard
-        navigate("/dashboard", { replace: true });
-      } else {
-        setError("Invalid response from server");
-      }
+      // Clear form after successful registration
+      setTimeout(() => {
+        setFormData({
+          firstName: "",
+          lastName: "",
+          email: "",
+          password: "",
+          confirmPassword: "",
+        });
+        setSuccess(false);
+        navigate("/login");
+        // You can add navigation here: navigate('/dashboard') or navigate('/login')
+      }, 1000);
     } catch (err) {
       console.error("Registration failed:", err);
       setError(
@@ -96,7 +102,7 @@ const Register = () => {
       {/* Animated background elements */}
       <div className="absolute inset-0 w-full h-full">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
       </div>
 
       <div className="w-full max-w-md relative z-10">
@@ -111,32 +117,63 @@ const Register = () => {
           <p className="text-gray-300 text-lg">Create your secure wallet</p>
         </div>
 
-        {/* Registration form */}
+        {/* Registration card */}
         <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl shadow-black/20">
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-6">
             {error && (
-              <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 animate-shake">
+              <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 animate-fade-in">
                 <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                  <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
                   <p className="text-red-300 text-sm font-medium">{error}</p>
+                </div>
+              </div>
+            )}
+
+            {success && (
+              <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-4 animate-fade-in">
+                <div className="flex items-center space-x-2">
+                  <Check size={16} className="text-green-400" />
+                  <p className="text-green-300 text-sm font-medium">
+                    Registration successful! Redirecting...
+                  </p>
                 </div>
               </div>
             )}
 
             <div className="space-y-2">
               <label className="block text-sm font-semibold text-gray-200 mb-3">
-                Full Name
+                First Name
               </label>
               <div className="relative group">
                 <input
                   type="text"
                   required
-                  value={formData.name}
+                  value={formData.firstName}
                   onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
+                    setFormData({ ...formData, firstName: e.target.value })
                   }
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-300 group-hover:border-white/20"
-                  placeholder="Enter your full name"
+                  placeholder="Enter your first name"
+                  disabled={isLoading}
+                />
+                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500/10 to-blue-500/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold text-gray-200 mb-3">
+                Last Name
+              </label>
+              <div className="relative group">
+                <input
+                  type="text"
+                  required
+                  value={formData.lastName}
+                  onChange={(e) =>
+                    setFormData({ ...formData, lastName: e.target.value })
+                  }
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-300 group-hover:border-white/20"
+                  placeholder="Enter your last name"
                   disabled={isLoading}
                 />
                 <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500/10 to-blue-500/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
@@ -189,7 +226,6 @@ const Register = () => {
                 <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500/10 to-blue-500/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
               </div>
 
-              {/* Password requirements */}
               {formData.password && (
                 <div className="mt-3 p-3 bg-white/5 rounded-lg border border-white/10">
                   <p className="text-xs text-gray-300 mb-2 font-medium">
@@ -268,7 +304,8 @@ const Register = () => {
             </div>
 
             <button
-              type="submit"
+              type="button"
+              onClick={handleSubmit}
               disabled={
                 isLoading ||
                 !passwordsMatch ||
@@ -288,9 +325,8 @@ const Register = () => {
                 </>
               )}
             </button>
-          </form>
+          </div>
 
-          {/* Divider */}
           <div className="relative my-8">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-white/10"></div>
@@ -302,10 +338,9 @@ const Register = () => {
             </div>
           </div>
 
-          {/* Login link */}
           <div className="text-center">
-            <Link
-              to="/login"
+            <button
+              type="button"
               className="inline-flex items-center space-x-2 text-purple-400 hover:text-purple-300 font-semibold transition-colors duration-200 group"
             >
               <span>Sign in to your wallet</span>
@@ -313,11 +348,10 @@ const Register = () => {
                 size={18}
                 className="transform group-hover:translate-x-1 transition-transform duration-200"
               />
-            </Link>
+            </button>
           </div>
         </div>
 
-        {/* Security badge */}
         <div className="text-center mt-6">
           <div className="inline-flex items-center space-x-2 text-xs text-gray-400 bg-white/5 px-4 py-2 rounded-full border border-white/10">
             <Shield size={14} />
@@ -330,3 +364,22 @@ const Register = () => {
 };
 
 export default Register;
+
+// Add animation styles
+const style = document.createElement("style");
+style.textContent = `
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .animate-fade-in {
+    animation: fade-in 0.3s ease-out;
+  }
+`;
+document.head.appendChild(style);
