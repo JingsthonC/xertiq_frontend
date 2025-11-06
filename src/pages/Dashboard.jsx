@@ -46,6 +46,23 @@ const Dashboard = () => {
           : "from-green-500 to-emerald-400",
     },
     {
+      title: "PDF Generator",
+      description: "Design & generate certificate PDFs",
+      icon: FileText,
+      action: () => navigate("/certificate-generator"),
+      gradient: "from-orange-500 to-red-400",
+      visible: userRole === "issuer",
+    },
+    {
+      title: "Designer POC",
+      description: "Compare Fabric.js vs Current",
+      icon: Zap,
+      action: () => navigate("/designer-comparison"),
+      gradient: "from-yellow-500 to-orange-400",
+      visible: userRole === "issuer",
+      badge: "NEW",
+    },
+    {
       title: "Batch Upload",
       description: "Process multiple certificates",
       icon: Upload,
@@ -121,8 +138,13 @@ const Dashboard = () => {
                       <action.icon size={18} className="text-white" />
                     </div>
                     <div className="text-left flex-1">
-                      <h4 className="text-sm font-semibold text-white">
+                      <h4 className="text-sm font-semibold text-white flex items-center gap-2">
                         {action.title}
+                        {action.badge && (
+                          <span className="text-[10px] bg-yellow-400 text-gray-900 px-2 py-0.5 rounded-full font-bold">
+                            {action.badge}
+                          </span>
+                        )}
                       </h4>
                       <p className="text-xs text-gray-400">
                         {action.description}
@@ -258,8 +280,13 @@ const Dashboard = () => {
                           <action.icon size={24} className="text-white" />
                         </div>
                         <div className="flex-1">
-                          <h3 className="text-lg font-semibold text-white group-hover:text-blue-100">
+                          <h3 className="text-lg font-semibold text-white group-hover:text-blue-100 flex items-center gap-2">
                             {action.title}
+                            {action.badge && (
+                              <span className="text-xs bg-yellow-400 text-gray-900 px-2 py-1 rounded-full font-bold">
+                                {action.badge}
+                              </span>
+                            )}
                           </h3>
                           <p className="text-gray-400 group-hover:text-gray-300">
                             {action.description}

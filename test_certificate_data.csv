@@ -1,0 +1,11 @@
+name,lastname,email,course,date,grade
+John,Doe,john.doe@example.com,Web Development Fundamentals,October 17 2025,A+
+Jane,Smith,jane.smith@example.com,Data Science Bootcamp,October 17 2025,A
+Michael,Johnson,michael.j@example.com,Cloud Architecture,October 17 2025,A-
+Sarah,Williams,sarah.w@example.com,Machine Learning Basics,October 17 2025,B+
+David,Brown,david.brown@example.com,Cybersecurity Essentials,October 17 2025,A
+Emily,Davis,emily.davis@example.com,Full Stack Development,October 17 2025,A+
+Robert,Martinez,robert.m@example.com,DevOps Engineering,October 17 2025,A-
+Lisa,Garcia,lisa.garcia@example.com,UI/UX Design,October 17 2025,B+
+James,Rodriguez,james.r@example.com,Blockchain Development,October 17 2025,A
+Maria,Lopez,maria.lopez@example.com,Mobile App Development,October 17 2025,A+

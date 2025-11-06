@@ -1,0 +1,500 @@
+import React, { useState, useEffect } from "react";
+import {
+  Download,
+  Eye,
+  Save,
+  Upload,
+  FolderOpen,
+  Trash2,
+  FileDown,
+  Zap,
+} from "lucide-react";
+import Header from "../components/Header";
+import ExtensionHeader from "../components/ExtensionHeader";
+import NavigationHeader from "../components/NavigationHeader";
+import PDFTemplateDesigner from "../components/PDFTemplateDesigner";
+import CSVUploader from "../components/CSVUploader";
+import pdfGenerator from "../services/pdfGenerator";
+import templateStorage from "../services/templateStorage";
+
+// Detect if running as Chrome extension
+const isExtension = () => {
+  return (
+    typeof window !== "undefined" &&
+    typeof window.chrome !== "undefined" &&
+    window.chrome.runtime &&
+    window.chrome.runtime.id
+  );
+};
+
+const CertificateGenerator = () => {
+  const isExt = isExtension();
+
+  const [template, setTemplate] = useState(pdfGenerator.getDefaultTemplate());
+  const [csvData, setCsvData] = useState([]);
+  const [csvHeaders, setCsvHeaders] = useState([]);
+  const [savedTemplates, setSavedTemplates] = useState([]);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [activeTab, setActiveTab] = useState("template"); // template, data, generate
+  const [showTemplateLibrary, setShowTemplateLibrary] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState(null);
+
+  useEffect(() => {
+    loadSavedTemplates();
+  }, []);
+
+  const loadSavedTemplates = () => {
+    const templates = templateStorage.getAllTemplates();
+    setSavedTemplates(templates);
+  };
+
+  const handleTemplateChange = (newTemplate) => {
+    setTemplate(newTemplate);
+  };
+
+  const handleCSVDataLoaded = (data, headers) => {
+    setCsvData(data);
+    setCsvHeaders(headers);
+  };
+
+  const handleSaveTemplate = () => {
+    if (!template.name) {
+      alert("Please enter a template name in settings");
+      return;
+    }
+
+    const success = templateStorage.saveTemplate(template);
+    if (success) {
+      alert("Template saved successfully!");
+      loadSavedTemplates();
+    } else {
+      alert("Failed to save template");
+    }
+  };
+
+  const handleLoadTemplate = (templateName) => {
+    const loadedTemplate = templateStorage.getTemplate(templateName);
+    if (loadedTemplate) {
+      setTemplate(loadedTemplate);
+      setShowTemplateLibrary(false);
+    }
+  };
+
+  const handleDeleteTemplate = (templateName) => {
+    if (window.confirm(`Delete template "${templateName}"?`)) {
+      const success = templateStorage.deleteTemplate(templateName);
+      if (success) {
+        loadSavedTemplates();
+      }
+    }
+  };
+
+  const handleExportTemplate = () => {
+    templateStorage.exportTemplate(template);
+  };
+
+  const handleImportTemplate = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      try {
+        const importedTemplate = await templateStorage.importTemplate(file);
+        setTemplate(importedTemplate);
+        alert("Template imported successfully!");
+      } catch (error) {
+        alert("Failed to import template: " + error.message);
+      }
+    }
+  };
+
+  const handleGeneratePreview = () => {
+    if (csvData.length === 0) {
+      alert("Please upload CSV data first");
+      return;
+    }
+
+    const sampleData = csvData[0];
+    const previewDataUrl = pdfGenerator.generatePreview(template, sampleData);
+    setPreviewUrl(previewDataUrl);
+  };
+
+  const handleGeneratePDFs = async (separateFiles = false) => {
+    if (csvData.length === 0) {
+      alert("Please upload CSV data first");
+      return;
+    }
+
+    setIsGenerating(true);
+
+    try {
+      if (separateFiles) {
+        const pdfs = pdfGenerator.generateBatchCertificates(
+          template,
+          csvData,
+          true
+        );
+        pdfGenerator.downloadBatchPDFs(
+          pdfs,
+          csvData,
+          `certificate_{{name}}_{{index}}.pdf`
+        );
+      } else {
+        const pdf = pdfGenerator.generateBatchCertificates(
+          template,
+          csvData,
+          false
+        );
+        pdfGenerator.downloadPDF(pdf, `certificates_batch_${Date.now()}.pdf`);
+      }
+
+      alert(`Successfully generated ${csvData.length} certificate(s)!`);
+    } catch (error) {
+      console.error("Error generating PDFs:", error);
+      alert("Failed to generate PDFs. Please check your template and data.");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case "template":
+        return (
+          <PDFTemplateDesigner
+            template={template}
+            onTemplateChange={handleTemplateChange}
+            availableFields={csvHeaders}
+          />
+        );
+
+      case "data":
+        return <CSVUploader onDataLoaded={handleCSVDataLoaded} />;
+
+      case "generate":
+        return (
+          <div className="space-y-4">
+            {/* Preview */}
+            <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-white">Preview</h3>
+                <button
+                  onClick={handleGeneratePreview}
+                  disabled={csvData.length === 0}
+                  className="flex items-center space-x-2 px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Eye size={16} />
+                  <span className="text-sm">Generate Preview</span>
+                </button>
+              </div>
+
+              {previewUrl ? (
+                <div className="bg-white rounded-lg p-2">
+                  <iframe
+                    src={previewUrl}
+                    className="w-full h-[400px] rounded"
+                    title="Certificate Preview"
+                  />
+                </div>
+              ) : (
+                <div className="bg-white/5 border-2 border-dashed border-white/20 rounded-xl h-[400px] flex items-center justify-center">
+                  <div className="text-center">
+                    <Eye size={48} className="text-gray-500 mx-auto mb-4" />
+                    <p className="text-gray-400">
+                      Click "Generate Preview" to see your certificate
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Generation Options */}
+            <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+              <h3 className="text-lg font-semibold text-white mb-4">
+                Generate PDFs
+              </h3>
+
+              {csvData.length > 0 ? (
+                <div className="space-y-3">
+                  <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
+                    <p className="text-sm text-blue-400">
+                      Ready to generate {csvData.length} certificate(s)
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      onClick={() => handleGeneratePDFs(false)}
+                      disabled={isGenerating}
+                      className="flex items-center justify-center space-x-2 px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-500 hover:opacity-90 text-white rounded-lg transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <Download size={18} />
+                      <span className="text-sm font-medium">
+                        {isGenerating ? "Generating..." : "Single PDF"}
+                      </span>
+                    </button>
+
+                    <button
+                      onClick={() => handleGeneratePDFs(true)}
+                      disabled={isGenerating}
+                      className="flex items-center justify-center space-x-2 px-4 py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white rounded-lg transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <FileDown size={18} />
+                      <span className="text-sm font-medium">
+                        {isGenerating ? "Generating..." : "Separate Files"}
+                      </span>
+                    </button>
+                  </div>
+
+                  <p className="text-xs text-gray-400 text-center">
+                    Single PDF combines all certificates. Separate files creates
+                    individual PDFs.
+                  </p>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <Upload size={48} className="text-gray-500 mx-auto mb-4" />
+                  <p className="text-gray-400 mb-2">No data uploaded</p>
+                  <button
+                    onClick={() => setActiveTab("data")}
+                    className="text-sm text-blue-400 hover:text-blue-300"
+                  >
+                    Upload CSV data →
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  if (isExt) {
+    return (
+      <div className="h-full bg-gradient-to-br from-[#0a0e27] via-[#1a1347] to-[#0f0f23] text-white overflow-hidden flex flex-col">
+        <ExtensionHeader />
+        <NavigationHeader title="PDF Generator" showBack={true} />
+
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {/* Tabs */}
+          <div className="flex space-x-2 bg-white/5 rounded-lg p-1">
+            {[
+              { id: "template", label: "Template" },
+              { id: "data", label: "Data" },
+              { id: "generate", label: "Generate" },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  activeTab === tab.id
+                    ? "bg-blue-500 text-white"
+                    : "text-gray-400 hover:text-white"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex space-x-2">
+            <button
+              onClick={handleSaveTemplate}
+              className="flex-1 flex items-center justify-center space-x-2 px-3 py-2 bg-green-500/20 hover:bg-green-500/30 text-green-400 rounded-lg transition-colors text-sm"
+            >
+              <Save size={14} />
+              <span>Save</span>
+            </button>
+            <button
+              onClick={() => setShowTemplateLibrary(!showTemplateLibrary)}
+              className="flex-1 flex items-center justify-center space-x-2 px-3 py-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 rounded-lg transition-colors text-sm"
+            >
+              <FolderOpen size={14} />
+              <span>Library</span>
+            </button>
+          </div>
+
+          {/* Template Library */}
+          {showTemplateLibrary && (
+            <div className="bg-white/5 border border-white/10 rounded-xl p-3">
+              <h4 className="text-sm font-semibold text-white mb-2">
+                Saved Templates ({savedTemplates.length})
+              </h4>
+              {savedTemplates.length > 0 ? (
+                <div className="space-y-2">
+                  {savedTemplates.map((tmpl) => (
+                    <div
+                      key={tmpl.name}
+                      className="flex items-center justify-between p-2 bg-white/5 rounded-lg"
+                    >
+                      <button
+                        onClick={() => handleLoadTemplate(tmpl.name)}
+                        className="text-sm text-white hover:text-blue-400 truncate flex-1 text-left"
+                      >
+                        {tmpl.name}
+                      </button>
+                      <button
+                        onClick={() => handleDeleteTemplate(tmpl.name)}
+                        className="p-1 hover:bg-red-500/20 rounded"
+                      >
+                        <Trash2 size={12} className="text-red-400" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-gray-400 text-center py-2">
+                  No saved templates
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Content */}
+          {renderContent()}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-[#0a0e27] via-[#1a1347] to-[#0f0f23]">
+      <Header />
+      <NavigationHeader title="Certificate PDF Generator" showBack={true} />
+
+      <div className="p-8">
+        <div className="max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-4xl font-bold text-white mb-2">
+              Certificate PDF Generator
+            </h1>
+            <p className="text-gray-300">
+              Design certificate templates, upload CSV data, and generate PDFs
+            </p>
+          </div>
+
+          {/* Action Bar */}
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-8">
+            <div className="flex flex-wrap gap-3">
+              <button
+                onClick={handleSaveTemplate}
+                className="flex items-center space-x-2 px-6 py-3 bg-green-500/20 hover:bg-green-500/30 text-green-400 rounded-xl transition-colors"
+              >
+                <Save size={18} />
+                <span>Save Template</span>
+              </button>
+
+              <button
+                onClick={() => setShowTemplateLibrary(!showTemplateLibrary)}
+                className="flex items-center space-x-2 px-6 py-3 bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 rounded-xl transition-colors"
+              >
+                <FolderOpen size={18} />
+                <span>Template Library</span>
+              </button>
+
+              <button
+                onClick={handleExportTemplate}
+                className="flex items-center space-x-2 px-6 py-3 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-xl transition-colors"
+              >
+                <Download size={18} />
+                <span>Export</span>
+              </button>
+
+              <label className="flex items-center space-x-2 px-6 py-3 bg-orange-500/20 hover:bg-orange-500/30 text-orange-400 rounded-xl transition-colors cursor-pointer">
+                <Upload size={18} />
+                <span>Import</span>
+                <input
+                  type="file"
+                  accept=".json"
+                  onChange={handleImportTemplate}
+                  className="hidden"
+                />
+              </label>
+            </div>
+          </div>
+
+          {/* Template Library */}
+          {showTemplateLibrary && (
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-8">
+              <h3 className="text-xl font-semibold text-white mb-4">
+                Template Library ({savedTemplates.length})
+              </h3>
+              {savedTemplates.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {savedTemplates.map((tmpl) => (
+                    <div
+                      key={tmpl.name}
+                      className="bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition-colors"
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1">
+                          <h4 className="text-white font-medium mb-1">
+                            {tmpl.name}
+                          </h4>
+                          <p className="text-xs text-gray-400">
+                            {tmpl.elements?.length || 0} elements
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => handleDeleteTemplate(tmpl.name)}
+                          className="p-2 hover:bg-red-500/20 rounded-lg transition-colors"
+                        >
+                          <Trash2 size={16} className="text-red-400" />
+                        </button>
+                      </div>
+                      <button
+                        onClick={() => handleLoadTemplate(tmpl.name)}
+                        className="w-full px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg transition-colors text-sm"
+                      >
+                        Load Template
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-400 text-center py-8">
+                  No saved templates. Design and save your first template!
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Main Content */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Tabs Navigation */}
+            <div className="lg:col-span-3">
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-2 inline-flex space-x-2">
+                {[
+                  { id: "template", label: "Design Template", icon: Zap },
+                  { id: "data", label: "Upload Data", icon: Upload },
+                  { id: "generate", label: "Generate PDFs", icon: Download },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-medium transition-all ${
+                      activeTab === tab.id
+                        ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg"
+                        : "text-gray-400 hover:text-white hover:bg-white/5"
+                    }`}
+                  >
+                    <tab.icon size={18} />
+                    <span>{tab.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Content Area */}
+            <div className="lg:col-span-3">{renderContent()}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default CertificateGenerator;
