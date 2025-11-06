@@ -176,6 +176,8 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import BatchUpload from "./pages/BatchUpload";
 import Verify from "./pages/Verify";
+import CertificateGenerator from "./pages/CertificateGenerator";
+import DesignerComparison from "./pages/DesignerComparison";
 import LoadingSpinner from "./components/LoadingSpinner";
 
 // Detect if running as Chrome extension
@@ -283,6 +285,22 @@ function App() {
       element: (
         <ProtectedRoute>
           <BatchUpload />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/certificate-generator",
+      element: (
+        <ProtectedRoute>
+          <CertificateGenerator />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/designer-comparison",
+      element: (
+        <ProtectedRoute>
+          <DesignerComparison />
         </ProtectedRoute>
       ),
     },
