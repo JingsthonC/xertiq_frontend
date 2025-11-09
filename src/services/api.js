@@ -166,6 +166,50 @@ class ApiService {
     return response.data;
   }
 
+  // Templates endpoints
+  async saveTemplateToBackend(templateData) {
+    const response = await this.api.post("/templates", templateData);
+    return response.data;
+  }
+
+  async getPublicTemplates() {
+    const response = await this.api.get("/templates/public");
+    return response.data;
+  }
+
+  async getMyTemplates() {
+    const response = await this.api.get("/templates/my-templates");
+    return response.data;
+  }
+
+  async getTemplateById(templateId) {
+    const response = await this.api.get(`/templates/${templateId}`);
+    return response.data;
+  }
+
+  async updateTemplate(templateId, templateData) {
+    const response = await this.api.put(
+      `/templates/${templateId}`,
+      templateData
+    );
+    return response.data;
+  }
+
+  async deleteTemplateFromBackend(templateId) {
+    const response = await this.api.delete(`/templates/${templateId}`);
+    return response.data;
+  }
+
+  async toggleTemplateVisibility(templateId, isPublic) {
+    const response = await this.api.patch(
+      `/templates/${templateId}/visibility`,
+      {
+        isPublic,
+      }
+    );
+    return response.data;
+  }
+
   // Helper method to manually set token (useful for testing)
   setAuthToken(token) {
     if (token) {
