@@ -1,10 +1,20 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import PDFTemplateDesigner from "../components/PDFTemplateDesigner";
 import FabricDesignerV2 from "../components/FabricDesignerV2";
 import KonvaPdfDesigner from "../components/KonvaPdfDesigner";
 import pdfGenerator from "../services/pdfGenerator";
 import canvasPdfGenerator from "../services/canvasPdfGenerator";
-import { Download, Eye, FileText, Sparkles, X, Palette } from "lucide-react";
+import templateStorage from "../services/templateStorage";
+import {
+  Download,
+  Eye,
+  FileText,
+  Sparkles,
+  X,
+  Palette,
+  Save,
+  FolderOpen,
+} from "lucide-react";
 
 const DesignerComparison = () => {
   const [activeDesigner, setActiveDesigner] = useState("konva"); // 'current', 'fabric', 'pdfme', or 'konva'
@@ -12,6 +22,11 @@ const DesignerComparison = () => {
   const [previewData, setPreviewData] = useState(null); // { pdf, filename, recipient }
   const [batchPreviews, setBatchPreviews] = useState([]); // For batch preview
   const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [showTemplateLibrary, setShowTemplateLibrary] = useState(false);
+  const [savedTemplates, setSavedTemplates] = useState([]);
+  const [templateName, setTemplateName] = useState("POC Test Certificate");
+  const [loadedTemplate, setLoadedTemplate] = useState(null); // Template to pass to Konva
   const [template, setTemplate] = useState({
     name: "POC Test Certificate",
     orientation: "landscape",
@@ -104,7 +119,7 @@ const DesignerComparison = () => {
     }
   };
 
-  const handleTemplateChange = async (updatedTemplate) => {
+  const handleTemplateChange = useCallback(async (updatedTemplate) => {
     // Check if we should use canvas-based generation for pixel-perfect accuracy
     const useCanvas =
       updatedTemplate.useCanvasGeneration && updatedTemplate.fabricCanvas;
@@ -151,9 +166,9 @@ const DesignerComparison = () => {
             );
             return {
               pdf,
-              filename: `certificate_${record.name ||
-                record.fullname ||
-                index + 1}.pdf`,
+              filename: `certificate_${
+                record.name || record.fullname || index + 1
+              }.pdf`,
               recipient: record,
             };
           });
@@ -196,9 +211,9 @@ const DesignerComparison = () => {
           );
         }
 
-        const filename = `certificate_${recipient.name ||
-          recipient.fullname ||
-          "recipient"}.pdf`;
+        const filename = `certificate_${
+          recipient.name || recipient.fullname || "recipient"
+        }.pdf`;
 
         // Create preview URL
         const pdfBlob = pdf.output("blob");
@@ -220,7 +235,7 @@ const DesignerComparison = () => {
 
     // Update template state
     setTemplate(updatedTemplate);
-  };
+  }, []); // Empty deps - function doesn't depend on any state
 
   const downloadSinglePDF = () => {
     if (previewData) {
@@ -246,6 +261,58 @@ const DesignerComparison = () => {
     setPreviewData(null);
     setBatchPreviews([]);
   };
+
+  const handleSaveTemplate = () => {
+    if (!templateName.trim()) {
+      alert("Please enter a template name");
+      setShowSaveDialog(true);
+      return;
+    }
+
+    const templateToSave = {
+      ...template,
+      name: templateName,
+    };
+
+    const success = templateStorage.saveTemplate(templateToSave);
+    if (success) {
+      alert(`Template "${templateName}" saved successfully!`);
+      setShowSaveDialog(false);
+      loadSavedTemplates(); // Refresh the list
+    } else {
+      alert("Failed to save template");
+    }
+  };
+
+  const loadSavedTemplates = () => {
+    const templates = templateStorage.getAllTemplates();
+    setSavedTemplates(templates);
+  };
+
+  const handleLoadTemplate = (templateToLoad) => {
+    setTemplate(templateToLoad);
+    setTemplateName(templateToLoad.name);
+    setLoadedTemplate(templateToLoad); // Pass to Konva
+    setShowTemplateLibrary(false);
+    alert(
+      `Template "${templateToLoad.name}" loaded! Switch to the designer tab to see it.`
+    );
+  };
+
+  const handleDeleteTemplate = (templateName) => {
+    if (window.confirm(`Delete template "${templateName}"?`)) {
+      const success = templateStorage.deleteTemplate(templateName);
+      if (success) {
+        loadSavedTemplates();
+        alert("Template deleted!");
+      }
+    }
+  };
+
+  // Load templates on mount
+  React.useEffect(() => {
+    loadSavedTemplates();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 p-4">
@@ -311,6 +378,26 @@ const DesignerComparison = () => {
                 </button>
               </div>
 
+              {/* Save button - visible for all designers */}
+              <button
+                onClick={() => setShowSaveDialog(!showSaveDialog)}
+                className="px-4 py-2 bg-green-500/20 hover:bg-green-500/30 text-green-400 rounded-lg transition-all shadow-lg hover:shadow-green-500/20 flex items-center gap-2 text-sm"
+                title="Save Template"
+              >
+                <Save size={16} />
+                <span>Save</span>
+              </button>
+
+              {/* Template Library button */}
+              <button
+                onClick={() => setShowTemplateLibrary(!showTemplateLibrary)}
+                className="px-4 py-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 rounded-lg transition-all shadow-lg hover:shadow-purple-500/20 flex items-center gap-2 text-sm"
+                title="Template Library"
+              >
+                <FolderOpen size={16} />
+                <span>Templates ({savedTemplates.length})</span>
+              </button>
+
               {/* Show preview/download buttons only for non-Konva designers */}
               {activeDesigner !== "konva" && (
                 <div className="flex gap-2">
@@ -334,11 +421,122 @@ const DesignerComparison = () => {
           </div>
         </div>
 
+        {/* Save Template Dialog */}
+        {showSaveDialog && (
+          <div className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/20 rounded-2xl p-4 mb-4 shadow-xl">
+            <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+              <Save size={20} className="text-green-400" />
+              Save Template
+            </h3>
+            <div className="flex gap-3 items-end">
+              <div className="flex-1">
+                <label className="block text-sm text-gray-300 mb-2">
+                  Template Name
+                </label>
+                <input
+                  type="text"
+                  value={templateName}
+                  onChange={(e) => setTemplateName(e.target.value)}
+                  placeholder="Enter template name..."
+                  className="w-full px-4 py-2 bg-gray-900/50 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-green-500/50"
+                  onKeyPress={(e) => {
+                    if (e.key === "Enter") handleSaveTemplate();
+                  }}
+                />
+              </div>
+              <button
+                onClick={handleSaveTemplate}
+                className="px-6 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-all font-medium"
+              >
+                Save
+              </button>
+              <button
+                onClick={() => setShowSaveDialog(false)}
+                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-all"
+              >
+                Cancel
+              </button>
+            </div>
+            <p className="text-xs text-gray-400 mt-2">
+              💡 Tip: Give your template a descriptive name to find it easily
+              later
+            </p>
+          </div>
+        )}
+
+        {/* Template Library Modal */}
+        {showTemplateLibrary && (
+          <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-2xl p-4 mb-4 shadow-xl">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                <FolderOpen size={20} className="text-purple-400" />
+                Template Library ({savedTemplates.length})
+              </h3>
+              <button
+                onClick={() => setShowTemplateLibrary(false)}
+                className="p-2 hover:bg-white/10 rounded-lg transition-all"
+              >
+                <X size={20} className="text-gray-400" />
+              </button>
+            </div>
+
+            {savedTemplates.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {savedTemplates.map((tmpl) => (
+                  <div
+                    key={tmpl.name}
+                    className="bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition-colors"
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <h4 className="text-white font-medium mb-1 truncate">
+                          {tmpl.name}
+                        </h4>
+                        <p className="text-xs text-gray-400">
+                          {tmpl.elements?.length || 0} elements
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {tmpl.orientation} • {tmpl.format}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => handleDeleteTemplate(tmpl.name)}
+                        className="p-2 hover:bg-red-500/20 rounded-lg transition-colors"
+                        title="Delete template"
+                      >
+                        <X size={16} className="text-red-400" />
+                      </button>
+                    </div>
+                    <button
+                      onClick={() => handleLoadTemplate(tmpl)}
+                      className="w-full px-4 py-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 rounded-lg transition-colors text-sm font-medium"
+                    >
+                      Load Template
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <FolderOpen size={48} className="text-gray-600 mx-auto mb-3" />
+                <p className="text-gray-400 mb-2">No saved templates yet</p>
+                <p className="text-sm text-gray-500">
+                  Design a certificate and click "Save" to create your first
+                  template
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Designer Container - Maximum Space */}
         <div className="bg-gradient-to-br from-gray-800/40 to-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-4 h-[calc(100vh-120px)] shadow-2xl">
           {activeDesigner === "konva" ? (
             <div className="h-full">
-              <KonvaPdfDesigner />
+              <KonvaPdfDesigner
+                template={loadedTemplate}
+                onTemplateChange={handleTemplateChange}
+              />
             </div>
           ) : activeDesigner === "current" ? (
             <div className="h-full">
@@ -370,9 +568,11 @@ const DesignerComparison = () => {
                   </h2>
                   <p className="text-sm text-gray-400">
                     {previewData
-                      ? `Certificate for ${previewData.recipient?.name ||
+                      ? `Certificate for ${
+                          previewData.recipient?.name ||
                           previewData.recipient?.fullname ||
-                          "recipient"}`
+                          "recipient"
+                        }`
                       : `${batchPreviews.length} certificate(s) ready`}
                   </p>
                 </div>

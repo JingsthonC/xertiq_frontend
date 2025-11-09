@@ -16,6 +16,9 @@ import PDFTemplateDesigner from "../components/PDFTemplateDesigner";
 import CSVUploader from "../components/CSVUploader";
 import pdfGenerator from "../services/pdfGenerator";
 import templateStorage from "../services/templateStorage";
+import apiService from "../services/api";
+import thumbnailGenerator from "../services/thumbnailGenerator";
+import useWalletStore from "../store/wallet";
 
 // Detect if running as Chrome extension
 const isExtension = () => {
@@ -29,23 +32,52 @@ const isExtension = () => {
 
 const CertificateGenerator = () => {
   const isExt = isExtension();
+  const { user } = useWalletStore();
 
   const [template, setTemplate] = useState(pdfGenerator.getDefaultTemplate());
   const [csvData, setCsvData] = useState([]);
   const [csvHeaders, setCsvHeaders] = useState([]);
   const [savedTemplates, setSavedTemplates] = useState([]);
+  const [publicTemplates, setPublicTemplates] = useState([]);
+  const [myTemplates, setMyTemplates] = useState([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeTab, setActiveTab] = useState("template"); // template, data, generate
   const [showTemplateLibrary, setShowTemplateLibrary] = useState(false);
+  const [showPublicLibrary, setShowPublicLibrary] = useState(false);
+  const [showMyTemplates, setShowMyTemplates] = useState(false);
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [templateVisibility, setTemplateVisibility] = useState("private"); // private or public
 
   useEffect(() => {
     loadSavedTemplates();
-  }, []);
+    loadPublicTemplates();
+    if (user) {
+      loadMyTemplates();
+    }
+  }, [user]);
 
   const loadSavedTemplates = () => {
     const templates = templateStorage.getAllTemplates();
     setSavedTemplates(templates);
+  };
+
+  const loadPublicTemplates = async () => {
+    try {
+      const templates = await apiService.getPublicTemplates();
+      setPublicTemplates(templates);
+    } catch (error) {
+      console.error("Error loading public templates:", error);
+    }
+  };
+
+  const loadMyTemplates = async () => {
+    try {
+      const templates = await apiService.getMyTemplates();
+      setMyTemplates(templates);
+    } catch (error) {
+      console.error("Error loading my templates:", error);
+    }
   };
 
   const handleTemplateChange = (newTemplate) => {
@@ -65,10 +97,103 @@ const CertificateGenerator = () => {
 
     const success = templateStorage.saveTemplate(template);
     if (success) {
-      alert("Template saved successfully!");
+      alert("Template saved locally!");
       loadSavedTemplates();
     } else {
       alert("Failed to save template");
+    }
+  };
+
+  const handleSaveTemplateToPlatform = async () => {
+    if (!template.name) {
+      alert("Please enter a template name in settings");
+      return;
+    }
+
+    if (!user) {
+      alert("Please login to save templates to the platform");
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      // Generate a preview thumbnail (we'll implement this later)
+      const thumbnailDataUrl = await generateThumbnail();
+
+      const templateData = {
+        name: template.name,
+        description: template.description || "",
+        templateData: template,
+        thumbnail: thumbnailDataUrl,
+        isPublic: templateVisibility === "public",
+        category: template.category || "certificate",
+      };
+
+      await apiService.saveTemplateToBackend(templateData);
+      alert("Template saved to platform successfully!");
+      loadMyTemplates();
+    } catch (error) {
+      console.error("Error saving template to platform:", error);
+      alert(
+        "Failed to save template to platform: " +
+          (error.response?.data?.message || error.message)
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleLoadTemplateFromPlatform = async (templateId) => {
+    try {
+      const templateData = await apiService.getTemplateById(templateId);
+      setTemplate(templateData.templateData);
+      setShowPublicLibrary(false);
+      setShowMyTemplates(false);
+      alert("Template loaded successfully!");
+    } catch (error) {
+      console.error("Error loading template:", error);
+      alert("Failed to load template");
+    }
+  };
+
+  const handleDeleteTemplateFromPlatform = async (templateId) => {
+    if (!window.confirm("Delete this template from the platform?")) {
+      return;
+    }
+
+    try {
+      await apiService.deleteTemplateFromBackend(templateId);
+      alert("Template deleted successfully!");
+      loadMyTemplates();
+    } catch (error) {
+      console.error("Error deleting template:", error);
+      alert("Failed to delete template");
+    }
+  };
+
+  const handleToggleVisibility = async (templateId, currentVisibility) => {
+    try {
+      await apiService.toggleTemplateVisibility(templateId, !currentVisibility);
+      alert(`Template is now ${!currentVisibility ? "public" : "private"}`);
+      loadMyTemplates();
+    } catch (error) {
+      console.error("Error toggling visibility:", error);
+      alert("Failed to update visibility");
+    }
+  };
+
+  const generateThumbnail = async () => {
+    try {
+      // Generate thumbnail from the current template
+      const thumbnailDataUrl = await thumbnailGenerator.generateFromTemplate(
+        template,
+        400,
+        300
+      );
+      return thumbnailDataUrl;
+    } catch (error) {
+      console.error("Error generating thumbnail:", error);
+      return ""; // Return empty string on error
     }
   };
 
@@ -413,15 +538,79 @@ const CertificateGenerator = () => {
                   className="hidden"
                 />
               </label>
+
+              {/* Platform Templates */}
+              {user && (
+                <>
+                  <button
+                    onClick={handleSaveTemplateToPlatform}
+                    disabled={isSaving}
+                    className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 hover:from-cyan-500/30 hover:to-blue-500/30 text-cyan-400 rounded-xl transition-colors disabled:opacity-50"
+                  >
+                    <Upload size={18} />
+                    <span>{isSaving ? "Saving..." : "Save to Platform"}</span>
+                  </button>
+
+                  <button
+                    onClick={() => setShowMyTemplates(!showMyTemplates)}
+                    className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-500/20 to-pink-500/20 hover:from-purple-500/30 hover:to-pink-500/30 text-purple-400 rounded-xl transition-colors"
+                  >
+                    <FolderOpen size={18} />
+                    <span>My Templates</span>
+                  </button>
+                </>
+              )}
+
+              <button
+                onClick={() => setShowPublicLibrary(!showPublicLibrary)}
+                className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 hover:from-yellow-500/30 hover:to-orange-500/30 text-yellow-400 rounded-xl transition-colors"
+              >
+                <FolderOpen size={18} />
+                <span>Public Templates</span>
+              </button>
             </div>
+
+            {/* Visibility Toggle for Platform Save */}
+            {user && (
+              <div className="mt-4 flex items-center space-x-4 px-2">
+                <label className="text-sm text-gray-400">
+                  Template Visibility:
+                </label>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => setTemplateVisibility("private")}
+                    className={`px-4 py-2 rounded-lg text-sm transition-colors ${
+                      templateVisibility === "private"
+                        ? "bg-blue-500 text-white"
+                        : "bg-white/5 text-gray-400 hover:bg-white/10"
+                    }`}
+                  >
+                    Private
+                  </button>
+                  <button
+                    onClick={() => setTemplateVisibility("public")}
+                    className={`px-4 py-2 rounded-lg text-sm transition-colors ${
+                      templateVisibility === "public"
+                        ? "bg-green-500 text-white"
+                        : "bg-white/5 text-gray-400 hover:bg-white/10"
+                    }`}
+                  >
+                    Public (Share with everyone)
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Template Library */}
           {showTemplateLibrary && (
             <div className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-8">
               <h3 className="text-xl font-semibold text-white mb-4">
-                Template Library ({savedTemplates.length})
+                Local Template Library ({savedTemplates.length})
               </h3>
+              <p className="text-sm text-gray-400 mb-4">
+                Templates saved in your browser (local storage)
+              </p>
               {savedTemplates.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {savedTemplates.map((tmpl) => (
@@ -457,6 +646,143 @@ const CertificateGenerator = () => {
               ) : (
                 <p className="text-gray-400 text-center py-8">
                   No saved templates. Design and save your first template!
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Public Templates Library */}
+          {showPublicLibrary && (
+            <div className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-yellow-500/20 rounded-2xl p-6 mb-8">
+              <h3 className="text-xl font-semibold text-white mb-2 flex items-center gap-2">
+                <Zap className="text-yellow-400" size={24} />
+                Public Templates ({publicTemplates.length})
+              </h3>
+              <p className="text-sm text-gray-400 mb-4">
+                Community-shared templates you can use
+              </p>
+              {publicTemplates.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {publicTemplates.map((tmpl) => (
+                    <div
+                      key={tmpl._id}
+                      className="bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition-colors"
+                    >
+                      {tmpl.thumbnail && (
+                        <div className="mb-3 rounded-lg overflow-hidden bg-white/5 h-32">
+                          <img
+                            src={tmpl.thumbnail}
+                            alt={tmpl.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
+                      <h4 className="text-white font-medium mb-1">
+                        {tmpl.name}
+                      </h4>
+                      <p className="text-xs text-gray-400 mb-2">
+                        {tmpl.description || "No description"}
+                      </p>
+                      <p className="text-xs text-gray-500 mb-3">
+                        By: {tmpl.createdBy?.name || "Anonymous"}
+                      </p>
+                      <button
+                        onClick={() => handleLoadTemplateFromPlatform(tmpl._id)}
+                        className="w-full px-4 py-2 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 hover:from-yellow-500/30 hover:to-orange-500/30 text-yellow-400 rounded-lg transition-colors text-sm"
+                      >
+                        Use Template
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-400 text-center py-8">
+                  No public templates available yet. Be the first to share!
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* My Templates (Platform) */}
+          {user && showMyTemplates && (
+            <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-2xl p-6 mb-8">
+              <h3 className="text-xl font-semibold text-white mb-2 flex items-center gap-2">
+                <FolderOpen className="text-purple-400" size={24} />
+                My Platform Templates ({myTemplates.length})
+              </h3>
+              <p className="text-sm text-gray-400 mb-4">
+                Your templates saved on the XertiQ platform
+              </p>
+              {myTemplates.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {myTemplates.map((tmpl) => (
+                    <div
+                      key={tmpl._id}
+                      className="bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition-colors"
+                    >
+                      {tmpl.thumbnail && (
+                        <div className="mb-3 rounded-lg overflow-hidden bg-white/5 h-32">
+                          <img
+                            src={tmpl.thumbnail}
+                            alt={tmpl.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex-1">
+                          <h4 className="text-white font-medium mb-1">
+                            {tmpl.name}
+                          </h4>
+                          <p className="text-xs text-gray-400 mb-2">
+                            {tmpl.description || "No description"}
+                          </p>
+                          <div className="flex items-center gap-2 mb-2">
+                            <span
+                              className={`text-xs px-2 py-1 rounded ${
+                                tmpl.isPublic
+                                  ? "bg-green-500/20 text-green-400"
+                                  : "bg-gray-500/20 text-gray-400"
+                              }`}
+                            >
+                              {tmpl.isPublic ? "Public" : "Private"}
+                            </span>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() =>
+                            handleDeleteTemplateFromPlatform(tmpl._id)
+                          }
+                          className="p-2 hover:bg-red-500/20 rounded-lg transition-colors"
+                        >
+                          <Trash2 size={16} className="text-red-400" />
+                        </button>
+                      </div>
+                      <div className="space-y-2">
+                        <button
+                          onClick={() =>
+                            handleLoadTemplateFromPlatform(tmpl._id)
+                          }
+                          className="w-full px-4 py-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 rounded-lg transition-colors text-sm"
+                        >
+                          Load Template
+                        </button>
+                        <button
+                          onClick={() =>
+                            handleToggleVisibility(tmpl._id, tmpl.isPublic)
+                          }
+                          className="w-full px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg transition-colors text-sm"
+                        >
+                          Make {tmpl.isPublic ? "Private" : "Public"}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-400 text-center py-8">
+                  No templates saved to platform yet. Click "Save to Platform"
+                  to share your templates!
                 </p>
               )}
             </div>
