@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import PDFTemplateDesigner from "../components/PDFTemplateDesigner";
 import FabricDesignerV2 from "../components/FabricDesignerV2";
+import KonvaPdfDesigner from "../components/KonvaPdfDesigner";
 import pdfGenerator from "../services/pdfGenerator";
 import canvasPdfGenerator from "../services/canvasPdfGenerator";
-import { Download, Eye, FileText, Sparkles, X } from "lucide-react";
+import { Download, Eye, FileText, Sparkles, X, Palette } from "lucide-react";
 
 const DesignerComparison = () => {
-  const [activeDesigner, setActiveDesigner] = useState("fabric"); // 'current' or 'fabric'
+  const [activeDesigner, setActiveDesigner] = useState("konva"); // 'current', 'fabric', 'pdfme', or 'konva'
   const [previewPdfUrl, setPreviewPdfUrl] = useState(null);
   const [previewData, setPreviewData] = useState(null); // { pdf, filename, recipient }
   const [batchPreviews, setBatchPreviews] = useState([]); // For batch preview
@@ -150,9 +151,9 @@ const DesignerComparison = () => {
             );
             return {
               pdf,
-              filename: `certificate_${
-                record.name || record.fullname || index + 1
-              }.pdf`,
+              filename: `certificate_${record.name ||
+                record.fullname ||
+                index + 1}.pdf`,
               recipient: record,
             };
           });
@@ -195,9 +196,9 @@ const DesignerComparison = () => {
           );
         }
 
-        const filename = `certificate_${
-          recipient.name || recipient.fullname || "recipient"
-        }.pdf`;
+        const filename = `certificate_${recipient.name ||
+          recipient.fullname ||
+          "recipient"}.pdf`;
 
         // Create preview URL
         const pdfBlob = pdf.output("blob");
@@ -270,19 +271,22 @@ const DesignerComparison = () => {
               {/* Designer Toggle - Compact */}
               <div className="flex gap-2 bg-gray-900/50 backdrop-blur p-1 rounded-xl border border-white/10">
                 <button
-                  onClick={() => setActiveDesigner("current")}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all text-sm ${
-                    activeDesigner === "current"
-                      ? "bg-white text-gray-900 shadow-lg"
+                  onClick={() => setActiveDesigner("konva")}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all text-sm ${
+                    activeDesigner === "konva"
+                      ? "bg-gradient-to-r from-pink-500 to-rose-600 text-white shadow-lg"
                       : "text-gray-400 hover:text-white hover:bg-white/5"
                   }`}
                 >
-                  <FileText size={16} />
-                  Current
+                  <Palette size={16} />
+                  Konva Designer
+                  <span className="px-1.5 py-0.5 bg-yellow-400 text-gray-900 text-[10px] rounded-full font-bold">
+                    NEW
+                  </span>
                 </button>
                 <button
                   onClick={() => setActiveDesigner("fabric")}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all text-sm ${
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all text-sm ${
                     activeDesigner === "fabric"
                       ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg"
                       : "text-gray-400 hover:text-white hover:bg-white/5"
@@ -294,31 +298,49 @@ const DesignerComparison = () => {
                     NEW
                   </span>
                 </button>
+                <button
+                  onClick={() => setActiveDesigner("current")}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all text-sm ${
+                    activeDesigner === "current"
+                      ? "bg-white text-gray-900 shadow-lg"
+                      : "text-gray-400 hover:text-white hover:bg-white/5"
+                  }`}
+                >
+                  <FileText size={16} />
+                  Legacy
+                </button>
               </div>
 
-              <div className="flex gap-2">
-                <button
-                  onClick={handleGeneratePreview}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-all text-sm shadow-lg hover:shadow-xl"
-                >
-                  <Eye size={16} />
-                  Preview
-                </button>
-                <button
-                  onClick={handleDownloadPDF}
-                  className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-all text-sm shadow-lg hover:shadow-xl"
-                >
-                  <Download size={16} />
-                  Download
-                </button>
-              </div>
+              {/* Show preview/download buttons only for non-Konva designers */}
+              {activeDesigner !== "konva" && (
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleGeneratePreview}
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-all text-sm shadow-lg hover:shadow-xl"
+                  >
+                    <Eye size={16} />
+                    Preview
+                  </button>
+                  <button
+                    onClick={handleDownloadPDF}
+                    className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-all text-sm shadow-lg hover:shadow-xl"
+                  >
+                    <Download size={16} />
+                    Download
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
 
         {/* Designer Container - Maximum Space */}
         <div className="bg-gradient-to-br from-gray-800/40 to-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-4 h-[calc(100vh-120px)] shadow-2xl">
-          {activeDesigner === "current" ? (
+          {activeDesigner === "konva" ? (
+            <div className="h-full">
+              <KonvaPdfDesigner />
+            </div>
+          ) : activeDesigner === "current" ? (
             <div className="h-full">
               <PDFTemplateDesigner
                 template={template}
@@ -348,11 +370,9 @@ const DesignerComparison = () => {
                   </h2>
                   <p className="text-sm text-gray-400">
                     {previewData
-                      ? `Certificate for ${
-                          previewData.recipient?.name ||
+                      ? `Certificate for ${previewData.recipient?.name ||
                           previewData.recipient?.fullname ||
-                          "recipient"
-                        }`
+                          "recipient"}`
                       : `${batchPreviews.length} certificate(s) ready`}
                   </p>
                 </div>
