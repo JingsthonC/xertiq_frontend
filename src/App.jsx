@@ -178,6 +178,7 @@ import BatchUpload from "./pages/BatchUpload";
 import Verify from "./pages/Verify";
 import CertificateGenerator from "./pages/CertificateGenerator";
 import DesignerComparison from "./pages/DesignerComparison";
+import PurchaseCredits from "./pages/PurchaseCredits";
 import LoadingSpinner from "./components/LoadingSpinner";
 
 // Detect if running as Chrome extension
@@ -301,6 +302,14 @@ function App() {
       element: (
         <ProtectedRoute>
           <DesignerComparison />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/purchase-credits",
+      element: (
+        <ProtectedRoute>
+          <PurchaseCredits />
         </ProtectedRoute>
       ),
     },

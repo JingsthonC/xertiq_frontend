@@ -2,6 +2,14 @@ import axios from "axios";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
+// Credit cost constants
+export const CREDIT_COSTS = {
+  generatePDF: 2,
+  uploadToIPFS: 1,
+  uploadToBlockChain: 3,
+  validateCertificate: 1,
+};
+
 // Import the store to access token directly
 let getWalletStore = null;
 
@@ -81,9 +89,47 @@ class ApiService {
     return response.data;
   }
 
+  async getCreditBalance() {
+    const response = await this.api.get("/credits/balance");
+    // Handle both response formats: { success, credits } or { success, data: { credits } }
+    if (response.data.data) {
+      return {
+        success: response.data.success,
+        credits: response.data.data.credits,
+      };
+    }
+    return response.data;
+  }
+
+  async getWalletInfo() {
+    const response = await this.api.get("/credits/wallet");
+    return response.data;
+  }
+
+  async getTransactionHistory(params = {}) {
+    const { limit = 20, offset = 0 } = params;
+    const response = await this.api.get("/credits/transactions", {
+      params: { limit, offset },
+    });
+    return response.data;
+  }
+
   async purchaseCredits(amount) {
     const response = await this.api.post("/credits/purchase", { amount });
     return response.data;
+  }
+
+  async checkSufficientCredits(operation, count = 1) {
+    const cost = (CREDIT_COSTS[operation] || 0) * count;
+    const balance = await this.getCreditBalance();
+
+    return {
+      sufficient: balance.credits >= cost,
+      cost,
+      balance: balance.credits,
+      operation,
+      count,
+    };
   }
 
   // Documents endpoints
