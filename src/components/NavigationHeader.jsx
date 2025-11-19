@@ -8,9 +8,11 @@ import {
   Shield,
   Upload,
   CheckCircle,
+  Coins,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import useWalletStore from "../store/wallet";
+import CreditBalance from "./CreditBalance";
 
 const NavigationHeader = ({ title, showBack = true }) => {
   const navigate = useNavigate();
@@ -84,6 +86,13 @@ const NavigationHeader = ({ title, showBack = true }) => {
       icon: Shield,
       visible: true,
     },
+    {
+      name: "Buy Credits",
+      path: "/purchase-credits",
+      icon: Coins,
+      visible: true,
+      highlight: true,
+    },
   ];
 
   const handleBack = () => {
@@ -142,13 +151,17 @@ const NavigationHeader = ({ title, showBack = true }) => {
             </div>
           </div>
 
-          {/* Right Side - Menu Button */}
-          <button
-            onClick={() => setShowSideNav(true)}
-            className="flex items-center justify-center w-8 h-8 bg-white/10 hover:bg-white/15 border border-white/20 rounded-lg transition-all duration-200"
-          >
-            <Menu size={16} className="text-gray-300" />
-          </button>
+          {/* Center/Right Side - Credit Balance & Menu Button */}
+          <div className="flex items-center gap-3">
+            <CreditBalance size="sm" />
+
+            <button
+              onClick={() => setShowSideNav(true)}
+              className="flex items-center justify-center w-8 h-8 bg-white/10 hover:bg-white/15 border border-white/20 rounded-lg transition-all duration-200"
+            >
+              <Menu size={16} className="text-gray-300" />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -189,6 +202,8 @@ const NavigationHeader = ({ title, showBack = true }) => {
                       className={`w-full flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 ${
                         location.pathname === item.path
                           ? "bg-blue-500/20 border border-blue-400/30 text-blue-300"
+                          : item.highlight
+                          ? "bg-gradient-to-r from-green-500/20 to-blue-500/20 border border-green-400/30 text-green-300 hover:from-green-500/30 hover:to-blue-500/30"
                           : "text-gray-300 hover:bg-white/10 hover:text-white"
                       }`}
                     >
@@ -196,12 +211,19 @@ const NavigationHeader = ({ title, showBack = true }) => {
                         className={`w-8 h-8 rounded-lg flex items-center justify-center ${
                           location.pathname === item.path
                             ? "bg-blue-500/30"
+                            : item.highlight
+                            ? "bg-green-500/30"
                             : "bg-white/10"
                         }`}
                       >
                         <item.icon size={16} />
                       </div>
                       <span className="font-medium">{item.name}</span>
+                      {item.highlight && (
+                        <span className="ml-auto text-xs bg-green-500 text-white px-2 py-0.5 rounded-full">
+                          New
+                        </span>
+                      )}
                     </button>
                   ))}
               </div>

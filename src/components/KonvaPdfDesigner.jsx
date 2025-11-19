@@ -43,6 +43,9 @@ import {
   AlignRight,
   Database,
 } from "lucide-react";
+import useWalletStore from "../store/wallet";
+import CreditConfirmationModal from "./CreditConfirmationModal";
+import { CREDIT_COSTS } from "../services/api";
 
 // Define initial canvas dimensions
 const STAGE_WIDTH = 1000;
@@ -81,6 +84,12 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
   const [currentLine, setCurrentLine] = useState(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false); // Export dropdown menu
+
+  // Credit system states
+  const { credits, fetchCredits, updateCredits } = useWalletStore();
+  const [showCreditModal, setShowCreditModal] = useState(false);
+  const [pendingExportAction, setPendingExportAction] = useState(null);
+  const [creditCheckLoading, setCreditCheckLoading] = useState(false);
 
   const stageRef = useRef(null);
   const transformerRef = useRef(null);
@@ -916,6 +925,58 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
     setBatchPreviews([]);
   };
 
+  // Credit system check function
+  const checkCreditsAndExecute = async (operation, count, exportFunction) => {
+    setCreditCheckLoading(true);
+
+    try {
+      // Calculate cost
+      const cost = CREDIT_COSTS[operation] * count;
+
+      // Check if sufficient credits
+      if (credits < cost) {
+        setShowCreditModal(true);
+        setPendingExportAction({ operation, count, cost });
+        return;
+      }
+
+      // Show confirmation modal
+      setPendingExportAction({ operation, count, cost, exportFunction });
+      setShowCreditModal(true);
+    } catch (error) {
+      console.error("Credit check failed:", error);
+      alert("Failed to check credits. Please try again.");
+    } finally {
+      setCreditCheckLoading(false);
+    }
+  };
+
+  // Handle credit modal confirmation
+  const handleCreditConfirmation = async () => {
+    if (!pendingExportAction || !pendingExportAction.exportFunction) return;
+
+    setCreditCheckLoading(true);
+    setShowCreditModal(false);
+
+    try {
+      // Execute the export function
+      await pendingExportAction.exportFunction();
+
+      // Update credits locally (backend should also update)
+      const newCredits = credits - pendingExportAction.cost;
+      updateCredits(newCredits);
+
+      // Fetch latest balance from server
+      await fetchCredits();
+    } catch (error) {
+      console.error("Export failed:", error);
+      alert("Export failed. Credits were not deducted.");
+    } finally {
+      setCreditCheckLoading(false);
+      setPendingExportAction(null);
+    }
+  };
+
   const handleExportPDF = () => {
     // Deselect any element to remove transformer from the exported image
     setSelectedId(null);
@@ -1538,7 +1599,11 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                     <button
                       onClick={async () => {
                         setShowExportMenu(false);
-                        await handleExportAllPDFs();
+                        await checkCreditsAndExecute(
+                          "generatePDF",
+                          csvData.length,
+                          handleExportAllPDFs
+                        );
                       }}
                       className="w-full px-4 py-3 text-left hover:bg-gray-700 transition-colors flex items-start gap-3 border-b border-gray-700"
                     >
@@ -1548,7 +1613,8 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                       />
                       <div>
                         <p className="text-white font-medium text-sm">
-                          Separate Files
+                          Separate Files (
+                          {CREDIT_COSTS.generatePDF * csvData.length} credits)
                         </p>
                         <p className="text-gray-400 text-xs mt-0.5">
                           {csvData.length} individual PDF files
@@ -1558,7 +1624,11 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                     <button
                       onClick={async () => {
                         setShowExportMenu(false);
-                        await handleExportAllAsSinglePDF();
+                        await checkCreditsAndExecute(
+                          "generatePDF",
+                          csvData.length,
+                          handleExportAllAsSinglePDF
+                        );
                       }}
                       className="w-full px-4 py-3 text-left hover:bg-gray-700 transition-colors flex items-start gap-3"
                     >
@@ -1568,7 +1638,8 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                       />
                       <div>
                         <p className="text-white font-medium text-sm">
-                          Single File
+                          Single File (
+                          {CREDIT_COSTS.generatePDF * csvData.length} credits)
                         </p>
                         <p className="text-gray-400 text-xs mt-0.5">
                           1 PDF with {csvData.length} pages
@@ -1580,7 +1651,9 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                   <button
                     onClick={() => {
                       setShowExportMenu(false);
-                      handleExportPDF();
+                      checkCreditsAndExecute("generatePDF", 1, () => {
+                        handleExportPDF();
+                      });
                     }}
                     className="w-full px-4 py-3 text-left hover:bg-gray-700 transition-colors flex items-start gap-3"
                   >
@@ -1590,7 +1663,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                     />
                     <div>
                       <p className="text-white font-medium text-sm">
-                        Export Template
+                        Export Template ({CREDIT_COSTS.generatePDF} credits)
                       </p>
                       <p className="text-gray-400 text-xs mt-0.5">
                         Download current design as PDF
@@ -2411,35 +2484,47 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                   <div className="flex flex-col sm:flex-row gap-2">
                     <button
                       onClick={async () => {
-                        await handleExportAllPDFs();
+                        await checkCreditsAndExecute(
+                          "generatePDF",
+                          csvData.length,
+                          handleExportAllPDFs
+                        );
                       }}
                       className="flex items-center gap-2 px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all text-sm font-medium justify-center"
                       title="Download each record as a separate PDF file"
                     >
                       <Download size={18} />
-                      Separate Files ({csvData.length})
+                      Separate Files ({csvData.length}) -{" "}
+                      {CREDIT_COSTS.generatePDF * csvData.length} credits
                     </button>
                     <button
                       onClick={async () => {
-                        await handleExportAllAsSinglePDF();
+                        await checkCreditsAndExecute(
+                          "generatePDF",
+                          csvData.length,
+                          handleExportAllAsSinglePDF
+                        );
                       }}
                       className="flex items-center gap-2 px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-all text-sm font-medium justify-center"
                       title="Download all records in one multi-page PDF file"
                     >
                       <Download size={18} />
-                      Single File ({csvData.length} pages)
+                      Single File ({csvData.length} pages) -{" "}
+                      {CREDIT_COSTS.generatePDF * csvData.length} credits
                     </button>
                   </div>
                 )}
                 <button
                   onClick={async () => {
-                    await handleExportPreviewedPDF();
-                    closePreview();
+                    await checkCreditsAndExecute("generatePDF", 1, async () => {
+                      await handleExportPreviewedPDF();
+                      closePreview();
+                    });
                   }}
                   className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all text-sm font-medium justify-center"
                 >
                   <Download size={18} />
-                  Download Current
+                  Download Current ({CREDIT_COSTS.generatePDF} credits)
                 </button>
               </div>
             </div>
@@ -3043,6 +3128,20 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
           </div>
         </div>
       )}
+
+      {/* Credit Confirmation Modal */}
+      <CreditConfirmationModal
+        isOpen={showCreditModal}
+        onClose={() => {
+          setShowCreditModal(false);
+          setPendingExportAction(null);
+        }}
+        onConfirm={handleCreditConfirmation}
+        operation="generatePDF"
+        count={pendingExportAction?.count || 1}
+        currentBalance={credits}
+        loading={creditCheckLoading}
+      />
     </div>
   );
 };

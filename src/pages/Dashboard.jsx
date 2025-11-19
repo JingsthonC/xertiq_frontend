@@ -8,6 +8,7 @@ import {
   Zap,
   Clock,
   User,
+  Coins,
 } from "lucide-react";
 import useWalletStore from "../store/wallet";
 import Header from "../components/Header";
@@ -44,6 +45,15 @@ const Dashboard = () => {
         userRole === "issuer"
           ? "from-purple-500 to-pink-500"
           : "from-green-500 to-emerald-400",
+    },
+    {
+      title: "Buy Credits",
+      description: "Purchase more credits",
+      icon: Coins,
+      action: () => navigate("/purchase-credits"),
+      gradient: "from-green-500 to-teal-400",
+      badge: "💰",
+      visible: true,
     },
     {
       title: "PDF Generator",
