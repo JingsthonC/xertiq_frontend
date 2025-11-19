@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from "react";
-import { Coins, Check, CreditCard, ArrowLeft } from "lucide-react";
+import { Coins, Check, CreditCard, ArrowLeft, TimerReset } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import useWalletStore from "../store/wallet";
-import apiService from "../services/api";
 import NavigationHeader from "../components/NavigationHeader";
+import usePayMongoPurchase from "../hooks/usePayMongoPurchase";
 
 const PurchaseCredits = () => {
   const navigate = useNavigate();
   const { credits, fetchCredits } = useWalletStore();
   const [selectedPackage, setSelectedPackage] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(false);
+  const [clientError, setClientError] = useState(null);
+  const [statusMessage, setStatusMessage] = useState(null);
+  const [redirectInfo, setRedirectInfo] = useState(null);
+  const [redirectCountdown, setRedirectCountdown] = useState(0);
+  const { startCheckout, isLoading, error, resetCheckoutState } =
+    usePayMongoPurchase();
 
   useEffect(() => {
     // Fetch latest credit balance on mount
@@ -21,6 +24,7 @@ const PurchaseCredits = () => {
   const packages = [
     {
       id: "starter",
+      payMongoPackageId: "starter",
       name: "Starter Pack",
       credits: 100,
       price: 10,
@@ -30,6 +34,7 @@ const PurchaseCredits = () => {
     },
     {
       id: "professional",
+      payMongoPackageId: "professional",
       name: "Professional Pack",
       credits: 500,
       price: 45,
@@ -40,6 +45,7 @@ const PurchaseCredits = () => {
     },
     {
       id: "enterprise",
+      payMongoPackageId: "enterprise",
       name: "Enterprise Pack",
       credits: 1000,
       price: 80,
@@ -50,6 +56,7 @@ const PurchaseCredits = () => {
     },
     {
       id: "ultimate",
+      payMongoPackageId: "ultimate",
       name: "Ultimate Pack",
       credits: 5000,
       price: 350,
@@ -60,33 +67,73 @@ const PurchaseCredits = () => {
     },
   ];
 
-  const handlePurchase = async () => {
-    if (!selectedPackage) return;
+  useEffect(() => {
+    if (!redirectInfo || redirectCountdown <= 0) {
+      return undefined;
+    }
 
-    setLoading(true);
-    setError(null);
+    const timer = setTimeout(() => {
+      setRedirectCountdown((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [redirectCountdown, redirectInfo]);
+
+  useEffect(() => {
+    if (redirectInfo?.redirectUrl && redirectCountdown === 0) {
+      window.location.assign(redirectInfo.redirectUrl);
+    }
+  }, [redirectCountdown, redirectInfo]);
+
+  const handlePurchase = async () => {
+    if (!selectedPackage) {
+      setClientError("Please select a package to continue.");
+      return;
+    }
+
+    setClientError(null);
+    setStatusMessage("Preparing secure PayMongo checkout...");
+    resetCheckoutState();
 
     try {
-      const response = await apiService.purchaseCredits(
-        selectedPackage.credits
-      );
+      const { checkoutUrl, checkoutReference, referenceNumber } =
+        await startCheckout(selectedPackage, {
+          autoRedirect: false,
+          successUrl: `${window.location.origin}/payment/success?package=${selectedPackage.id}`,
+          cancelUrl: `${window.location.origin}/purchase-credits`,
+        });
 
-      if (response.success) {
-        setSuccess(true);
-        await fetchCredits(); // Refresh balance
-
-        // Redirect after 2 seconds
-        setTimeout(() => {
-          navigate(-1); // Go back to previous page
-        }, 2000);
-      } else {
-        setError(response.message || "Purchase failed");
+      const checkoutMeta = {
+        reference: checkoutReference || referenceNumber,
+        checkoutReference,
+        referenceNumber,
+        packageId: selectedPackage.id,
+        packageName: selectedPackage.name,
+        credits: selectedPackage.credits,
+        price: selectedPackage.price,
+        createdAt: Date.now(),
+      };
+      try {
+        sessionStorage.setItem(
+          "xertiq-active-checkout",
+          JSON.stringify(checkoutMeta)
+        );
+      } catch (storageError) {
+        console.warn("Unable to persist checkout metadata", storageError);
       }
+
+      setRedirectInfo({
+        redirectUrl: checkoutUrl,
+        packageName: selectedPackage.name,
+        credits: selectedPackage.credits,
+        price: selectedPackage.price,
+      });
+      setStatusMessage("Redirecting you to PayMongo...");
+      setRedirectCountdown(3);
     } catch (err) {
       console.error("Purchase error:", err);
-      setError(err.response?.data?.message || "Failed to process purchase");
-    } finally {
-      setLoading(false);
+      setStatusMessage(null);
+      setClientError(err?.message || "Failed to process purchase");
     }
   };
 
@@ -120,25 +167,43 @@ const PurchaseCredits = () => {
           </p>
         </div>
 
-        {/* Success Message */}
-        {success && (
-          <div className="mb-6 bg-green-500/20 border border-green-500/50 rounded-lg p-4 flex items-center gap-3">
-            <Check className="w-6 h-6 text-green-400" />
+        {/* Status Message */}
+        {statusMessage && (
+          <div className="mb-6 bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 flex items-center gap-3 text-blue-200">
+            <CreditCard className="w-5 h-5" />
             <div>
-              <p className="text-green-300 font-semibold">
-                Purchase Successful!
-              </p>
-              <p className="text-green-400 text-sm">
-                Your credits have been added. Redirecting...
-              </p>
+              <p className="font-semibold">{statusMessage}</p>
+              {redirectInfo && redirectCountdown > 0 && (
+                <p className="text-sm text-blue-100">
+                  Redirecting in {redirectCountdown} second
+                  {redirectCountdown === 1 ? "" : "s"}...
+                </p>
+              )}
             </div>
           </div>
         )}
 
         {/* Error Message */}
-        {error && (
+        {(clientError || error) && (
           <div className="mb-6 bg-red-500/20 border border-red-500/50 rounded-lg p-4">
-            <p className="text-red-300">{error}</p>
+            <p className="text-red-300">{clientError || error}</p>
+          </div>
+        )}
+
+        {/* Redirect Summary */}
+        {redirectInfo && (
+          <div className="mb-6 bg-white/5 border border-white/10 rounded-xl p-4">
+            <div className="flex items-center gap-3 text-white">
+              <TimerReset className="w-5 h-5 text-blue-400" />
+              <div>
+                <p className="font-semibold">
+                  You're about to purchase {redirectInfo.credits} credits
+                </p>
+                <p className="text-gray-300 text-sm">
+                  Package: {redirectInfo.packageName} · ${redirectInfo.price}
+                </p>
+              </div>
+            </div>
           </div>
         )}
 
@@ -226,18 +291,18 @@ const PurchaseCredits = () => {
         <div className="max-w-md mx-auto">
           <button
             onClick={handlePurchase}
-            disabled={!selectedPackage || loading || success}
+            disabled={
+              !selectedPackage ||
+              isLoading ||
+              redirectCountdown > 0 ||
+              Boolean(redirectInfo)
+            }
             className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? (
+            {isLoading ? (
               <>
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 <span>Processing...</span>
-              </>
-            ) : success ? (
-              <>
-                <Check className="w-5 h-5" />
-                <span>Purchase Complete!</span>
               </>
             ) : (
               <>
@@ -251,7 +316,7 @@ const PurchaseCredits = () => {
             )}
           </button>
 
-          {selectedPackage && !success && (
+          {selectedPackage && !redirectInfo && (
             <p className="text-center text-gray-400 text-sm mt-4">
               After purchase, you'll have{" "}
               <span className="text-blue-400 font-semibold">

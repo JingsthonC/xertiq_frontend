@@ -179,6 +179,7 @@ import Verify from "./pages/Verify";
 import CertificateGenerator from "./pages/CertificateGenerator";
 import DesignerComparison from "./pages/DesignerComparison";
 import PurchaseCredits from "./pages/PurchaseCredits";
+import PaymentSuccess from "./pages/PaymentSuccess";
 import LoadingSpinner from "./components/LoadingSpinner";
 
 // Detect if running as Chrome extension
@@ -310,6 +311,14 @@ function App() {
       element: (
         <ProtectedRoute>
           <PurchaseCredits />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/payment/success",
+      element: (
+        <ProtectedRoute>
+          <PaymentSuccess />
         </ProtectedRoute>
       ),
     },
