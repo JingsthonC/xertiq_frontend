@@ -65,16 +65,32 @@ const PaymentSuccess = () => {
     [location.search]
   );
 
+  const checkoutIdFromQuery = queryParams.get("checkoutId");
+  const packageIdFromQuery = queryParams.get("package");
+
+  console.log("[PaymentSuccess] checkoutId from URL query:", checkoutIdFromQuery);
+  console.log("[PaymentSuccess] packageId from URL query:", packageIdFromQuery);
+
   useEffect(() => {
     try {
       const stored = sessionStorage.getItem("xertiq-active-checkout");
       if (stored) {
-        setCheckoutMeta(JSON.parse(stored));
+        const parsed = JSON.parse(stored);
+        // Merge checkoutId from query if sessionStorage didn't have it
+        if (checkoutIdFromQuery && !parsed.checkoutId) {
+          parsed.checkoutId = checkoutIdFromQuery;
+        }
+        console.log("[PaymentSuccess] Merged checkoutMeta from sessionStorage:", parsed);
+        setCheckoutMeta(parsed);
+      } else if (checkoutIdFromQuery) {
+        // No sessionStorage but we have the checkoutId from query
+        console.log("[PaymentSuccess] No sessionStorage; using query checkoutId:", checkoutIdFromQuery);
+        setCheckoutMeta({ checkoutId: checkoutIdFromQuery, packageId: packageIdFromQuery });
       }
     } catch (err) {
       console.warn("Unable to read checkout metadata", err);
     }
-  }, []);
+  }, [checkoutIdFromQuery, packageIdFromQuery]);
 
   useEffect(() => {
     if (!hasStarted) {
@@ -93,9 +109,8 @@ const PaymentSuccess = () => {
     }
   }, [status]);
 
-  const packageIdFromQuery = queryParams.get("package");
-
   const details = checkoutMeta || {
+    checkoutId: checkoutIdFromQuery,
     packageId: packageIdFromQuery,
   };
 

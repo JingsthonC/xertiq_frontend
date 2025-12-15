@@ -10,18 +10,19 @@ const getEndpoint = (path) =>
 const getDefaultSuccessUrl = () => `${window.location.origin}/payment/success`;
 const getDefaultCancelUrl = () => `${window.location.origin}/purchase-credits`;
 
-const buildPayload = (pkg, overrides) => ({
-  packageId: overrides?.packageId ?? pkg?.payMongoPackageId ?? pkg?.id,
-  successUrl: overrides?.successUrl || getDefaultSuccessUrl(),
-  cancelUrl: overrides?.cancelUrl || getDefaultCancelUrl(),
-  returnUrl: overrides?.returnUrl || getDefaultSuccessUrl(),
-  metadata: {
-    credits: pkg?.credits,
-    price: pkg?.price,
-    name: pkg?.name,
-    ...overrides?.metadata,
-  },
-});
+const buildPayload = (pkg, overrides) => {
+  const base = {
+    packageId: overrides?.packageId ?? pkg?.payMongoPackageId ?? pkg?.id,
+  };
+
+  if (overrides?.successUrl || overrides?.cancelUrl || overrides?.returnUrl) {
+    base.successUrl = overrides.successUrl || getDefaultSuccessUrl();
+    base.cancelUrl = overrides.cancelUrl || getDefaultCancelUrl();
+    base.returnUrl = overrides.returnUrl || getDefaultSuccessUrl();
+  }
+
+  return base;
+};
 
 const extractCheckoutUrl = (payload) => {
   if (!payload) return null;
@@ -59,14 +60,17 @@ const usePayMongoPurchase = () => {
 
       try {
         const payload = buildPayload(pkg, { ...overrides, packageId });
-        const response = await fetch(getEndpoint(`/credits/purchase`), {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          body: JSON.stringify(payload),
-        });
+        const response = await fetch(
+          getEndpoint(`/payments/paymongo/create-checkout`),
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+            body: JSON.stringify(payload),
+          }
+        );
 
         const data = await response.json();
 
@@ -74,10 +78,8 @@ const usePayMongoPurchase = () => {
           throw new Error(data?.message || "Unable to start PayMongo checkout");
         }
 
-        const checkoutUrl =
-          extractCheckoutUrl(data) || data?.data?.url || data?.url;
-        const checkoutReference =
-          data?.data?.checkoutId || data?.checkoutId || data?.data?.id;
+        const checkoutUrl = data?.data?.url || extractCheckoutUrl(data);
+        const checkoutReference = data?.data?.checkoutId || data?.checkoutId;
         const referenceNumber =
           data?.data?.referenceNumber || data?.referenceNumber;
 

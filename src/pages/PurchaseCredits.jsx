@@ -96,15 +96,27 @@ const PurchaseCredits = () => {
     resetCheckoutState();
 
     try {
+      // First call without successUrl so backend creates session and returns checkoutId
       const { checkoutUrl, checkoutReference, referenceNumber } =
         await startCheckout(selectedPackage, {
           autoRedirect: false,
-          successUrl: `${window.location.origin}/payment/success?package=${selectedPackage.id}`,
+          // Send successUrl with placeholder; backend ideally passes it to PayMongo
+          successUrl: `${window.location.origin}/payment/success?checkoutId=CHECKOUT_ID_PLACEHOLDER`,
           cancelUrl: `${window.location.origin}/purchase-credits`,
         });
 
+      // Replace placeholder with actual checkoutId (if backend echoes it into the URL)
+      console.log("[PurchaseCredits] checkoutReference returned:", checkoutReference);
+      console.log("[PurchaseCredits] Building successUrl with checkoutId:", checkoutReference);
+      const finalCheckoutUrl = checkoutUrl?.replace(
+        "CHECKOUT_ID_PLACEHOLDER",
+        checkoutReference || ""
+      );
+      console.log("[PurchaseCredits] Final checkout URL:", finalCheckoutUrl);
+
       const checkoutMeta = {
         reference: checkoutReference || referenceNumber,
+        checkoutId: checkoutReference,
         checkoutReference,
         referenceNumber,
         packageId: selectedPackage.id,
@@ -123,8 +135,7 @@ const PurchaseCredits = () => {
       }
 
       setRedirectInfo({
-        redirectUrl: checkoutUrl,
-        packageName: selectedPackage.name,
+        redirectUrl: finalCheckoutUrl || checkoutUrl,
         credits: selectedPackage.credits,
         price: selectedPackage.price,
       });
