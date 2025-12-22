@@ -17,14 +17,21 @@ class ThumbnailGenerator {
       const templateWidth = isLandscape ? 297 : 210; // A4 in mm
       const templateHeight = isLandscape ? 210 : 297;
 
-      // Calculate scale to fit within max dimensions
-      const scaleX = maxWidth / templateWidth;
-      const scaleY = maxHeight / templateHeight;
-      const scale = Math.min(scaleX, scaleY);
+      // Calculate scale to fit within max dimensions (with padding to ensure nothing is cut off)
+      const padding = 0; // No padding, use exact fit
+      const availableWidth = maxWidth - (padding * 2);
+      const availableHeight = maxHeight - (padding * 2);
+      const scaleX = availableWidth / templateWidth;
+      const scaleY = availableHeight / templateHeight;
+      const scale = Math.min(scaleX, scaleY); // Use smaller scale to ensure everything fits
 
-      // Set canvas size
+      // Set canvas size to exact fit
       canvas.width = templateWidth * scale;
       canvas.height = templateHeight * scale;
+
+      // Enable high-quality rendering
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
 
       // Fill background
       ctx.fillStyle = template.backgroundColor || "#ffffff";
@@ -86,9 +93,14 @@ class ThumbnailGenerator {
    * Draw text element
    */
   drawText(ctx, element, scale) {
-    const x = element.x * scale;
+    const canvas = ctx.canvas;
+    const canvasWidth = canvas.width;
+    const canvasHeight = canvas.height;
+    
+    let x = element.x * scale;
     const y = element.y * scale;
     const fontSize = (element.fontSize || 16) * scale;
+    const text = element.text || "Text";
 
     ctx.save();
 
@@ -102,16 +114,48 @@ class ThumbnailGenerator {
     ctx.fillStyle = element.color || "#000000";
 
     // Set alignment
-    ctx.textAlign = element.align || "left";
+    const align = element.align || "left";
+    ctx.textAlign = align;
     ctx.textBaseline = "top";
+
+    // Calculate text width for positioning and clipping
+    const textWidth = ctx.measureText(text).width;
+    const maxWidth = element.width ? element.width * scale : canvasWidth;
+
+    // For centered text, use canvas center
+    if (align === "center") {
+      x = canvasWidth / 2;
+    } else if (align === "right") {
+      // For right-aligned, position from right edge
+      // element.x in template is from left, so we need to calculate from right
+      const templateWidth = canvasWidth / scale; // Original template width in mm
+      const rightEdgeX = templateWidth - element.x; // Distance from right edge in mm
+      x = canvasWidth - (rightEdgeX * scale);
+    }
+    // For left-aligned, x is already calculated correctly as element.x * scale
+
+    // Clipping to prevent text from going outside canvas bounds
+    ctx.beginPath();
+    ctx.rect(0, 0, canvasWidth, canvasHeight);
+    ctx.clip();
 
     // Apply rotation if exists
     if (element.rotation) {
       ctx.translate(x, y);
       ctx.rotate((element.rotation * Math.PI) / 180);
-      ctx.fillText(element.text || "Text", 0, 0);
+      // Use maxWidth for text wrapping if specified
+      if (element.width) {
+        ctx.fillText(text, 0, 0, maxWidth);
+      } else {
+        ctx.fillText(text, 0, 0);
+      }
     } else {
-      ctx.fillText(element.text || "Text", x, y);
+      // Use maxWidth for text wrapping if specified
+      if (element.width) {
+        ctx.fillText(text, x, y, maxWidth);
+      } else {
+        ctx.fillText(text, x, y);
+      }
     }
 
     ctx.restore();

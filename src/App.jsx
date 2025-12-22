@@ -180,6 +180,9 @@ import CertificateGenerator from "./pages/CertificateGenerator";
 import DesignerComparison from "./pages/DesignerComparison";
 import PurchaseCredits from "./pages/PurchaseCredits";
 import PaymentSuccess from "./pages/PaymentSuccess";
+import SmartTemplateEditor from "./pages/SmartTemplateEditor";
+import HolderDashboard from "./pages/HolderDashboard";
+import IssuerDashboard from "./pages/IssuerDashboard";
 import LoadingSpinner from "./components/LoadingSpinner";
 
 // Detect if running as Chrome extension
@@ -319,6 +322,30 @@ function App() {
       element: (
         <ProtectedRoute>
           <PaymentSuccess />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/smart-template-editor",
+      element: (
+        <ProtectedRoute>
+          <SmartTemplateEditor />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/holder-dashboard",
+      element: (
+        <ProtectedRoute>
+          <HolderDashboard />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/issuer-dashboard",
+      element: (
+        <ProtectedRoute>
+          <IssuerDashboard />
         </ProtectedRoute>
       ),
     },

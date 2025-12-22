@@ -30,7 +30,7 @@ const Header = () => {
             <div className="flex items-center space-x-2">
               <div
                 className={`w-2 h-2 rounded-full ${
-                  userRole === "issuer" ? "bg-purple-400" : "bg-blue-400"
+                  userRole?.toLowerCase() === "issuer" ? "bg-purple-400" : "bg-blue-400"
                 }`}
               ></div>
               <p className="text-xs text-gray-300 capitalize font-medium">
@@ -122,37 +122,44 @@ const Header = () => {
 
                 {/* Menu Items */}
                 <div className="p-2">
-                  <button
-                    onClick={() => {
-                      setUserRole(userRole === "issuer" ? "holder" : "issuer");
-                      setShowMenu(false);
-                    }}
-                    className="w-full text-left px-3 py-3 text-sm text-gray-300 hover:bg-white/10 rounded-xl transition-all duration-200 flex items-center space-x-3 group"
-                  >
-                    <div
-                      className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                        userRole === "issuer"
-                          ? "bg-blue-500/20 text-blue-400"
-                          : "bg-purple-500/20 text-purple-400"
-                      }`}
+                  {/* Mode Switch - Only show for ISSUER users */}
+                  {user?.role?.toLowerCase() === "issuer" && (
+                    <button
+                      onClick={() => {
+                        // Switch between issuer and user/holder roles
+                        // Normalize userRole for comparison (handle both "user" and "holder")
+                        const isIssuer = userRole?.toLowerCase() === "issuer";
+                        const newRole = isIssuer ? "user" : "issuer";
+                        setUserRole(newRole);
+                        setShowMenu(false);
+                      }}
+                      className="w-full text-left px-3 py-3 text-sm text-gray-300 hover:bg-white/10 rounded-xl transition-all duration-200 flex items-center space-x-3 group"
                     >
-                      {userRole === "issuer" ? (
-                        <User size={16} />
-                      ) : (
-                        <Crown size={16} />
-                      )}
-                    </div>
-                    <div>
-                      <p className="font-medium group-hover:text-white transition-colors">
-                        Switch to {userRole === "issuer" ? "Holder" : "Issuer"}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {userRole === "issuer"
-                          ? "View and verify documents"
-                          : "Issue and manage certificates"}
-                      </p>
-                    </div>
-                  </button>
+                      <div
+                        className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                          userRole?.toLowerCase() === "issuer"
+                            ? "bg-blue-500/20 text-blue-400"
+                            : "bg-purple-500/20 text-purple-400"
+                        }`}
+                      >
+                        {userRole?.toLowerCase() === "issuer" ? (
+                          <User size={16} />
+                        ) : (
+                          <Crown size={16} />
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-medium group-hover:text-white transition-colors">
+                          Switch to {userRole?.toLowerCase() === "issuer" ? "Holder" : "Issuer"}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {userRole?.toLowerCase() === "issuer"
+                            ? "View and verify documents"
+                            : "Issue and manage certificates"}
+                        </p>
+                      </div>
+                    </button>
+                  )}
 
                   <button className="w-full text-left px-3 py-3 text-sm text-gray-300 hover:bg-white/10 rounded-xl transition-all duration-200 flex items-center space-x-3 group">
                     <div className="w-8 h-8 bg-gray-500/20 rounded-lg flex items-center justify-center">

@@ -1,83 +1,39 @@
-import React, { useState, useCallback } from "react";
-import PDFTemplateDesigner from "../components/PDFTemplateDesigner";
-import FabricDesignerV2 from "../components/FabricDesignerV2";
+import React, { useState, useCallback, useEffect } from "react";
 import KonvaPdfDesigner from "../components/KonvaPdfDesigner";
 import pdfGenerator from "../services/pdfGenerator";
 import canvasPdfGenerator from "../services/canvasPdfGenerator";
 import templateStorage from "../services/templateStorage";
+import thumbnailGenerator from "../services/thumbnailGenerator";
 import {
   Download,
-  Eye,
-  FileText,
-  Sparkles,
   X,
   Palette,
   Save,
   FolderOpen,
+  Sparkles,
+  FileText,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 const DesignerComparison = () => {
-  const [activeDesigner, setActiveDesigner] = useState("konva"); // 'current', 'fabric', 'pdfme', or 'konva'
+  const [activeDesigner] = useState("konva"); // Only Konva designer
   const [previewPdfUrl, setPreviewPdfUrl] = useState(null);
   const [previewData, setPreviewData] = useState(null); // { pdf, filename, recipient }
   const [batchPreviews, setBatchPreviews] = useState([]); // For batch preview
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
-  const [showTemplateLibrary, setShowTemplateLibrary] = useState(false);
   const [savedTemplates, setSavedTemplates] = useState([]);
+  const [templateThumbnails, setTemplateThumbnails] = useState({}); // Store thumbnails by template name
   const [templateName, setTemplateName] = useState("POC Test Certificate");
   const [loadedTemplate, setLoadedTemplate] = useState(null); // Template to pass to Konva
+  const [showSidebar, setShowSidebar] = useState(true); // Sidebar visibility
   const [template, setTemplate] = useState({
     name: "POC Test Certificate",
     orientation: "landscape",
     format: "a4",
     backgroundColor: "#ffffff",
-    elements: [
-      {
-        id: "title",
-        type: "text",
-        text: "Certificate of Achievement",
-        x: 148,
-        y: 30,
-        width: 200,
-        height: 40,
-        fontSize: 32,
-        font: "Arial",
-        fontStyle: "bold",
-        color: "#1e40af",
-        align: "center",
-      },
-      {
-        id: "subtitle",
-        type: "text",
-        text: "This certificate is awarded to",
-        x: 148,
-        y: 80,
-        width: 200,
-        height: 20,
-        fontSize: 16,
-        font: "Arial",
-        fontStyle: "normal",
-        color: "#000000",
-        align: "center",
-      },
-      {
-        id: "name",
-        type: "text",
-        text: "John Doe",
-        isDynamic: true,
-        dataField: "name",
-        x: 148,
-        y: 110,
-        width: 200,
-        height: 30,
-        fontSize: 24,
-        font: "Arial",
-        fontStyle: "bold",
-        color: "#000000",
-        align: "center",
-      },
-    ],
+    elements: [], // Start with empty canvas
   });
 
   const [csvData] = useState([
@@ -119,123 +75,131 @@ const DesignerComparison = () => {
     }
   };
 
-  const handleTemplateChange = useCallback(async (updatedTemplate) => {
-    // Check if we should use canvas-based generation for pixel-perfect accuracy
-    const useCanvas =
-      updatedTemplate.useCanvasGeneration && updatedTemplate.fabricCanvas;
+  const handleTemplateChange = useCallback(
+    async (updatedTemplate) => {
+      // Update the shared template state
+      setTemplate(updatedTemplate);
 
-    // Handle batch PDF generation
-    if (updatedTemplate.batchGenerate && updatedTemplate.csvData) {
-      const csvRecords = updatedTemplate.csvData;
-      const batchInfo = updatedTemplate.batchInfo || null;
+      // Update loadedTemplate to keep them in sync
+      setLoadedTemplate(updatedTemplate);
 
-      try {
-        let pdfs;
+      // Check if we should use canvas-based generation for pixel-perfect accuracy
+      const useCanvas =
+        updatedTemplate.useCanvasGeneration && updatedTemplate.fabricCanvas;
 
-        if (useCanvas) {
-          // Use canvas-based generation for pixel-perfect accuracy
-          console.log(
-            "🎨 Using canvas-based generation for pixel-perfect PDFs"
-          );
-          console.log("📦 Batch Info:", batchInfo);
-          pdfs = await canvasPdfGenerator.generateBatch(
-            updatedTemplate.fabricCanvas,
-            updatedTemplate,
-            csvRecords,
-            batchInfo // Pass batch info for course/batch name
-          );
-        } else {
-          // Fallback to element-based generation
-          pdfs = csvRecords.map((record, index) => {
-            // Merge batch info with record data
-            const mergedData = { ...record };
-            if (batchInfo) {
-              if (batchInfo.courseName) {
-                mergedData.course = batchInfo.courseName;
-                mergedData.courseName = batchInfo.courseName;
-              }
-              if (batchInfo.batchName) {
-                mergedData.batch = batchInfo.batchName;
-                mergedData.batchName = batchInfo.batchName;
-              }
-            }
+      // Handle batch PDF generation
+      if (updatedTemplate.batchGenerate && updatedTemplate.csvData) {
+        const csvRecords = updatedTemplate.csvData;
+        const batchInfo = updatedTemplate.batchInfo || null;
 
-            const pdf = pdfGenerator.generateSingleCertificate(
-              updatedTemplate,
-              mergedData
+        try {
+          let pdfs;
+
+          if (useCanvas) {
+            // Use canvas-based generation for pixel-perfect accuracy
+            console.log(
+              "🎨 Using canvas-based generation for pixel-perfect PDFs"
             );
-            return {
-              pdf,
-              filename: `certificate_${
-                record.name || record.fullname || index + 1
-              }.pdf`,
-              recipient: record,
-            };
-          });
+            console.log("📦 Batch Info:", batchInfo);
+            pdfs = await canvasPdfGenerator.generateBatch(
+              updatedTemplate.fabricCanvas,
+              updatedTemplate,
+              csvRecords,
+              batchInfo // Pass batch info for course/batch name
+            );
+          } else {
+            // Fallback to element-based generation
+            pdfs = csvRecords.map((record, index) => {
+              // Merge batch info with record data
+              const mergedData = { ...record };
+              if (batchInfo) {
+                if (batchInfo.courseName) {
+                  mergedData.course = batchInfo.courseName;
+                  mergedData.courseName = batchInfo.courseName;
+                }
+                if (batchInfo.batchName) {
+                  mergedData.batch = batchInfo.batchName;
+                  mergedData.batchName = batchInfo.batchName;
+                }
+              }
+
+              const pdf = pdfGenerator.generateSingleCertificate(
+                updatedTemplate,
+                mergedData
+              );
+              return {
+                pdf,
+                filename: `certificate_${
+                  record.name || record.fullname || index + 1
+                }.pdf`,
+                recipient: record,
+              };
+            });
+          }
+
+          // Store for preview instead of downloading immediately
+          setBatchPreviews(pdfs);
+          setShowPreviewModal(true);
+        } catch (error) {
+          console.error("Error generating batch PDFs:", error);
+          alert("Error generating PDFs. Check console for details.");
         }
 
-        // Store for preview instead of downloading immediately
-        setBatchPreviews(pdfs);
-        setShowPreviewModal(true);
-      } catch (error) {
-        console.error("Error generating batch PDFs:", error);
-        alert("Error generating PDFs. Check console for details.");
+        // Clear the flags
+        delete updatedTemplate.batchGenerate;
+        delete updatedTemplate.csvData;
+        delete updatedTemplate.batchInfo;
       }
 
-      // Clear the flags
-      delete updatedTemplate.batchGenerate;
-      delete updatedTemplate.csvData;
-      delete updatedTemplate.batchInfo;
-    }
+      // Handle single PDF generation
+      if (updatedTemplate.generateSingle && updatedTemplate.currentRecipient) {
+        const recipient = updatedTemplate.currentRecipient;
 
-    // Handle single PDF generation
-    if (updatedTemplate.generateSingle && updatedTemplate.currentRecipient) {
-      const recipient = updatedTemplate.currentRecipient;
+        try {
+          let pdf;
 
-      try {
-        let pdf;
+          if (useCanvas) {
+            // Use canvas-based generation for pixel-perfect accuracy
+            console.log(
+              "🎨 Using canvas-based generation for pixel-perfect PDF"
+            );
+            pdf = await canvasPdfGenerator.generateFromCanvas(
+              updatedTemplate.fabricCanvas,
+              updatedTemplate,
+              recipient
+            );
+          } else {
+            // Fallback to element-based generation
+            pdf = pdfGenerator.generateSingleCertificate(
+              updatedTemplate,
+              recipient
+            );
+          }
 
-        if (useCanvas) {
-          // Use canvas-based generation for pixel-perfect accuracy
-          console.log("🎨 Using canvas-based generation for pixel-perfect PDF");
-          pdf = await canvasPdfGenerator.generateFromCanvas(
-            updatedTemplate.fabricCanvas,
-            updatedTemplate,
-            recipient
-          );
-        } else {
-          // Fallback to element-based generation
-          pdf = pdfGenerator.generateSingleCertificate(
-            updatedTemplate,
-            recipient
-          );
+          const filename = `certificate_${
+            recipient.name || recipient.fullname || "recipient"
+          }.pdf`;
+
+          // Create preview URL
+          const pdfBlob = pdf.output("blob");
+          const pdfUrl = URL.createObjectURL(pdfBlob);
+
+          // Store for preview instead of downloading immediately
+          setPreviewData({ pdf, filename, recipient });
+          setPreviewPdfUrl(pdfUrl);
+          setShowPreviewModal(true);
+        } catch (error) {
+          console.error("Error generating PDF:", error);
+          alert("Error generating PDF. Check console for details.");
         }
 
-        const filename = `certificate_${
-          recipient.name || recipient.fullname || "recipient"
-        }.pdf`;
-
-        // Create preview URL
-        const pdfBlob = pdf.output("blob");
-        const pdfUrl = URL.createObjectURL(pdfBlob);
-
-        // Store for preview instead of downloading immediately
-        setPreviewData({ pdf, filename, recipient });
-        setPreviewPdfUrl(pdfUrl);
-        setShowPreviewModal(true);
-      } catch (error) {
-        console.error("Error generating PDF:", error);
-        alert("Error generating PDF. Check console for details.");
+        // Clear the flags
+        delete updatedTemplate.generateSingle;
+        delete updatedTemplate.currentRecipient;
       }
-
-      // Clear the flags
-      delete updatedTemplate.generateSingle;
-      delete updatedTemplate.currentRecipient;
-    }
-
-    // Update template state
-    setTemplate(updatedTemplate);
-  }, []); // Empty deps - function doesn't depend on any state
+    },
+    []
+  );
 
   const downloadSinglePDF = () => {
     if (previewData) {
@@ -284,19 +248,41 @@ const DesignerComparison = () => {
     }
   };
 
-  const loadSavedTemplates = () => {
+  const loadSavedTemplates = async () => {
     const templates = templateStorage.getAllTemplates();
     setSavedTemplates(templates);
+    
+    // Generate thumbnails for all templates
+    // Use dimensions that will fill the preview container properly
+    const thumbnails = {};
+    for (const tmpl of templates) {
+      try {
+        // Generate larger thumbnail for better quality, it will be scaled down by CSS
+        // Container is aspect-[3/2], so generate at 600x400 for crisp display
+        const thumbnail = await thumbnailGenerator.generateFromTemplate(tmpl, 600, 400);
+        thumbnails[tmpl.name] = thumbnail;
+      } catch (error) {
+        console.error(`Failed to generate thumbnail for ${tmpl.name}:`, error);
+      }
+    }
+    setTemplateThumbnails(thumbnails);
   };
 
-  const handleLoadTemplate = (templateToLoad) => {
+  const handleLoadTemplate = async (templateToLoad) => {
     setTemplate(templateToLoad);
     setTemplateName(templateToLoad.name);
     setLoadedTemplate(templateToLoad); // Pass to Konva
-    setShowTemplateLibrary(false);
-    alert(
-      `Template "${templateToLoad.name}" loaded! Switch to the designer tab to see it.`
-    );
+    
+    // Regenerate thumbnail for this template to ensure it's up to date
+    try {
+      const thumbnail = await thumbnailGenerator.generateFromTemplate(templateToLoad, 600, 400);
+      setTemplateThumbnails(prev => ({
+        ...prev,
+        [templateToLoad.name]: thumbnail
+      }));
+    } catch (error) {
+      console.error(`Failed to regenerate thumbnail for ${templateToLoad.name}:`, error);
+    }
   };
 
   const handleDeleteTemplate = (templateName) => {
@@ -309,8 +295,23 @@ const DesignerComparison = () => {
     }
   };
 
+  // Initialize loadedTemplate if null (for Konva designer)
+  useEffect(() => {
+    // Initialize loadedTemplate with default template if it's null
+    if (!loadedTemplate && template) {
+      setLoadedTemplate(template);
+    }
+  }, [template, loadedTemplate]);
+
+  // Sync loadedTemplate with template
+  useEffect(() => {
+    if (template && !loadedTemplate) {
+      setLoadedTemplate(template);
+    }
+  }, [template, loadedTemplate]);
+
   // Load templates on mount
-  React.useEffect(() => {
+  useEffect(() => {
     loadSavedTemplates();
   }, []);
 
@@ -335,47 +336,10 @@ const DesignerComparison = () => {
             </div>
 
             <div className="flex items-center gap-3">
-              {/* Designer Toggle - Compact */}
-              <div className="flex gap-2 bg-gray-900/50 backdrop-blur p-1 rounded-xl border border-white/10">
-                <button
-                  onClick={() => setActiveDesigner("konva")}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all text-sm ${
-                    activeDesigner === "konva"
-                      ? "bg-gradient-to-r from-pink-500 to-rose-600 text-white shadow-lg"
-                      : "text-gray-400 hover:text-white hover:bg-white/5"
-                  }`}
-                >
-                  <Palette size={16} />
-                  Konva Designer
-                  <span className="px-1.5 py-0.5 bg-yellow-400 text-gray-900 text-[10px] rounded-full font-bold">
-                    NEW
-                  </span>
-                </button>
-                <button
-                  onClick={() => setActiveDesigner("fabric")}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all text-sm ${
-                    activeDesigner === "fabric"
-                      ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg"
-                      : "text-gray-400 hover:text-white hover:bg-white/5"
-                  }`}
-                >
-                  <Sparkles size={16} />
-                  Fabric.js
-                  <span className="px-1.5 py-0.5 bg-yellow-400 text-gray-900 text-[10px] rounded-full font-bold">
-                    NEW
-                  </span>
-                </button>
-                <button
-                  onClick={() => setActiveDesigner("current")}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all text-sm ${
-                    activeDesigner === "current"
-                      ? "bg-white text-gray-900 shadow-lg"
-                      : "text-gray-400 hover:text-white hover:bg-white/5"
-                  }`}
-                >
-                  <FileText size={16} />
-                  Legacy
-                </button>
+              {/* Designer Name - Only Konva */}
+              <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-pink-500/20 to-rose-500/20 border border-pink-500/30 rounded-xl">
+                <Palette size={16} className="text-pink-400" />
+                <span className="text-sm font-semibold text-white">Konva Designer</span>
               </div>
 
               {/* Save button - visible for all designers */}
@@ -388,35 +352,16 @@ const DesignerComparison = () => {
                 <span>Save</span>
               </button>
 
-              {/* Template Library button */}
+              {/* Template Sidebar Toggle button */}
               <button
-                onClick={() => setShowTemplateLibrary(!showTemplateLibrary)}
+                onClick={() => setShowSidebar(!showSidebar)}
                 className="px-4 py-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 rounded-lg transition-all shadow-lg hover:shadow-purple-500/20 flex items-center gap-2 text-sm"
-                title="Template Library"
+                title={showSidebar ? "Hide Templates" : "Show Templates"}
               >
                 <FolderOpen size={16} />
                 <span>Templates ({savedTemplates.length})</span>
               </button>
 
-              {/* Show preview/download buttons only for non-Konva designers */}
-              {activeDesigner !== "konva" && (
-                <div className="flex gap-2">
-                  <button
-                    onClick={handleGeneratePreview}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-all text-sm shadow-lg hover:shadow-xl"
-                  >
-                    <Eye size={16} />
-                    Preview
-                  </button>
-                  <button
-                    onClick={handleDownloadPDF}
-                    className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-all text-sm shadow-lg hover:shadow-xl"
-                  >
-                    <Download size={16} />
-                    Download
-                  </button>
-                </div>
-              )}
             </div>
           </div>
         </div>
@@ -464,96 +409,110 @@ const DesignerComparison = () => {
           </div>
         )}
 
-        {/* Template Library Modal */}
-        {showTemplateLibrary && (
-          <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-2xl p-4 mb-4 shadow-xl">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                <FolderOpen size={20} className="text-purple-400" />
-                Template Library ({savedTemplates.length})
-              </h3>
-              <button
-                onClick={() => setShowTemplateLibrary(false)}
-                className="p-2 hover:bg-white/10 rounded-lg transition-all"
-              >
-                <X size={20} className="text-gray-400" />
-              </button>
-            </div>
+        {/* Main Content Area with Sidebar */}
+        <div className="flex gap-4 h-[calc(100vh-120px)] relative">
+          {/* Template Sidebar */}
+          {showSidebar && (
+            <div className="w-80 bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-xl flex flex-col">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                  <FolderOpen size={20} className="text-purple-400" />
+                  Templates ({savedTemplates.length})
+                </h3>
+                <button
+                  onClick={() => setShowSidebar(false)}
+                  className="p-1.5 hover:bg-white/10 rounded-lg transition-all"
+                  title="Hide sidebar"
+                >
+                  <ChevronLeft size={18} className="text-gray-400" />
+                </button>
+              </div>
 
-            {savedTemplates.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                {savedTemplates.map((tmpl) => (
-                  <div
-                    key={tmpl.name}
-                    className="bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition-colors"
-                  >
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1">
-                        <h4 className="text-white font-medium mb-1 truncate">
-                          {tmpl.name}
-                        </h4>
-                        <p className="text-xs text-gray-400">
-                          {tmpl.elements?.length || 0} elements
-                        </p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          {tmpl.orientation} • {tmpl.format}
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => handleDeleteTemplate(tmpl.name)}
-                        className="p-2 hover:bg-red-500/20 rounded-lg transition-colors"
-                        title="Delete template"
-                      >
-                        <X size={16} className="text-red-400" />
-                      </button>
-                    </div>
-                    <button
+              <div className="flex-1 overflow-y-auto space-y-3 pr-2">
+                {savedTemplates.length > 0 ? (
+                  savedTemplates.map((tmpl) => (
+                    <div
+                      key={tmpl.name}
+                      className="bg-white/5 border border-white/10 rounded-xl overflow-hidden hover:bg-white/10 hover:border-purple-500/30 transition-all cursor-pointer group"
                       onClick={() => handleLoadTemplate(tmpl)}
-                      className="w-full px-4 py-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 rounded-lg transition-colors text-sm font-medium"
                     >
-                      Load Template
-                    </button>
+                      {/* Template Preview - Emphasize the design */}
+                      <div className="relative aspect-[3/2] bg-white overflow-hidden">
+                        {templateThumbnails[tmpl.name] ? (
+                          <img
+                            src={templateThumbnails[tmpl.name]}
+                            alt={tmpl.name}
+                            className="w-full h-full object-contain"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                            <FolderOpen size={32} className="text-gray-400" />
+                          </div>
+                        )}
+                        {/* Overlay on hover */}
+                        <div className="absolute inset-0 bg-purple-500/0 group-hover:bg-purple-500/10 transition-colors flex items-center justify-center">
+                          <span className="text-white text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                            Click to Load
+                          </span>
+                        </div>
+                      </div>
+                      
+                      {/* Template Name - Below preview, readable */}
+                      <div className="p-3">
+                        <p className="text-white font-medium text-sm truncate" title={tmpl.name}>
+                          {tmpl.name}
+                        </p>
+                        <div className="flex items-center justify-between mt-1">
+                          <p className="text-xs text-gray-400">
+                            {tmpl.elements?.length || 0} elements
+                          </p>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteTemplate(tmpl.name);
+                            }}
+                            className="p-1 hover:bg-red-500/20 rounded transition-colors opacity-0 group-hover:opacity-100"
+                            title="Delete template"
+                          >
+                            <X size={14} className="text-red-400" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-8">
+                    <FolderOpen size={48} className="text-gray-600 mx-auto mb-3" />
+                    <p className="text-gray-400 mb-2 text-sm">No saved templates yet</p>
+                    <p className="text-xs text-gray-500">
+                      Design and save your first template
+                    </p>
                   </div>
-                ))}
+                )}
               </div>
-            ) : (
-              <div className="text-center py-8">
-                <FolderOpen size={48} className="text-gray-600 mx-auto mb-3" />
-                <p className="text-gray-400 mb-2">No saved templates yet</p>
-                <p className="text-sm text-gray-500">
-                  Design a certificate and click "Save" to create your first
-                  template
-                </p>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Designer Container - Maximum Space */}
-        <div className="bg-gradient-to-br from-gray-800/40 to-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-4 h-[calc(100vh-120px)] shadow-2xl">
-          {activeDesigner === "konva" ? (
-            <div className="h-full">
-              <KonvaPdfDesigner
-                template={loadedTemplate}
-                onTemplateChange={handleTemplateChange}
-              />
-            </div>
-          ) : activeDesigner === "current" ? (
-            <div className="h-full">
-              <PDFTemplateDesigner
-                template={template}
-                onTemplateChange={handleTemplateChange}
-                availableFields={Object.keys(csvData[0])}
-              />
-            </div>
-          ) : (
-            <div className="h-full">
-              <FabricDesignerV2
-                template={template}
-                onTemplateChange={handleTemplateChange}
-              />
             </div>
           )}
+
+          {/* Sidebar Toggle Button (when hidden) */}
+          {!showSidebar && (
+            <button
+              onClick={() => setShowSidebar(true)}
+              className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 rounded-lg transition-all shadow-lg z-10"
+              title="Show templates"
+            >
+              <ChevronRight size={20} />
+            </button>
+          )}
+
+          {/* Designer Container - Full Screen */}
+          <div className={`bg-gradient-to-br from-gray-800/40 to-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-2 shadow-2xl transition-all ${showSidebar ? 'flex-1' : 'w-full'}`}>
+            <div className="h-full">
+              <KonvaPdfDesigner
+                template={loadedTemplate || template}
+                onTemplateChange={handleTemplateChange}
+              />
+            </div>
+          </div>
         </div>
 
         {/* PDF Preview Modal */}

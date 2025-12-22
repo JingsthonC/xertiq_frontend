@@ -9,7 +9,7 @@ const useWalletStore = create(
       isAuthenticated: false,
       user: null,
       token: null,
-      userRole: "issuer", // Add userRole for header component
+      userRole: "user", // Default role, will be set from login response
 
       // Wallet data
       credits: 150, // Set default credits
@@ -41,6 +41,7 @@ const useWalletStore = create(
           isAuthenticated: true,
           user,
           token,
+          userRole: (user?.role || "USER").toLowerCase(), // Normalize role to lowercase
           error: null,
         }),
 
@@ -137,6 +138,7 @@ const useWalletStore = create(
         isAuthenticated: state.isAuthenticated,
         user: state.user,
         token: state.token,
+        userRole: state.userRole, // Persist userRole across page reloads
         activeTab: state.activeTab,
       }),
     }

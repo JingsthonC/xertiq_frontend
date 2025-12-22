@@ -115,6 +115,31 @@ class CanvasPDFGenerator {
 
     return pdfs;
   }
+
+  /**
+   * Generate preview PDF blob URL for real-time preview
+   * Optimized for faster generation (slightly lower quality acceptable for preview)
+   * @param {Canvas} canvas - Fabric.js canvas instance
+   * @param {Object} template - Template configuration
+   * @param {Object} data - Data to replace dynamic fields
+   * @param {Object} batchInfo - Batch/course information
+   * @returns {string} Blob URL for PDF preview
+   */
+  async generatePreview(canvas, template, data = null, batchInfo = null) {
+    try {
+      // Use same generation logic but return blob URL for immediate display
+      const pdf = await this.generateFromCanvas(canvas, template, data, batchInfo);
+      
+      // Convert to blob URL
+      const pdfBlob = pdf.output("blob");
+      const blobUrl = URL.createObjectURL(pdfBlob);
+      
+      return blobUrl;
+    } catch (error) {
+      console.error("Error generating preview:", error);
+      throw error;
+    }
+  }
 }
 
 const canvasPdfGenerator = new CanvasPDFGenerator();

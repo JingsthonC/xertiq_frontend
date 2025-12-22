@@ -31,6 +31,7 @@ import {
   MoveUp,
   MoveDown,
   Copy,
+  Clipboard,
   Lock,
   Unlock,
   Pen,
@@ -42,10 +43,15 @@ import {
   AlignCenter,
   AlignRight,
   Database,
+  CloudUpload,
+  ZoomIn,
+  ZoomOut,
 } from "lucide-react";
 import useWalletStore from "../store/wallet";
 import CreditConfirmationModal from "./CreditConfirmationModal";
 import { CREDIT_COSTS } from "../services/api";
+import apiService from "../services/api";
+import konvaPdfGenerator from "../services/konvaPdfGenerator";
 
 // Define initial canvas dimensions
 const STAGE_WIDTH = 1000;
@@ -78,18 +84,31 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
   // Multi-select states
   const [selectedIds, setSelectedIds] = useState([]); // Array of selected IDs
 
+  // Selection box states (for drag selection)
+  const [isSelecting, setIsSelecting] = useState(false);
+  const [selectionBox, setSelectionBox] = useState(null); // { x1, y1, x2, y2 }
+
+  // Copy/paste states
+  const [copiedElements, setCopiedElements] = useState([]);
+
   // New states for advanced features
   const [drawingMode, setDrawingMode] = useState(null); // 'pen', 'line', 'arrow'
   const [isDrawing, setIsDrawing] = useState(false);
   const [currentLine, setCurrentLine] = useState(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false); // Export dropdown menu
+  const [scale, setScale] = useState(1); // Canvas scale for zoom
+  const [zoomInputValue, setZoomInputValue] = useState(""); // For editable zoom input
+  const [isEditingZoom, setIsEditingZoom] = useState(false); // Track if zoom input is being edited
+  const [showPropertiesPanel, setShowPropertiesPanel] = useState(true); // Properties panel visibility
 
   // Credit system states
-  const { credits, fetchCredits, updateCredits } = useWalletStore();
+  const { credits, fetchCredits, updateCredits, user } = useWalletStore();
   const [showCreditModal, setShowCreditModal] = useState(false);
   const [pendingExportAction, setPendingExportAction] = useState(null);
   const [creditCheckLoading, setCreditCheckLoading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [showUploadMenu, setShowUploadMenu] = useState(false);
 
   const stageRef = useRef(null);
   const transformerRef = useRef(null);
@@ -207,13 +226,17 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
     // Only sync if we have elements and onTemplateChange callback
     if (onTemplateChange && elements.length > 0) {
       const templateElements = convertToTemplateFormat(elements);
-      onTemplateChange({
+      const template = {
         name: initialTemplate?.name || "Konva Design",
-        orientation: "landscape",
+        orientation: STAGE_WIDTH > STAGE_HEIGHT ? "landscape" : "portrait",
         format: "a4",
         backgroundColor: "#ffffff",
+        stageWidth: STAGE_WIDTH,
+        stageHeight: STAGE_HEIGHT,
         elements: templateElements,
-      });
+        version: "1.0", // Template format version
+      };
+      onTemplateChange(template);
       lastSyncedElements.current = elementsStr;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -232,8 +255,28 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
       // Convert template elements to Konva format
       // Templates store positions in mm, Konva uses pixels
       // A4 landscape: 297mm x 210mm -> ~1000px x 700px canvas
-      const mmToPixelX = STAGE_WIDTH / 297; // ~3.37
-      const mmToPixelY = STAGE_HEIGHT / 210; // ~3.33
+      // Use template's stage dimensions if available (for templates saved from Konva)
+      // Otherwise use default STAGE_WIDTH/STAGE_HEIGHT
+      const templateStageWidth = initialTemplate.stageWidth || STAGE_WIDTH;
+      const templateStageHeight = initialTemplate.stageHeight || STAGE_HEIGHT;
+      const mmToPixelX = templateStageWidth / 297; // ~3.37
+      const mmToPixelY = templateStageHeight / 210; // ~3.33
+
+      // Debug: Log conversion factors to help diagnose coordinate issues
+      if (process.env.NODE_ENV === "development") {
+        console.log("Loading template:", {
+          hasStageDimensions: !!(
+            initialTemplate.stageWidth && initialTemplate.stageHeight
+          ),
+          templateStageWidth,
+          templateStageHeight,
+          defaultStageWidth: STAGE_WIDTH,
+          defaultStageHeight: STAGE_HEIGHT,
+          mmToPixelX,
+          mmToPixelY,
+          elementCount: initialTemplate.elements?.length || 0,
+        });
+      }
 
       const konvaElements = initialTemplate.elements
         .map((el, index) => {
@@ -260,10 +303,20 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
               width: el.width ? el.width * mmToPixelX : 200,
             };
           } else if (el.type === "image") {
+            // Load image from src if available
+            let imageObj = null;
+            if (el.src) {
+              const img = new window.Image();
+              img.crossOrigin = "anonymous";
+              img.src = el.src;
+              imageObj = img;
+            }
+
             return {
               ...baseElement,
               type: "image",
               src: el.src,
+              image: imageObj,
               width: (el.width || 100) * mmToPixelX,
               height: (el.height || 100) * mmToPixelY,
             };
@@ -344,6 +397,35 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
     }
   }, [initialTemplate]);
 
+  // Auto-calculate scale to fit container on mount and resize
+  useEffect(() => {
+    const calculateScale = () => {
+      const container = document.querySelector(".konva-canvas-container");
+      if (container) {
+        const containerWidth = container.clientWidth - 32; // Account for padding
+        const containerHeight = container.clientHeight - 32;
+        const scaleX = containerWidth / STAGE_WIDTH;
+        const scaleY = containerHeight / STAGE_HEIGHT;
+        const newScale = Math.min(scaleX, scaleY, 1); // Don't scale up beyond 100%
+        setScale(Math.max(0.25, newScale)); // Minimum 25% zoom
+      }
+    };
+
+    // Calculate on mount
+    setTimeout(calculateScale, 100);
+
+    // Recalculate on window resize
+    window.addEventListener("resize", calculateScale);
+    return () => window.removeEventListener("resize", calculateScale);
+  }, []);
+
+  // Reset zoom input when not editing and scale changes externally
+  useEffect(() => {
+    if (!isEditingZoom) {
+      setZoomInputValue("");
+    }
+  }, [scale, isEditingZoom]);
+
   // Attach transformer to selected node
   useEffect(() => {
     if (transformerRef.current) {
@@ -371,19 +453,95 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
     }
   }, [selectedId, selectedIds]);
 
-  // Keyboard event for deleting elements
+  // Keyboard shortcuts for the editor
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === "Delete" && selectedId) {
+      // Only handle if not typing in an input/textarea
+      if (
+        e.target.tagName === "INPUT" ||
+        e.target.tagName === "TEXTAREA" ||
+        e.target.isContentEditable
+      ) {
+        return;
+      }
+
+      // Ctrl+C or Cmd+C - Copy (only if elements are selected)
+      if (
+        (e.ctrlKey || e.metaKey) &&
+        e.key === "c" &&
+        (selectedId || selectedIds.length > 0)
+      ) {
+        e.preventDefault();
+        handleCopy();
+        return;
+      }
+
+      // Ctrl+V or Cmd+V - Paste (only if there are copied elements)
+      if (
+        (e.ctrlKey || e.metaKey) &&
+        e.key === "v" &&
+        copiedElements.length > 0
+      ) {
+        e.preventDefault();
+        handlePaste();
+        return;
+      }
+
+      // Ctrl+Z or Cmd+Z - Undo
+      if ((e.ctrlKey || e.metaKey) && e.key === "z" && !e.shiftKey) {
+        e.preventDefault();
+        handleUndo();
+        return;
+      }
+
+      // Ctrl+Y or Cmd+Shift+Z - Redo
+      if (
+        (e.ctrlKey && e.key === "y") ||
+        (e.metaKey && e.shiftKey && e.key === "z")
+      ) {
+        e.preventDefault();
+        handleRedo();
+        return;
+      }
+
+      // Delete key - delete selected element(s)
+      if (
+        (e.key === "Delete" || e.key === "Backspace") &&
+        (selectedId || selectedIds.length > 0)
+      ) {
+        e.preventDefault();
         handleDelete();
+        return;
+      }
+
+      // Escape - deselect
+      if (e.key === "Escape" && (selectedId || selectedIds.length > 0)) {
+        setSelectedId(null);
+        setSelectedIds([]);
+        return;
+      }
+
+      // Ctrl/Cmd + Plus/Equal - Zoom In
+      if ((e.ctrlKey || e.metaKey) && (e.key === "+" || e.key === "=")) {
+        e.preventDefault();
+        setScale((prev) => Math.min(2, prev + 0.1));
+        return;
+      }
+
+      // Ctrl/Cmd + Minus - Zoom Out
+      if ((e.ctrlKey || e.metaKey) && e.key === "-") {
+        e.preventDefault();
+        setScale((prev) => Math.max(0.25, prev - 0.1));
+        return;
       }
     };
+
     window.addEventListener("keydown", handleKeyDown);
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedId, elements]); // handleDelete uses elements, so it's included
+  }, [selectedId, selectedIds, elements, copiedElements, history, historyStep]); // Include history for undo/redo
 
   /**
    * Saves the current state of elements to the history stack.
@@ -391,27 +549,37 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
    * @param {Array} newElements - The new array of elements to save.
    */
   const saveHistory = (newElements) => {
+    // Create a deep copy to avoid reference issues
+    const elementsCopy = JSON.parse(JSON.stringify(newElements));
     const newHistory = history.slice(0, historyStep + 1);
-    newHistory.push(newElements);
+    newHistory.push(elementsCopy);
     setHistory(newHistory);
     setHistoryStep(newHistory.length - 1);
   };
 
   const handleUndo = () => {
-    if (historyStep > 0) {
+    if (historyStep > 0 && history.length > 0) {
       const newStep = historyStep - 1;
-      setHistoryStep(newStep);
-      setElements(history[newStep]);
-      setSelectedId(null);
+      const previousState = history[newStep];
+      if (previousState && Array.isArray(previousState)) {
+        setHistoryStep(newStep);
+        setElements([...previousState]); // Create a new array to trigger re-render
+        setSelectedId(null);
+        setSelectedIds([]);
+      }
     }
   };
 
   const handleRedo = () => {
-    if (historyStep < history.length - 1) {
+    if (historyStep < history.length - 1 && history.length > 0) {
       const newStep = historyStep + 1;
-      setHistoryStep(newStep);
-      setElements(history[newStep]);
-      setSelectedId(null);
+      const nextState = history[newStep];
+      if (nextState && Array.isArray(nextState)) {
+        setHistoryStep(newStep);
+        setElements([...nextState]); // Create a new array to trigger re-render
+        setSelectedId(null);
+        setSelectedIds([]);
+      }
     }
   };
 
@@ -631,24 +799,44 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
       const reader = new FileReader();
       reader.onload = (event) => {
         const img = new window.Image();
+        img.crossOrigin = "anonymous"; // Allow cross-origin images
         img.src = event.target.result;
         img.onload = () => {
+          // Scale image if it's too large for the canvas
+          const maxWidth = 400;
+          const maxHeight = 400;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > maxWidth || height > maxHeight) {
+            const scale = Math.min(maxWidth / width, maxHeight / height);
+            width = width * scale;
+            height = height * scale;
+          }
+
           const newImage = {
-            id: `image-${elements.length}`,
+            id: `image-${Date.now()}`,
             type: "image",
             x: 100,
             y: 100,
             image: img,
-            width: img.width,
-            height: img.height,
+            src: event.target.result, // Store data URL for persistence
+            width: width,
+            height: height,
           };
           const newElements = [...elements, newImage];
           setElements(newElements);
           saveHistory(newElements);
         };
+        img.onerror = (error) => {
+          console.error("Error loading image:", error);
+          alert("Failed to load image. Please try a different image file.");
+        };
       };
       reader.readAsDataURL(file);
     }
+    // Reset file input so same file can be uploaded again
+    e.target.value = "";
   };
 
   const handleDelete = () => {
@@ -658,6 +846,8 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
     if (idsToDelete.length === 0) return;
 
     const newElements = elements.filter((el) => !idsToDelete.includes(el.id));
+    setSelectedId(null);
+    setSelectedIds([]);
     setElements(newElements);
     saveHistory(newElements);
     setSelectedId(null);
@@ -673,64 +863,43 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
 
   const generatePreviewWithRecord = async (recordIndex) => {
     const stage = stageRef.current;
-    const layer = layerRef.current;
-    if (!stage || !layer) return;
+    if (!stage) return;
 
-    // If CSV data exists, show preview with specified record's data
-    if (csvData.length > 0 && recordIndex < csvData.length) {
-      const record = csvData[recordIndex];
+    try {
+      // Hide transformer before generating preview
+      if (transformerRef.current) {
+        transformerRef.current.nodes([]);
+        layerRef.current?.batchDraw();
+      }
 
-      // Store original text values
-      const originalTexts = {};
+      // Wait a bit for transformer to disappear from canvas
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
-      // Temporarily replace dynamic fields with actual data
-      elements.forEach((el) => {
-        if (el.type === "text" && el.isDynamic && el.dataField) {
-          const textNode = stage.findOne(`#${el.id}`);
-          if (textNode) {
-            originalTexts[el.id] = textNode.text();
-            const value = record[el.dataField] || `{{${el.dataField}}}`;
-            textNode.text(value);
-          }
-        }
-      });
+      if (csvData.length > 0 && recordIndex < csvData.length) {
+        const record = csvData[recordIndex];
 
-      layer.batchDraw();
-
-      // Wait for render
-      await new Promise((resolve) => setTimeout(resolve, 100));
-
-      // Generate preview with white background
-      const dataURL = stage.toDataURL({
-        pixelRatio: 2,
-        mimeType: "image/png",
-        quality: 1,
-        backgroundColor: "#ffffff", // Add white background
-      });
-      setPreviewUrl(dataURL);
-      setShowPreview(true);
-
-      // Restore original text
-      elements.forEach((el) => {
-        if (originalTexts[el.id]) {
-          const textNode = stage.findOne(`#${el.id}`);
-          if (textNode) {
-            textNode.text(originalTexts[el.id]);
-          }
-        }
-      });
-
-      layer.batchDraw();
-    } else {
-      // No CSV data, show as-is with white background
-      const dataURL = stage.toDataURL({
-        pixelRatio: 2,
-        mimeType: "image/png",
-        quality: 1,
-        backgroundColor: "#ffffff", // Add white background
-      });
-      setPreviewUrl(dataURL);
-      setShowPreview(true);
+        // Use the new preview generator service
+        const dataURL = konvaPdfGenerator.generatePreview(stage, {
+          backgroundColor: "#ffffff",
+          pixelRatio: 2,
+          data: record,
+          elements,
+        });
+        setPreviewUrl(dataURL);
+        setShowPreview(true);
+      } else {
+        // No CSV data, show as-is with white background
+        const dataURL = konvaPdfGenerator.generatePreview(stage, {
+          backgroundColor: "#ffffff",
+          pixelRatio: 2,
+          elements,
+        });
+        setPreviewUrl(dataURL);
+        setShowPreview(true);
+      }
+    } catch (error) {
+      console.error("Error generating preview:", error);
+      alert("Failed to generate preview: " + error.message);
     }
   };
 
@@ -797,46 +966,41 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
     }
 
     setSelectedId(null);
+    setSelectedIds([]);
+
+    // Hide transformer before generating preview
+    if (transformerRef.current) {
+      transformerRef.current.nodes([]);
+      layerRef.current?.batchDraw();
+    }
+
     const samples = [];
 
     // Preview first 3 records (or all if less than 3)
     const samplesToPreview = Math.min(csvData.length, 3);
 
+    // Wait for transformer to disappear from canvas
     await new Promise((resolve) => setTimeout(resolve, 100));
+
+    const stage = stageRef.current;
+    if (!stage) return;
 
     for (let i = 0; i < samplesToPreview; i++) {
       const record = csvData[i];
-      const stage = stageRef.current;
-      const layer = layerRef.current;
-      const originalTexts = [];
 
-      // Store original text values and replace with dynamic data
-      elements.forEach((el) => {
-        if (el.type === "text" && el.isDynamic && el.dataField) {
-          const node = stage.findOne(`#${el.id}`);
-          if (node) {
-            originalTexts.push({ node, originalText: node.text() });
-            const value = record[el.dataField] || el.text;
-            node.text(value);
-          }
-        }
+      // Use the new preview generator service
+      const dataURL = konvaPdfGenerator.generatePreview(stage, {
+        backgroundColor: "#ffffff",
+        pixelRatio: 2,
+        data: record,
+        elements,
       });
-
-      layer.batchDraw();
-      await new Promise((resolve) => setTimeout(resolve, 50));
-      const dataURL = stage.toDataURL({ pixelRatio: 2 });
 
       samples.push({
         dataURL,
         recipient: record,
         recipientNumber: i + 1,
       });
-
-      // Restore original text
-      originalTexts.forEach(({ node, originalText }) => {
-        node.text(originalText);
-      });
-      layer.batchDraw();
     }
 
     setPreviewSamples(samples);
@@ -851,66 +1015,54 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
     }
 
     setSelectedId(null);
-    const previews = [];
+    const stage = stageRef.current;
+    if (!stage) return;
 
     // Wait for deselection
     await new Promise((resolve) => setTimeout(resolve, 100));
 
-    for (let i = 0; i < csvData.length; i++) {
-      const record = csvData[i];
-      const stage = stageRef.current;
-
-      // Create a temporary stage with data
-      const layer = layerRef.current;
-      const originalTexts = [];
-
-      // Store original text values and replace with dynamic data
-      elements.forEach((el) => {
-        if (el.type === "text" && el.isDynamic && el.dataField) {
-          const node = stage.findOne(`#${el.id}`);
-          if (node) {
-            originalTexts.push({ node, originalText: node.text() });
-            const value = record[el.dataField] || el.text;
-            node.text(value);
-          }
-        }
-      });
-
-      layer.batchDraw();
-
-      // Generate PDF
-      await new Promise((resolve) => setTimeout(resolve, 50));
-      const dataURL = stage.toDataURL({ pixelRatio: 2 });
-
-      const pdf = new jsPDF({
+    try {
+      // Use the new batch PDF generator service
+      const pdfs = await konvaPdfGenerator.generateBatch(stage, csvData, {
         orientation: STAGE_WIDTH > STAGE_HEIGHT ? "landscape" : "portrait",
-        unit: "px",
-        format: [STAGE_WIDTH, STAGE_HEIGHT],
+        format: "a4",
+        backgroundColor: "#ffffff",
+        pixelRatio: 2,
+        elements,
+        filenamePattern: "certificate_{{name}}_{{index}}.pdf",
       });
 
-      pdf.addImage(dataURL, "PNG", 0, 0, STAGE_WIDTH, STAGE_HEIGHT);
+      // Convert to preview format with data URLs
+      const previews = await Promise.all(
+        pdfs.map(async (pdfData, i) => {
+          // Generate preview data URL for display
+          const previewDataURL = konvaPdfGenerator.generatePreview(stage, {
+            backgroundColor: "#ffffff",
+            pixelRatio: 2,
+            data: pdfData.data,
+            elements,
+          });
 
-      previews.push({
-        pdf,
-        dataURL,
-        filename: `certificate_${record.name || record.fullname || i + 1}.pdf`,
-        recipient: record,
-      });
+          return {
+            pdf: pdfData.pdf,
+            dataURL: previewDataURL,
+            filename: pdfData.filename,
+            recipient: pdfData.data,
+          };
+        })
+      );
 
-      // Restore original text
-      originalTexts.forEach(({ node, originalText }) => {
-        node.text(originalText);
-      });
-      layer.batchDraw();
+      setBatchPreviews(previews);
+      setShowBatchPreview(true);
+      setShowCsvModal(false);
+    } catch (error) {
+      console.error("Error generating batch PDFs:", error);
+      alert("Failed to generate PDFs: " + error.message);
     }
-
-    setBatchPreviews(previews);
-    setShowBatchPreview(true);
-    setShowCsvModal(false);
   };
 
   const downloadBatchPDF = (pdf, filename) => {
-    pdf.save(filename);
+    konvaPdfGenerator.downloadPDF(pdf, filename);
   };
 
   const downloadAllBatchPDFs = () => {
@@ -986,24 +1138,22 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
     setTimeout(() => {
       const stage = stageRef.current;
       if (stage) {
-        // Get data URL of the stage content
-        const dataURL = stage.toDataURL({
-          pixelRatio: 2,
-          backgroundColor: "#ffffff",
-        });
+        try {
+          // Use the new PDF generator service with proper A4 dimensions
+          const pdf = konvaPdfGenerator.generateFromStage(stage, {
+            orientation: STAGE_WIDTH > STAGE_HEIGHT ? "landscape" : "portrait",
+            format: "a4",
+            backgroundColor: "#ffffff",
+            pixelRatio: 2,
+            elements,
+          });
 
-        // Create a new jsPDF instance
-        const pdf = new jsPDF({
-          orientation: STAGE_WIDTH > STAGE_HEIGHT ? "landscape" : "portrait",
-          unit: "px",
-          format: [STAGE_WIDTH, STAGE_HEIGHT],
-        });
-
-        // Add the image to the PDF
-        pdf.addImage(dataURL, "PNG", 0, 0, STAGE_WIDTH, STAGE_HEIGHT);
-
-        // Download the PDF
-        pdf.save("design.pdf");
+          // Download the PDF
+          konvaPdfGenerator.downloadPDF(pdf, "certificate.pdf");
+        } catch (error) {
+          console.error("Error generating PDF:", error);
+          alert("Failed to generate PDF: " + error.message);
+        }
       }
     }, 100);
   };
@@ -1013,63 +1163,34 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
     const layer = layerRef.current;
     if (!stage || !layer) return;
 
-    // If CSV data exists, export with the current record's data
-    if (csvData.length > 0 && previewRecordIndex < csvData.length) {
-      const record = csvData[previewRecordIndex];
+    try {
+      // If CSV data exists, export with the current record's data
+      if (csvData.length > 0 && previewRecordIndex < csvData.length) {
+        const record = csvData[previewRecordIndex];
 
-      // Store original text values
-      const originalTexts = {};
+        // Use the new PDF generator service with data replacement
+        const pdf = konvaPdfGenerator.generateSingle(stage, record, {
+          orientation: STAGE_WIDTH > STAGE_HEIGHT ? "landscape" : "portrait",
+          format: "a4",
+          backgroundColor: "#ffffff",
+          pixelRatio: 2,
+          elements,
+        });
 
-      // Temporarily replace dynamic fields with actual data
-      elements.forEach((el) => {
-        if (el.type === "text" && el.isDynamic && el.dataField) {
-          const textNode = stage.findOne(`#${el.id}`);
-          if (textNode) {
-            originalTexts[el.id] = textNode.text();
-            const value = record[el.dataField] || `{{${el.dataField}}}`;
-            textNode.text(value);
-          }
-        }
-      });
-
-      layer.batchDraw();
-
-      // Wait for render
-      await new Promise((resolve) => setTimeout(resolve, 100));
-
-      // Generate PDF with actual data
-      const dataURL = stage.toDataURL({
-        pixelRatio: 2,
-        backgroundColor: "#ffffff",
-      });
-
-      const pdf = new jsPDF({
-        orientation: STAGE_WIDTH > STAGE_HEIGHT ? "landscape" : "portrait",
-        unit: "px",
-        format: [STAGE_WIDTH, STAGE_HEIGHT],
-      });
-
-      pdf.addImage(dataURL, "PNG", 0, 0, STAGE_WIDTH, STAGE_HEIGHT);
-
-      // Generate filename from record data
-      const recordName =
-        record.name || record.Name || `record_${previewRecordIndex + 1}`;
-      pdf.save(`certificate_${recordName.replace(/\s+/g, "_")}.pdf`);
-
-      // Restore original text
-      elements.forEach((el) => {
-        if (originalTexts[el.id]) {
-          const textNode = stage.findOne(`#${el.id}`);
-          if (textNode) {
-            textNode.text(originalTexts[el.id]);
-          }
-        }
-      });
-
-      layer.batchDraw();
-    } else {
-      // No CSV data, export as-is
-      handleExportPDF();
+        // Generate filename from record data
+        const recordName =
+          record.name || record.Name || `record_${previewRecordIndex + 1}`;
+        konvaPdfGenerator.downloadPDF(
+          pdf,
+          `certificate_${recordName.replace(/\s+/g, "_")}.pdf`
+        );
+      } else {
+        // No CSV data, export as-is
+        handleExportPDF();
+      }
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      alert("Failed to generate PDF: " + error.message);
     }
   };
 
@@ -1086,73 +1207,35 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
     if (!confirmExport) return;
 
     const stage = stageRef.current;
-    const layer = layerRef.current;
-    if (!stage || !layer) return;
+    if (!stage) return;
 
     // Close preview and show progress
     closePreview();
 
-    let successCount = 0;
-
-    for (let i = 0; i < csvData.length; i++) {
-      const record = csvData[i];
-
-      // Store original text values
-      const originalTexts = {};
-
-      // Temporarily replace dynamic fields with actual data
-      elements.forEach((el) => {
-        if (el.type === "text" && el.isDynamic && el.dataField) {
-          const textNode = stage.findOne(`#${el.id}`);
-          if (textNode) {
-            originalTexts[el.id] = textNode.text();
-            const value = record[el.dataField] || `{{${el.dataField}}}`;
-            textNode.text(value);
-          }
-        }
-      });
-
-      layer.batchDraw();
-
-      // Wait for render
-      await new Promise((resolve) => setTimeout(resolve, 100));
-
-      // Generate PDF
-      const dataURL = stage.toDataURL({
-        pixelRatio: 2,
-        backgroundColor: "#ffffff",
-      });
-
-      const pdf = new jsPDF({
+    try {
+      // Use the new batch PDF generator
+      const pdfs = await konvaPdfGenerator.generateBatch(stage, csvData, {
         orientation: STAGE_WIDTH > STAGE_HEIGHT ? "landscape" : "portrait",
-        unit: "px",
-        format: [STAGE_WIDTH, STAGE_HEIGHT],
+        format: "a4",
+        backgroundColor: "#ffffff",
+        pixelRatio: 2,
+        elements,
+        filenamePattern: "certificate_{{name}}_{{index}}.pdf",
       });
 
-      pdf.addImage(dataURL, "PNG", 0, 0, STAGE_WIDTH, STAGE_HEIGHT);
-
-      // Generate filename from record data
-      const recordName = record.name || record.Name || `record_${i + 1}`;
-      pdf.save(`certificate_${recordName.replace(/\s+/g, "_")}.pdf`);
-
-      // Restore original text
-      elements.forEach((el) => {
-        if (originalTexts[el.id]) {
-          const textNode = stage.findOne(`#${el.id}`);
-          if (textNode) {
-            textNode.text(originalTexts[el.id]);
-          }
+      // Download each PDF with a small delay to prevent browser blocking
+      for (let i = 0; i < pdfs.length; i++) {
+        konvaPdfGenerator.downloadPDF(pdfs[i].pdf, pdfs[i].filename);
+        if (i < pdfs.length - 1) {
+          await new Promise((resolve) => setTimeout(resolve, 200));
         }
-      });
+      }
 
-      layer.batchDraw();
-      successCount++;
-
-      // Small delay between downloads to prevent browser blocking
-      await new Promise((resolve) => setTimeout(resolve, 200));
+      alert(`✓ Successfully generated ${pdfs.length} PDF certificates!`);
+    } catch (error) {
+      console.error("Error generating batch PDFs:", error);
+      alert("Failed to generate PDFs: " + error.message);
     }
-
-    alert(`✓ Successfully generated ${successCount} PDF certificates!`);
   };
 
   const handleExportAllAsSinglePDF = async () => {
@@ -1174,12 +1257,15 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
     // Close preview and show progress
     closePreview();
 
-    // Create a single PDF document
+    // Create a single PDF document with A4 dimensions
     const pdf = new jsPDF({
       orientation: STAGE_WIDTH > STAGE_HEIGHT ? "landscape" : "portrait",
-      unit: "px",
-      format: [STAGE_WIDTH, STAGE_HEIGHT],
+      unit: "mm",
+      format: "a4",
     });
+
+    const pageWidth = pdf.internal.pageSize.width;
+    const pageHeight = pdf.internal.pageSize.height;
 
     for (let i = 0; i < csvData.length; i++) {
       const record = csvData[i];
@@ -1215,8 +1301,17 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
         pdf.addPage();
       }
 
-      // Add the image to the current page
-      pdf.addImage(dataURL, "PNG", 0, 0, STAGE_WIDTH, STAGE_HEIGHT);
+      // Add the image to the current page with proper A4 dimensions
+      pdf.addImage(
+        dataURL,
+        "PNG",
+        0,
+        0,
+        pageWidth,
+        pageHeight,
+        undefined,
+        "FAST"
+      );
 
       // Restore original text
       elements.forEach((el) => {
@@ -1239,6 +1334,170 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
     alert(`✓ Successfully generated 1 PDF with ${csvData.length} pages!`);
   };
 
+  // Upload to Blockchain functions
+  const handleUploadToBlockchain = async () => {
+    // Deselect any element to remove transformer from the exported image
+    setSelectedId(null);
+    setSelectedIds([]);
+
+    // Wait for deselection
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    const stage = stageRef.current;
+    if (!stage) {
+      alert("Stage not available. Please try again.");
+      return;
+    }
+
+    // Check if user email is available
+    if (!user?.email) {
+      alert("User email not found. Please log in again.");
+      return;
+    }
+
+    setIsUploading(true);
+
+    try {
+      // Generate PDF
+      const pdf = konvaPdfGenerator.generateFromStage(stage, {
+        orientation: STAGE_WIDTH > STAGE_HEIGHT ? "landscape" : "portrait",
+        format: "a4",
+        backgroundColor: "#ffffff",
+        pixelRatio: 2,
+        elements,
+      });
+
+      // Convert to File with a specific filename
+      const pdfFilename = "certificate.pdf";
+      const pdfFile = konvaPdfGenerator.pdfToFile(pdf, pdfFilename);
+
+      // Get template name or default title
+      const title = initialTemplate?.name || "Certificate";
+
+      // Auto-generate CSV file for single document upload
+      const csvFile = konvaPdfGenerator.generateSingleDocumentCSV(
+        pdfFilename,
+        user.email,
+        title,
+        {
+          course: title,
+          completion_date: new Date().toISOString().split("T")[0],
+        }
+      );
+
+      // Create FormData with PDF and CSV (using batch endpoint format)
+      const formData = new FormData();
+      formData.append("certificates", pdfFile);
+      formData.append("metadata", csvFile);
+
+      // Upload via batch API (which goes through Merkle tree pipeline + blockchain)
+      const response = await apiService.createBatch(formData);
+
+      // Handle batch response structure
+      const batchId =
+        response.batchId || response.batch?.id || response.id || "N/A";
+      const merkleRoot =
+        response.merkleRoot || response.batch?.merkleRoot || "N/A";
+      const txSig =
+        response.solanaTransaction ||
+        response.txSig ||
+        response.batch?.txSig ||
+        "N/A";
+      const explorerUrl =
+        response.explorerUrl || response.batch?.explorerUrl || "";
+
+      let successMessage = `✓ Successfully uploaded to blockchain!\n\n`;
+      successMessage += `Batch ID: ${batchId}\n`;
+      successMessage += `Merkle Root: ${merkleRoot}\n`;
+      successMessage += `Transaction: ${txSig}`;
+      if (explorerUrl) {
+        successMessage += `\n\nView on blockchain: ${explorerUrl}`;
+      }
+
+      alert(successMessage);
+
+      // Refresh credits after upload
+      await fetchCredits();
+    } catch (error) {
+      console.error("Error uploading to blockchain:", error);
+      const errorMessage =
+        error.response?.data?.message || error.message || "Upload failed";
+      alert(`Failed to upload to blockchain: ${errorMessage}`);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleUploadBatchToBlockchain = async () => {
+    if (csvData.length === 0) {
+      alert("No CSV data to upload");
+      return;
+    }
+
+    const confirmUpload = window.confirm(
+      `This will upload ${csvData.length} PDF files to blockchain as a batch. Continue?`
+    );
+
+    if (!confirmUpload) return;
+
+    const stage = stageRef.current;
+    if (!stage) {
+      alert("Stage not available. Please try again.");
+      return;
+    }
+
+    setIsUploading(true);
+
+    try {
+      // Generate all PDFs
+      const pdfs = await konvaPdfGenerator.generateBatch(stage, csvData, {
+        orientation: STAGE_WIDTH > STAGE_HEIGHT ? "landscape" : "portrait",
+        format: "a4",
+        backgroundColor: "#ffffff",
+        pixelRatio: 2,
+        elements,
+        filenamePattern: "certificate_{{name}}_{{index}}.pdf",
+      });
+
+      // Convert PDFs to Files
+      const pdfFiles = pdfs.map((item) =>
+        konvaPdfGenerator.pdfToFile(item.pdf, item.filename)
+      );
+
+      // Generate CSV File
+      const csvFile = konvaPdfGenerator.generateCSVFile(
+        csvData,
+        "metadata.csv"
+      );
+
+      // Create FormData
+      const formData = new FormData();
+      pdfFiles.forEach((file) => {
+        formData.append("certificates", file);
+      });
+      formData.append("metadata", csvFile);
+
+      // Upload via batch API
+      const response = await apiService.createBatch(formData);
+
+      alert(
+        `✓ Successfully uploaded batch to blockchain!\n\nBatch ID: ${
+          response.batch?.id || response.id || "N/A"
+        }\nDocuments: ${pdfFiles.length}`
+      );
+
+      // Refresh credits after upload
+      await fetchCredits();
+    } catch (error) {
+      console.error("Error uploading batch to blockchain:", error);
+      const errorMessage =
+        error.response?.data?.message || error.message || "Batch upload failed";
+      alert(`Failed to upload batch to blockchain: ${errorMessage}`);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const checkDeselect = (e) => {
     // Deselect when clicking on the stage
     const clickedOnEmpty = e.target === e.target.getStage();
@@ -1249,20 +1508,24 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
   };
 
   const handleElementClick = (e, elementId) => {
-    // Check if Ctrl (Windows/Linux) or Cmd (Mac) is pressed
-    const isMultiSelect = e.evt.ctrlKey || e.evt.metaKey;
+    // Check if Ctrl/Cmd or Shift is pressed
+    const isCtrlSelect = e.evt.ctrlKey || e.evt.metaKey;
+    const isShiftSelect = e.evt.shiftKey;
 
-    if (isMultiSelect) {
+    if (isCtrlSelect || isShiftSelect) {
       // Multi-select mode
       if (selectedIds.includes(elementId)) {
-        // Remove from selection
-        setSelectedIds(selectedIds.filter((id) => id !== elementId));
-        if (selectedId === elementId) {
-          setSelectedId(selectedIds[0] || null);
+        // Remove from selection (only with Ctrl/Cmd, not Shift)
+        if (isCtrlSelect && !isShiftSelect) {
+          const newSelectedIds = selectedIds.filter((id) => id !== elementId);
+          setSelectedIds(newSelectedIds);
+          setSelectedId(newSelectedIds.length > 0 ? newSelectedIds[0] : null);
         }
+        // With Shift, keep it selected (do nothing)
       } else {
         // Add to selection
-        setSelectedIds([...selectedIds, elementId]);
+        const newSelectedIds = [...selectedIds, elementId];
+        setSelectedIds(newSelectedIds);
         setSelectedId(elementId);
       }
     } else {
@@ -1270,6 +1533,42 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
       setSelectedId(elementId);
       setSelectedIds([elementId]);
     }
+  };
+
+  // Copy selected elements
+  const handleCopy = () => {
+    const idsToCopy =
+      selectedIds.length > 0 ? selectedIds : selectedId ? [selectedId] : [];
+    if (idsToCopy.length === 0) return;
+
+    const elementsToCopy = elements.filter((el) => idsToCopy.includes(el.id));
+    setCopiedElements(elementsToCopy);
+    console.log(`Copied ${elementsToCopy.length} element(s)`);
+  };
+
+  // Paste copied elements
+  const handlePaste = () => {
+    if (copiedElements.length === 0) return;
+
+    const offset = 20; // Offset for pasted elements
+    const newElements = copiedElements.map((el, index) => {
+      const newId = `${el.id}-copy-${Date.now()}-${index}`;
+      return {
+        ...el,
+        id: newId,
+        x: (el.x || 0) + offset,
+        y: (el.y || 0) + offset,
+      };
+    });
+
+    const updatedElements = [...elements, ...newElements];
+    setElements(updatedElements);
+    saveHistory(updatedElements);
+
+    // Select the pasted elements
+    const newIds = newElements.map((el) => el.id);
+    setSelectedIds(newIds);
+    setSelectedId(newIds[0] || null);
   };
 
   // CSV Field Drag and Drop Handlers
@@ -1342,10 +1641,11 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
 
   const handleDragEnd = (e, id) => {
     const newAttrs = { x: e.target.x(), y: e.target.y() };
-    handleElementChange(id, newAttrs);
-    saveHistory(
-      elements.map((el) => (el.id === id ? { ...el, ...newAttrs } : el))
+    const updatedElements = elements.map((el) =>
+      el.id === id ? { ...el, ...newAttrs } : el
     );
+    setElements(updatedElements);
+    saveHistory(updatedElements);
   };
 
   const handleTransformEnd = (e, id) => {
@@ -1359,13 +1659,14 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
       x: node.x(),
       y: node.y(),
       width: Math.max(5, node.width() * scaleX),
-      height: Math.max(node.height() * scaleY),
+      height: Math.max(5, node.height() * scaleY),
       rotation: node.rotation(),
     };
-    handleElementChange(id, newAttrs);
-    saveHistory(
-      elements.map((el) => (el.id === id ? { ...el, ...newAttrs } : el))
+    const updatedElements = elements.map((el) =>
+      el.id === id ? { ...el, ...newAttrs } : el
     );
+    setElements(updatedElements);
+    saveHistory(updatedElements);
   };
 
   const getSelectedElement = () => elements.find((el) => el.id === selectedId);
@@ -1380,6 +1681,44 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
     });
     setElements(newElements);
     saveHistory(newElements);
+  };
+
+  // Zoom handlers
+  const handleZoomIn = () => {
+    setScale((prev) => Math.min(2, prev + 0.1));
+  };
+
+  const handleZoomOut = () => {
+    setScale((prev) => Math.max(0.25, prev - 0.1));
+  };
+
+  const handleZoomInputChange = (e) => {
+    setZoomInputValue(e.target.value);
+  };
+
+  const handleZoomInputBlur = () => {
+    setIsEditingZoom(false);
+    const numValue = parseFloat(zoomInputValue);
+    if (!isNaN(numValue) && numValue > 0) {
+      const percentage = Math.max(25, Math.min(200, numValue));
+      setScale(percentage / 100);
+    }
+    setZoomInputValue("");
+  };
+
+  const handleZoomInputKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.target.blur();
+    } else if (e.key === "Escape") {
+      setZoomInputValue("");
+      setIsEditingZoom(false);
+      e.target.blur();
+    }
+  };
+
+  const handleZoomInputFocus = () => {
+    setIsEditingZoom(true);
+    setZoomInputValue(Math.round(scale * 100).toString());
   };
 
   return (
@@ -1464,12 +1803,28 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
         <div className="w-px h-6 bg-gray-700 mx-2"></div>
         {/* Element Controls */}
         <button
+          onClick={handleCopy}
+          disabled={!selectedId && selectedIds.length === 0}
+          className="p-2 hover:bg-gray-700 rounded disabled:opacity-50"
+          title="Copy (Ctrl+C)"
+        >
+          <Copy size={18} />
+        </button>
+        <button
+          onClick={handlePaste}
+          disabled={copiedElements.length === 0}
+          className="p-2 hover:bg-gray-700 rounded disabled:opacity-50"
+          title="Paste (Ctrl+V)"
+        >
+          <Clipboard size={18} />
+        </button>
+        <button
           onClick={handleDuplicateElement}
-          disabled={!selectedId}
+          disabled={!selectedId && selectedIds.length === 0}
           className="p-2 hover:bg-gray-700 rounded disabled:opacity-50"
           title="Duplicate"
         >
-          <Copy />
+          <Copy size={18} />
         </button>
         <button
           onClick={handleBringToFront}
@@ -1560,6 +1915,42 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
         >
           <Redo />
         </button>
+        <div className="w-px h-6 bg-gray-700 mx-2"></div>
+        {/* Zoom Controls */}
+        <button
+          onClick={handleZoomOut}
+          className="p-2 hover:bg-gray-700 rounded"
+          title="Zoom Out (Ctrl/Cmd + -)"
+        >
+          <ZoomOut size={18} />
+        </button>
+        {isEditingZoom ? (
+          <input
+            type="text"
+            value={zoomInputValue}
+            onChange={handleZoomInputChange}
+            onBlur={handleZoomInputBlur}
+            onKeyDown={handleZoomInputKeyDown}
+            onFocus={handleZoomInputFocus}
+            className="w-16 px-2 py-1 bg-gray-700 border border-gray-600 rounded text-sm text-center text-white focus:outline-none focus:border-blue-500"
+            autoFocus
+          />
+        ) : (
+          <span
+            onClick={handleZoomInputFocus}
+            className="px-2 py-1 text-sm text-gray-300 min-w-[60px] text-center cursor-text hover:bg-gray-700 rounded"
+            title="Click to edit zoom percentage"
+          >
+            {Math.round(scale * 100)}%
+          </span>
+        )}
+        <button
+          onClick={handleZoomIn}
+          className="p-2 hover:bg-gray-700 rounded"
+          title="Zoom In (Ctrl/Cmd + +)"
+        >
+          <ZoomIn size={18} />
+        </button>
         <div className="flex-grow"></div>
         <button
           onClick={handlePreview}
@@ -1568,6 +1959,105 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
         >
           <Eye /> Preview
         </button>
+
+        {/* Upload to Blockchain Dropdown */}
+        <div className="relative mr-2">
+          <button
+            onClick={() => setShowUploadMenu(!showUploadMenu)}
+            disabled={isUploading}
+            className="p-2 bg-green-600 hover:bg-green-700 rounded flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Upload to Blockchain"
+          >
+            {isUploading ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                Uploading...
+              </>
+            ) : (
+              <>
+                <CloudUpload /> Upload to Blockchain
+              </>
+            )}
+          </button>
+
+          {showUploadMenu && !isUploading && (
+            <>
+              {/* Backdrop to close menu */}
+              <div
+                className="fixed inset-0 z-10"
+                onClick={() => setShowUploadMenu(false)}
+              />
+
+              {/* Dropdown Menu */}
+              <div className="absolute right-0 mt-2 w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-2xl z-20 overflow-hidden">
+                {csvData.length > 0 ? (
+                  <>
+                    <div className="px-4 py-2 bg-gray-700 border-b border-gray-600">
+                      <p className="text-xs text-gray-300 font-semibold">
+                        Upload Options ({csvData.length} records)
+                      </p>
+                    </div>
+                    <button
+                      onClick={async () => {
+                        setShowUploadMenu(false);
+                        await checkCreditsAndExecute(
+                          "uploadToBlockChain",
+                          csvData.length,
+                          handleUploadBatchToBlockchain
+                        );
+                      }}
+                      className="w-full px-4 py-3 text-left hover:bg-gray-700 transition-colors flex items-start gap-3 border-b border-gray-700"
+                    >
+                      <CloudUpload
+                        size={18}
+                        className="text-green-400 mt-0.5 flex-shrink-0"
+                      />
+                      <div>
+                        <p className="text-white font-medium text-sm">
+                          Upload as Batch (
+                          {CREDIT_COSTS.uploadToBlockChain * csvData.length}{" "}
+                          credits)
+                        </p>
+                        <p className="text-gray-400 text-xs mt-0.5">
+                          Upload {csvData.length} PDFs as a single batch with
+                          Merkle tree
+                        </p>
+                      </div>
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={async () => {
+                      setShowUploadMenu(false);
+                      await checkCreditsAndExecute(
+                        "uploadToBlockChain",
+                        1,
+                        () => {
+                          handleUploadToBlockchain();
+                        }
+                      );
+                    }}
+                    className="w-full px-4 py-3 text-left hover:bg-gray-700 transition-colors flex items-start gap-3"
+                  >
+                    <CloudUpload
+                      size={18}
+                      className="text-green-400 mt-0.5 flex-shrink-0"
+                    />
+                    <div>
+                      <p className="text-white font-medium text-sm">
+                        Upload to Blockchain ({CREDIT_COSTS.uploadToBlockChain}{" "}
+                        credits)
+                      </p>
+                      <p className="text-gray-400 text-xs mt-0.5">
+                        Upload PDF directly to IPFS and blockchain
+                      </p>
+                    </div>
+                  </button>
+                )}
+              </div>
+            </>
+          )}
+        </div>
 
         {/* Export PDF Dropdown */}
         <div className="relative">
@@ -1677,23 +2167,113 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
         </div>
       </div>
 
-      <div className="flex-1 flex">
-        {/* Main Canvas Area */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Main Canvas Area - Full Screen */}
         <div
-          className="flex-1 flex items-center justify-center bg-gray-700 p-4"
+          className="konva-canvas-container flex-1 flex items-center justify-center bg-gray-700 p-4 overflow-auto relative"
           onDragOver={handleStageDragOver}
           onDrop={handleStageDropField}
+          onWheel={(e) => {
+            // Zoom with Ctrl/Cmd + wheel
+            if (e.ctrlKey || e.metaKey) {
+              e.preventDefault();
+              const delta = e.deltaY > 0 ? -0.1 : 0.1;
+              setScale((prev) => {
+                const newScale = prev + delta;
+                return Math.max(0.25, Math.min(2, newScale));
+              });
+            }
+          }}
         >
-          <div className="bg-white shadow-lg">
+          <div
+            className="bg-white shadow-2xl"
+            style={{
+              transform: `scale(${scale})`,
+              transformOrigin: "center center",
+            }}
+          >
             <Stage
               width={STAGE_WIDTH}
               height={STAGE_HEIGHT}
               onMouseDown={(e) => {
+                const clickedOnEmpty = e.target === e.target.getStage();
+                if (
+                  clickedOnEmpty &&
+                  !e.evt.ctrlKey &&
+                  !e.evt.metaKey &&
+                  !e.evt.shiftKey &&
+                  drawingMode !== "pen"
+                ) {
+                  // Start selection box
+                  const pos = e.target.getPointerPosition();
+                  setIsSelecting(true);
+                  setSelectionBox({
+                    x1: pos.x,
+                    y1: pos.y,
+                    x2: pos.x,
+                    y2: pos.y,
+                  });
+                  setSelectedId(null);
+                  setSelectedIds([]);
+                }
                 checkDeselect(e);
                 handleMouseDown(e);
               }}
-              onMouseMove={handleMouseMove}
-              onMouseUp={handleMouseUp}
+              onMouseMove={(e) => {
+                if (isSelecting && selectionBox) {
+                  // Always get position from stage, not from target (which might be an element)
+                  const stage = e.target.getStage();
+                  const pos = stage.getPointerPosition();
+
+                  setSelectionBox({
+                    ...selectionBox,
+                    x2: pos.x,
+                    y2: pos.y,
+                  });
+
+                  // Select elements within selection box
+                  const box = {
+                    x: Math.min(selectionBox.x1, pos.x),
+                    y: Math.min(selectionBox.y1, pos.y),
+                    width: Math.abs(pos.x - selectionBox.x1),
+                    height: Math.abs(pos.y - selectionBox.y1),
+                  };
+
+                  // Only select if box has meaningful size (avoid accidental selections)
+                  if (box.width > 5 && box.height > 5) {
+                    const selected = elements.filter((el) => {
+                      const shape = stage.findOne(`#${el.id}`);
+                      if (!shape || el.locked) return false;
+                      const shapeBox = shape.getClientRect();
+                      // Check if shape intersects with selection box
+                      return (
+                        shapeBox.x < box.x + box.width &&
+                        shapeBox.x + shapeBox.width > box.x &&
+                        shapeBox.y < box.y + box.height &&
+                        shapeBox.y + shapeBox.height > box.y
+                      );
+                    });
+
+                    if (selected.length > 0) {
+                      const ids = selected.map((el) => el.id);
+                      setSelectedIds(ids);
+                      setSelectedId(ids[0] || null);
+                    }
+                  }
+
+                  // Prevent elements from interfering with selection
+                  e.cancelBubble = true;
+                } else {
+                  handleMouseMove(e);
+                }
+              }}
+              onMouseUp={(e) => {
+                if (isSelecting) {
+                  setIsSelecting(false);
+                  setSelectionBox(null);
+                }
+                handleMouseUp(e);
+              }}
               onTouchStart={checkDeselect}
               ref={stageRef}
             >
@@ -1704,9 +2284,18 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                     id: el.id,
                     x: el.x,
                     y: el.y,
-                    draggable: !el.locked,
-                    onClick: (e) => handleElementClick(e, el.id),
-                    onTap: (e) => handleElementClick(e, el.id),
+                    draggable: !el.locked && !isSelecting, // Disable dragging during selection
+                    listening: !isSelecting, // Disable listening during selection to prevent interference
+                    onClick: (e) => {
+                      if (!isSelecting) {
+                        handleElementClick(e, el.id);
+                      }
+                    },
+                    onTap: (e) => {
+                      if (!isSelecting) {
+                        handleElementClick(e, el.id);
+                      }
+                    },
                     onDragEnd: (e) => handleDragEnd(e, el.id),
                     onTransformEnd: (e) => handleTransformEnd(e, el.id),
                   };
@@ -1722,6 +2311,12 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                         strokeWidth={el.strokeWidth || 0}
                         opacity={el.opacity !== undefined ? el.opacity : 1}
                         rotation={el.rotation}
+                        cornerRadius={el.cornerRadius || 0}
+                        dash={el.dashEnabled ? el.dash || [5, 5] : null}
+                        scaleX={el.scaleX || 1}
+                        scaleY={el.scaleY || 1}
+                        skewX={el.skewX || 0}
+                        skewY={el.skewY || 0}
                       />
                     );
                   }
@@ -1735,23 +2330,57 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                         strokeWidth={el.strokeWidth || 0}
                         opacity={el.opacity !== undefined ? el.opacity : 1}
                         rotation={el.rotation}
+                        dash={el.dashEnabled ? el.dash || [5, 5] : null}
+                        scaleX={el.scaleX || 1}
+                        scaleY={el.scaleY || 1}
+                        skewX={el.skewX || 0}
+                        skewY={el.skewY || 0}
                       />
                     );
                   }
                   if (el.type === "text") {
+                    // Apply text transform
+                    let displayText = el.text || "Text";
+                    if (el.textTransform === "uppercase") {
+                      displayText = displayText.toUpperCase();
+                    } else if (el.textTransform === "lowercase") {
+                      displayText = displayText.toLowerCase();
+                    } else if (el.textTransform === "capitalize") {
+                      displayText = displayText.replace(/\b\w/g, (l) =>
+                        l.toUpperCase()
+                      );
+                    }
+
                     return (
                       <Text
                         {...commonProps}
-                        text={el.text}
+                        text={displayText}
                         fontSize={el.fontSize}
                         fontFamily={el.fontFamily || "Arial"}
                         fontStyle={el.fontStyle || "normal"}
+                        fontWeight={el.fontWeight || "normal"}
                         textDecoration={el.textDecoration || ""}
                         align={el.align || "left"}
                         fill={el.fill}
                         opacity={el.opacity !== undefined ? el.opacity : 1}
                         rotation={el.rotation}
                         width={el.width} // Important for alignment
+                        lineHeight={el.lineHeight || 1.2}
+                        letterSpacing={el.letterSpacing || 0}
+                        shadowColor={
+                          el.shadowEnabled ? el.shadowColor || "#000000" : null
+                        }
+                        shadowBlur={el.shadowEnabled ? el.shadowBlur || 5 : 0}
+                        shadowOffsetX={
+                          el.shadowEnabled ? el.shadowOffsetX || 0 : 0
+                        }
+                        shadowOffsetY={
+                          el.shadowEnabled ? el.shadowOffsetY || 0 : 0
+                        }
+                        scaleX={el.scaleX || 1}
+                        scaleY={el.scaleY || 1}
+                        skewX={el.skewX || 0}
+                        skewY={el.skewY || 0}
                         onDblClick={(e) => {
                           const textNode = e.target;
                           const layer = layerRef.current;
@@ -1903,15 +2532,66 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                     );
                   }
                   if (el.type === "image") {
-                    return (
-                      <Image
-                        {...commonProps}
-                        image={el.image}
-                        width={el.width}
-                        height={el.height}
-                        rotation={el.rotation}
-                      />
-                    );
+                    // Create a component that handles image loading properly
+                    const ImageElement = () => {
+                      const [imageObj, setImageObj] = React.useState(null);
+
+                      React.useEffect(() => {
+                        // If we already have an image object that's loaded, use it
+                        if (
+                          el.image &&
+                          el.image.complete &&
+                          el.image.naturalWidth > 0
+                        ) {
+                          setImageObj(el.image);
+                          return;
+                        }
+
+                        // Otherwise, load from src
+                        if (el.src) {
+                          const img = new window.Image();
+                          img.crossOrigin = "anonymous";
+                          img.onload = () => {
+                            setImageObj(img);
+                          };
+                          img.onerror = () => {
+                            console.error("Failed to load image:", el.src);
+                          };
+                          img.src = el.src;
+                        } else if (el.image) {
+                          // Image object exists but might not be loaded yet
+                          if (el.image.complete && el.image.naturalWidth > 0) {
+                            setImageObj(el.image);
+                          } else {
+                            const img = el.image;
+                            img.onload = () => {
+                              setImageObj(img);
+                            };
+                            // If already has src, trigger load
+                            if (img.src) {
+                              img.src = img.src;
+                            }
+                          }
+                        }
+                      }, [el.src, el.image]);
+
+                      if (!imageObj) {
+                        return null; // Don't render until image is loaded
+                      }
+
+                      return (
+                        <Image
+                          {...commonProps}
+                          image={imageObj}
+                          width={el.width || 100}
+                          height={el.height || 100}
+                          rotation={el.rotation || 0}
+                          opacity={el.opacity !== undefined ? el.opacity : 1}
+                        />
+                      );
+                    };
+
+                    return <ImageElement key={el.id} />;
                   }
                   if (el.type === "star") {
                     return (
@@ -1967,6 +2647,21 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                     lineJoin="round"
                   />
                 )}
+
+                {/* Selection Box */}
+                {isSelecting && selectionBox && (
+                  <Rect
+                    x={Math.min(selectionBox.x1, selectionBox.x2)}
+                    y={Math.min(selectionBox.y1, selectionBox.y2)}
+                    width={Math.abs(selectionBox.x2 - selectionBox.x1)}
+                    height={Math.abs(selectionBox.y2 - selectionBox.y1)}
+                    fill="rgba(59, 130, 246, 0.1)"
+                    stroke="#3b82f6"
+                    strokeWidth={1}
+                    dash={[5, 5]}
+                  />
+                )}
+
                 <Transformer ref={transformerRef} />
               </Layer>
             </Stage>
@@ -2024,284 +2719,71 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
           </div>
         )}
 
-        {/* Properties Panel */}
-        <div className="w-64 bg-gray-900 p-4 border-l border-gray-700 overflow-y-auto">
-          <h3 className="text-lg font-bold mb-4">Properties</h3>
-          {selectedId && getSelectedElement() ? (
-            <div className="space-y-4">
-              {/* Fill Color */}
-              <div>
-                <label className="text-sm text-gray-400 block mb-1">
-                  Fill Color
-                </label>
-                <input
-                  type="color"
-                  value={getSelectedElement().fill || "#000000"}
-                  onChange={(e) =>
-                    updateSelectedElement("fill", e.target.value)
-                  }
-                  className="w-full h-10 p-1 bg-gray-700 border border-gray-600 rounded cursor-pointer"
-                />
-              </div>
-
-              {/* Opacity for shapes and circles */}
-              {(getSelectedElement().type === "rect" ||
-                getSelectedElement().type === "circle") && (
+        {/* Properties Panel - Collapsible */}
+        {showPropertiesPanel && (
+          <div className="w-80 bg-gray-900 p-4 border-l border-gray-700 overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold">Properties</h3>
+              <button
+                onClick={() => setShowPropertiesPanel(false)}
+                className="p-1 hover:bg-gray-700 rounded"
+                title="Hide Properties Panel"
+              >
+                <X size={18} className="text-gray-400" />
+              </button>
+            </div>
+            {selectedId && getSelectedElement() ? (
+              <div className="space-y-4">
+                {/* Fill Color */}
                 <div>
                   <label className="text-sm text-gray-400 block mb-1">
-                    Opacity:{" "}
-                    {Math.round(
-                      (getSelectedElement().opacity !== undefined
-                        ? getSelectedElement().opacity
-                        : 1) * 100
-                    )}
-                    %
+                    Fill Color
                   </label>
-                  <input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.01"
-                    value={
-                      getSelectedElement().opacity !== undefined
-                        ? getSelectedElement().opacity
-                        : 1
-                    }
-                    onChange={(e) =>
-                      updateSelectedElement(
-                        "opacity",
-                        parseFloat(e.target.value)
-                      )
-                    }
-                    className="w-full"
-                  />
-                </div>
-              )}
-
-              {/* Border/Stroke for shapes and circles */}
-              {(getSelectedElement().type === "rect" ||
-                getSelectedElement().type === "circle") && (
-                <>
-                  <div>
-                    <label className="text-sm text-gray-400 block mb-1">
-                      Border Color
-                    </label>
+                  <div className="flex gap-2 mb-2">
                     <input
                       type="color"
-                      value={getSelectedElement().stroke || "#000000"}
-                      onChange={(e) =>
-                        updateSelectedElement("stroke", e.target.value)
+                      value={
+                        getSelectedElement().fill === "transparent"
+                          ? "#000000"
+                          : getSelectedElement().fill || "#000000"
                       }
-                      className="w-full h-10 p-1 bg-gray-700 border border-gray-600 rounded cursor-pointer"
+                      onChange={(e) =>
+                        updateSelectedElement("fill", e.target.value)
+                      }
+                      className="flex-1 h-10 p-1 bg-gray-700 border border-gray-600 rounded cursor-pointer"
                     />
-                  </div>
-                  <div>
-                    <label className="text-sm text-gray-400 block mb-1">
-                      Border Width
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      value={getSelectedElement().strokeWidth || 0}
-                      onChange={(e) =>
-                        updateSelectedElement(
-                          "strokeWidth",
-                          parseInt(e.target.value, 10)
-                        )
+                    <button
+                      onClick={() =>
+                        updateSelectedElement("fill", "transparent")
                       }
-                      className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white"
-                    />
-                  </div>
-                </>
-              )}
-
-              {/* Font Size for text */}
-              {getSelectedElement().type === "text" && (
-                <>
-                  <div>
-                    <label className="text-sm text-gray-400 block mb-1">
-                      Font Size
-                    </label>
-                    <input
-                      type="number"
-                      value={getSelectedElement().fontSize}
-                      onChange={(e) =>
-                        updateSelectedElement(
-                          "fontSize",
-                          parseInt(e.target.value, 10)
-                        )
-                      }
-                      className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white"
-                    />
-                  </div>
-
-                  {/* Font Family */}
-                  <div>
-                    <label className="text-sm text-gray-400 block mb-1">
-                      Font Family
-                    </label>
-                    <select
-                      value={getSelectedElement().fontFamily || "Arial"}
-                      onChange={(e) =>
-                        updateSelectedElement("fontFamily", e.target.value)
-                      }
-                      className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white"
+                      className={`px-3 py-2 rounded border text-sm transition-colors ${
+                        getSelectedElement().fill === "transparent"
+                          ? "bg-blue-600 border-blue-500 text-white"
+                          : "bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600"
+                      }`}
+                      title="No Fill (Transparent) - Only border will be visible"
                     >
-                      <option value="Arial">Arial</option>
-                      <option value="Times New Roman">Times New Roman</option>
-                      <option value="Courier New">Courier New</option>
-                      <option value="Georgia">Georgia</option>
-                      <option value="Verdana">Verdana</option>
-                      <option value="Comic Sans MS">Comic Sans MS</option>
-                      <option value="Impact">Impact</option>
-                      <option value="Trebuchet MS">Trebuchet MS</option>
-                    </select>
+                      No Fill
+                    </button>
                   </div>
-
-                  {/* Text Formatting Buttons */}
-                  <div>
-                    <label className="text-sm text-gray-400 block mb-2">
-                      Text Style
-                    </label>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => {
-                          const current =
-                            getSelectedElement().fontStyle || "normal";
-                          updateSelectedElement(
-                            "fontStyle",
-                            current === "bold" ? "normal" : "bold"
-                          );
-                        }}
-                        className={`flex-1 p-2 rounded border ${
-                          getSelectedElement().fontStyle === "bold"
-                            ? "bg-blue-600 border-blue-500"
-                            : "bg-gray-700 border-gray-600 hover:bg-gray-600"
-                        }`}
-                        title="Bold"
-                      >
-                        <Bold size={18} className="mx-auto" />
-                      </button>
-                      <button
-                        onClick={() => {
-                          const current =
-                            getSelectedElement().textDecoration || "";
-                          updateSelectedElement(
-                            "textDecoration",
-                            current === "italic" ? "" : "italic"
-                          );
-                        }}
-                        className={`flex-1 p-2 rounded border ${
-                          getSelectedElement().textDecoration === "italic"
-                            ? "bg-blue-600 border-blue-500"
-                            : "bg-gray-700 border-gray-600 hover:bg-gray-600"
-                        }`}
-                        title="Italic"
-                      >
-                        <Italic size={18} className="mx-auto" />
-                      </button>
-                      <button
-                        onClick={() => {
-                          const current =
-                            getSelectedElement().textDecoration || "";
-                          updateSelectedElement(
-                            "textDecoration",
-                            current === "underline" ? "" : "underline"
-                          );
-                        }}
-                        className={`flex-1 p-2 rounded border ${
-                          getSelectedElement().textDecoration === "underline"
-                            ? "bg-blue-600 border-blue-500"
-                            : "bg-gray-700 border-gray-600 hover:bg-gray-600"
-                        }`}
-                        title="Underline"
-                      >
-                        <Underline size={18} className="mx-auto" />
-                      </button>
+                  {getSelectedElement().fill === "transparent" ? (
+                    <div className="flex items-center gap-2 px-2 py-1 bg-blue-500/20 border border-blue-500/30 rounded text-xs text-blue-300">
+                      <span>✓</span>
+                      <span>Only border will be visible</span>
                     </div>
-                  </div>
-
-                  {/* Text Alignment */}
-                  <div>
-                    <label className="text-sm text-gray-400 block mb-2">
-                      Text Alignment
-                    </label>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => updateSelectedElement("align", "left")}
-                        className={`flex-1 p-2 rounded border ${
-                          getSelectedElement().align === "left"
-                            ? "bg-blue-600 border-blue-500"
-                            : "bg-gray-700 border-gray-600 hover:bg-gray-600"
-                        }`}
-                        title="Align Left"
-                      >
-                        <AlignLeft size={18} className="mx-auto" />
-                      </button>
-                      <button
-                        onClick={() => updateSelectedElement("align", "center")}
-                        className={`flex-1 p-2 rounded border ${
-                          getSelectedElement().align === "center"
-                            ? "bg-blue-600 border-blue-500"
-                            : "bg-gray-700 border-gray-600 hover:bg-gray-600"
-                        }`}
-                        title="Align Center"
-                      >
-                        <AlignCenter size={18} className="mx-auto" />
-                      </button>
-                      <button
-                        onClick={() => updateSelectedElement("align", "right")}
-                        className={`flex-1 p-2 rounded border ${
-                          getSelectedElement().align === "right"
-                            ? "bg-blue-600 border-blue-500"
-                            : "bg-gray-700 border-gray-600 hover:bg-gray-600"
-                        }`}
-                        title="Align Right"
-                      >
-                        <AlignRight size={18} className="mx-auto" />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Dynamic Field Checkbox */}
-                  <div className="border-t border-gray-700 pt-3 mt-3">
-                    <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={getSelectedElement().isDynamic || false}
-                        onChange={(e) =>
-                          updateSelectedElement("isDynamic", e.target.checked)
-                        }
-                        className="w-4 h-4"
-                      />
-                      <span>Dynamic Field (from CSV)</span>
-                    </label>
-                  </div>
-
-                  {/* Data Field Input - only show if isDynamic is true */}
-                  {getSelectedElement().isDynamic && (
-                    <div>
-                      <label className="text-sm text-gray-400 block mb-1">
-                        CSV Field Name
-                      </label>
-                      <input
-                        type="text"
-                        value={getSelectedElement().dataField || ""}
-                        onChange={(e) =>
-                          updateSelectedElement("dataField", e.target.value)
-                        }
-                        placeholder="e.g., name, email, course"
-                        className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white placeholder-gray-500"
-                      />
-                      <p className="text-xs text-gray-500 mt-1">
-                        Enter the exact column name from your CSV
-                      </p>
-                    </div>
+                  ) : (
+                    <p className="text-xs text-gray-500">
+                      Click "No Fill" to show only border
+                    </p>
                   )}
+                </div>
 
+                {/* Opacity for shapes and circles */}
+                {(getSelectedElement().type === "rect" ||
+                  getSelectedElement().type === "circle") && (
                   <div>
                     <label className="text-sm text-gray-400 block mb-1">
-                      Text Opacity:{" "}
+                      Opacity:{" "}
                       {Math.round(
                         (getSelectedElement().opacity !== undefined
                           ? getSelectedElement().opacity
@@ -2328,74 +2810,799 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                       className="w-full"
                     />
                   </div>
-                </>
-              )}
+                )}
 
-              {/* Width and Height for rect and image */}
-              {(getSelectedElement().type === "rect" ||
-                getSelectedElement().type === "image") && (
-                <>
-                  <div>
-                    <label className="text-sm text-gray-400 block mb-1">
-                      Width
-                    </label>
-                    <input
-                      type="number"
-                      value={Math.round(getSelectedElement().width)}
-                      onChange={(e) =>
-                        updateSelectedElement(
-                          "width",
-                          parseInt(e.target.value, 10)
-                        )
-                      }
-                      className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm text-gray-400 block mb-1">
-                      Height
-                    </label>
-                    <input
-                      type="number"
-                      value={Math.round(getSelectedElement().height)}
-                      onChange={(e) =>
-                        updateSelectedElement(
-                          "height",
-                          parseInt(e.target.value, 10)
-                        )
-                      }
-                      className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white"
-                    />
-                  </div>
-                </>
-              )}
+                {/* Border/Stroke for shapes and circles */}
+                {(getSelectedElement().type === "rect" ||
+                  getSelectedElement().type === "circle") && (
+                  <>
+                    <div>
+                      <label className="text-sm text-gray-400 block mb-1">
+                        Border Color
+                      </label>
+                      <input
+                        type="color"
+                        value={getSelectedElement().stroke || "#000000"}
+                        onChange={(e) =>
+                          updateSelectedElement("stroke", e.target.value)
+                        }
+                        className="w-full h-10 p-1 bg-gray-700 border border-gray-600 rounded cursor-pointer"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm text-gray-400 block mb-1">
+                        Border Width
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={getSelectedElement().strokeWidth || 0}
+                        onChange={(e) =>
+                          updateSelectedElement(
+                            "strokeWidth",
+                            parseInt(e.target.value, 10)
+                          )
+                        }
+                        className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white"
+                      />
+                    </div>
 
-              {/* Radius for circle */}
-              {getSelectedElement().type === "circle" && (
-                <div>
-                  <label className="text-sm text-gray-400 block mb-1">
-                    Radius
+                    {/* Border Dash Array (Dashed Border) */}
+                    <div>
+                      <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={getSelectedElement().dashEnabled || false}
+                          onChange={(e) =>
+                            updateSelectedElement(
+                              "dashEnabled",
+                              e.target.checked
+                            )
+                          }
+                          className="w-4 h-4"
+                        />
+                        <span>Dashed Border</span>
+                      </label>
+                      {getSelectedElement().dashEnabled && (
+                        <div className="mt-2 space-y-2">
+                          <div>
+                            <label className="text-xs text-gray-500 block mb-1">
+                              Dash Length:{" "}
+                              {getSelectedElement().dash || [5, 5]?.[0] || 5}
+                            </label>
+                            <input
+                              type="range"
+                              min="1"
+                              max="50"
+                              step="1"
+                              value={getSelectedElement().dash?.[0] || 5}
+                              onChange={(e) => {
+                                const dash = getSelectedElement().dash || [
+                                  5, 5,
+                                ];
+                                updateSelectedElement("dash", [
+                                  parseInt(e.target.value, 10),
+                                  dash[1] || 5,
+                                ]);
+                              }}
+                              className="w-full"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs text-gray-500 block mb-1">
+                              Gap Length: {getSelectedElement().dash?.[1] || 5}
+                            </label>
+                            <input
+                              type="range"
+                              min="1"
+                              max="50"
+                              step="1"
+                              value={getSelectedElement().dash?.[1] || 5}
+                              onChange={(e) => {
+                                const dash = getSelectedElement().dash || [
+                                  5, 5,
+                                ];
+                                updateSelectedElement("dash", [
+                                  dash[0] || 5,
+                                  parseInt(e.target.value, 10),
+                                ]);
+                              }}
+                              className="w-full"
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Corner Radius for Rectangles */}
+                    {getSelectedElement().type === "rect" && (
+                      <div>
+                        <label className="text-sm text-gray-400 block mb-1">
+                          Corner Radius:{" "}
+                          {getSelectedElement().cornerRadius || 0}px
+                        </label>
+                        <input
+                          type="range"
+                          min="0"
+                          max="100"
+                          step="1"
+                          value={getSelectedElement().cornerRadius || 0}
+                          onChange={(e) =>
+                            updateSelectedElement(
+                              "cornerRadius",
+                              parseInt(e.target.value, 10)
+                            )
+                          }
+                          className="w-full"
+                        />
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {/* Font Size for text */}
+                {getSelectedElement().type === "text" && (
+                  <>
+                    <div>
+                      <label className="text-sm text-gray-400 block mb-1">
+                        Font Size
+                      </label>
+                      <input
+                        type="number"
+                        value={getSelectedElement().fontSize}
+                        onChange={(e) =>
+                          updateSelectedElement(
+                            "fontSize",
+                            parseInt(e.target.value, 10)
+                          )
+                        }
+                        className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white"
+                      />
+                    </div>
+
+                    {/* Font Family */}
+                    <div>
+                      <label className="text-sm text-gray-400 block mb-1">
+                        Font Family
+                      </label>
+                      <select
+                        value={getSelectedElement().fontFamily || "Arial"}
+                        onChange={(e) =>
+                          updateSelectedElement("fontFamily", e.target.value)
+                        }
+                        className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white"
+                      >
+                        <option value="Arial">Arial</option>
+                        <option value="Arial Black">Arial Black</option>
+                        <option value="Times New Roman">Times New Roman</option>
+                        <option value="Courier New">Courier New</option>
+                        <option value="Georgia">Georgia</option>
+                        <option value="Verdana">Verdana</option>
+                        <option value="Comic Sans MS">Comic Sans MS</option>
+                        <option value="Impact">Impact</option>
+                        <option value="Trebuchet MS">Trebuchet MS</option>
+                        <option value="Helvetica">Helvetica</option>
+                        <option value="Tahoma">Tahoma</option>
+                        <option value="Palatino">Palatino</option>
+                        <option value="Garamond">Garamond</option>
+                        <option value="Bookman">Bookman</option>
+                        <option value="Lucida Console">Lucida Console</option>
+                        <option value="Monaco">Monaco</option>
+                        <option value="Courier">Courier</option>
+                      </select>
+                    </div>
+
+                    {/* Font Weight */}
+                    <div>
+                      <label className="text-sm text-gray-400 block mb-1">
+                        Font Weight
+                      </label>
+                      <select
+                        value={getSelectedElement().fontWeight || "normal"}
+                        onChange={(e) =>
+                          updateSelectedElement("fontWeight", e.target.value)
+                        }
+                        className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white"
+                      >
+                        <option value="normal">Normal</option>
+                        <option value="100">Thin (100)</option>
+                        <option value="200">Extra Light (200)</option>
+                        <option value="300">Light (300)</option>
+                        <option value="400">Regular (400)</option>
+                        <option value="500">Medium (500)</option>
+                        <option value="600">Semi Bold (600)</option>
+                        <option value="700">Bold (700)</option>
+                        <option value="800">Extra Bold (800)</option>
+                        <option value="900">Black (900)</option>
+                      </select>
+                    </div>
+
+                    {/* Line Height */}
+                    <div>
+                      <label className="text-sm text-gray-400 block mb-1">
+                        Line Height: {getSelectedElement().lineHeight || 1.2}
+                      </label>
+                      <input
+                        type="range"
+                        min="0.5"
+                        max="3"
+                        step="0.1"
+                        value={getSelectedElement().lineHeight || 1.2}
+                        onChange={(e) =>
+                          updateSelectedElement(
+                            "lineHeight",
+                            parseFloat(e.target.value)
+                          )
+                        }
+                        className="w-full"
+                      />
+                    </div>
+
+                    {/* Letter Spacing */}
+                    <div>
+                      <label className="text-sm text-gray-400 block mb-1">
+                        Letter Spacing:{" "}
+                        {getSelectedElement().letterSpacing || 0}px
+                      </label>
+                      <input
+                        type="range"
+                        min="-5"
+                        max="20"
+                        step="0.5"
+                        value={getSelectedElement().letterSpacing || 0}
+                        onChange={(e) =>
+                          updateSelectedElement(
+                            "letterSpacing",
+                            parseFloat(e.target.value)
+                          )
+                        }
+                        className="w-full"
+                      />
+                    </div>
+
+                    {/* Text Transform */}
+                    <div>
+                      <label className="text-sm text-gray-400 block mb-1">
+                        Text Transform
+                      </label>
+                      <select
+                        value={getSelectedElement().textTransform || "none"}
+                        onChange={(e) =>
+                          updateSelectedElement("textTransform", e.target.value)
+                        }
+                        className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white"
+                      >
+                        <option value="none">None</option>
+                        <option value="uppercase">UPPERCASE</option>
+                        <option value="lowercase">lowercase</option>
+                        <option value="capitalize">Capitalize</option>
+                      </select>
+                    </div>
+
+                    {/* Text Formatting Buttons */}
+                    <div>
+                      <label className="text-sm text-gray-400 block mb-2">
+                        Text Style
+                      </label>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => {
+                            const current =
+                              getSelectedElement().fontStyle || "normal";
+                            updateSelectedElement(
+                              "fontStyle",
+                              current === "bold" ? "normal" : "bold"
+                            );
+                          }}
+                          className={`flex-1 p-2 rounded border ${
+                            getSelectedElement().fontStyle === "bold"
+                              ? "bg-blue-600 border-blue-500"
+                              : "bg-gray-700 border-gray-600 hover:bg-gray-600"
+                          }`}
+                          title="Bold"
+                        >
+                          <Bold size={18} className="mx-auto" />
+                        </button>
+                        <button
+                          onClick={() => {
+                            const current =
+                              getSelectedElement().textDecoration || "";
+                            updateSelectedElement(
+                              "textDecoration",
+                              current === "italic" ? "" : "italic"
+                            );
+                          }}
+                          className={`flex-1 p-2 rounded border ${
+                            getSelectedElement().textDecoration === "italic"
+                              ? "bg-blue-600 border-blue-500"
+                              : "bg-gray-700 border-gray-600 hover:bg-gray-600"
+                          }`}
+                          title="Italic"
+                        >
+                          <Italic size={18} className="mx-auto" />
+                        </button>
+                        <button
+                          onClick={() => {
+                            const current =
+                              getSelectedElement().textDecoration || "";
+                            updateSelectedElement(
+                              "textDecoration",
+                              current === "underline" ? "" : "underline"
+                            );
+                          }}
+                          className={`flex-1 p-2 rounded border ${
+                            getSelectedElement().textDecoration === "underline"
+                              ? "bg-blue-600 border-blue-500"
+                              : "bg-gray-700 border-gray-600 hover:bg-gray-600"
+                          }`}
+                          title="Underline"
+                        >
+                          <Underline size={18} className="mx-auto" />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Text Alignment */}
+                    <div>
+                      <label className="text-sm text-gray-400 block mb-2">
+                        Text Alignment
+                      </label>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => updateSelectedElement("align", "left")}
+                          className={`flex-1 p-2 rounded border ${
+                            getSelectedElement().align === "left"
+                              ? "bg-blue-600 border-blue-500"
+                              : "bg-gray-700 border-gray-600 hover:bg-gray-600"
+                          }`}
+                          title="Align Left"
+                        >
+                          <AlignLeft size={18} className="mx-auto" />
+                        </button>
+                        <button
+                          onClick={() =>
+                            updateSelectedElement("align", "center")
+                          }
+                          className={`flex-1 p-2 rounded border ${
+                            getSelectedElement().align === "center"
+                              ? "bg-blue-600 border-blue-500"
+                              : "bg-gray-700 border-gray-600 hover:bg-gray-600"
+                          }`}
+                          title="Align Center"
+                        >
+                          <AlignCenter size={18} className="mx-auto" />
+                        </button>
+                        <button
+                          onClick={() =>
+                            updateSelectedElement("align", "right")
+                          }
+                          className={`flex-1 p-2 rounded border ${
+                            getSelectedElement().align === "right"
+                              ? "bg-blue-600 border-blue-500"
+                              : "bg-gray-700 border-gray-600 hover:bg-gray-600"
+                          }`}
+                          title="Align Right"
+                        >
+                          <AlignRight size={18} className="mx-auto" />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Dynamic Field Checkbox */}
+                    <div className="border-t border-gray-700 pt-3 mt-3">
+                      <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={getSelectedElement().isDynamic || false}
+                          onChange={(e) =>
+                            updateSelectedElement("isDynamic", e.target.checked)
+                          }
+                          className="w-4 h-4"
+                        />
+                        <span>Dynamic Field (from CSV)</span>
+                      </label>
+                    </div>
+
+                    {/* Data Field Input - only show if isDynamic is true */}
+                    {getSelectedElement().isDynamic && (
+                      <div>
+                        <label className="text-sm text-gray-400 block mb-1">
+                          CSV Field Name
+                        </label>
+                        <input
+                          type="text"
+                          value={getSelectedElement().dataField || ""}
+                          onChange={(e) =>
+                            updateSelectedElement("dataField", e.target.value)
+                          }
+                          placeholder="e.g., name, email, course"
+                          className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white placeholder-gray-500"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                          Enter the exact column name from your CSV
+                        </p>
+                      </div>
+                    )}
+
+                    <div>
+                      <label className="text-sm text-gray-400 block mb-1">
+                        Text Opacity:{" "}
+                        {Math.round(
+                          (getSelectedElement().opacity !== undefined
+                            ? getSelectedElement().opacity
+                            : 1) * 100
+                        )}
+                        %
+                      </label>
+                      <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.01"
+                        value={
+                          getSelectedElement().opacity !== undefined
+                            ? getSelectedElement().opacity
+                            : 1
+                        }
+                        onChange={(e) =>
+                          updateSelectedElement(
+                            "opacity",
+                            parseFloat(e.target.value)
+                          )
+                        }
+                        className="w-full"
+                      />
+                    </div>
+
+                    {/* Text Shadow */}
+                    <div className="border-t border-gray-700 pt-3 mt-3">
+                      <label className="text-sm text-gray-400 block mb-2">
+                        Text Shadow
+                      </label>
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={
+                              getSelectedElement().shadowEnabled || false
+                            }
+                            onChange={(e) =>
+                              updateSelectedElement(
+                                "shadowEnabled",
+                                e.target.checked
+                              )
+                            }
+                            className="w-4 h-4"
+                          />
+                          <span className="text-sm text-gray-300">
+                            Enable Shadow
+                          </span>
+                        </div>
+                        {getSelectedElement().shadowEnabled && (
+                          <>
+                            <div>
+                              <label className="text-xs text-gray-500 block mb-1">
+                                Shadow Color
+                              </label>
+                              <input
+                                type="color"
+                                value={
+                                  getSelectedElement().shadowColor || "#000000"
+                                }
+                                onChange={(e) =>
+                                  updateSelectedElement(
+                                    "shadowColor",
+                                    e.target.value
+                                  )
+                                }
+                                className="w-full h-8 p-1 bg-gray-700 border border-gray-600 rounded cursor-pointer"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-xs text-gray-500 block mb-1">
+                                Blur: {getSelectedElement().shadowBlur || 5}
+                              </label>
+                              <input
+                                type="range"
+                                min="0"
+                                max="50"
+                                step="1"
+                                value={getSelectedElement().shadowBlur || 5}
+                                onChange={(e) =>
+                                  updateSelectedElement(
+                                    "shadowBlur",
+                                    parseInt(e.target.value, 10)
+                                  )
+                                }
+                                className="w-full"
+                              />
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div>
+                                <label className="text-xs text-gray-500 block mb-1">
+                                  Offset X:{" "}
+                                  {getSelectedElement().shadowOffsetX || 0}
+                                </label>
+                                <input
+                                  type="range"
+                                  min="-50"
+                                  max="50"
+                                  step="1"
+                                  value={
+                                    getSelectedElement().shadowOffsetX || 0
+                                  }
+                                  onChange={(e) =>
+                                    updateSelectedElement(
+                                      "shadowOffsetX",
+                                      parseInt(e.target.value, 10)
+                                    )
+                                  }
+                                  className="w-full"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-xs text-gray-500 block mb-1">
+                                  Offset Y:{" "}
+                                  {getSelectedElement().shadowOffsetY || 0}
+                                </label>
+                                <input
+                                  type="range"
+                                  min="-50"
+                                  max="50"
+                                  step="1"
+                                  value={
+                                    getSelectedElement().shadowOffsetY || 0
+                                  }
+                                  onChange={(e) =>
+                                    updateSelectedElement(
+                                      "shadowOffsetY",
+                                      parseInt(e.target.value, 10)
+                                    )
+                                  }
+                                  className="w-full"
+                                />
+                              </div>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* Position Controls - Available for all elements */}
+                <div className="border-t border-gray-700 pt-3 mt-3">
+                  <label className="text-sm text-gray-400 block mb-2 font-semibold">
+                    Position
                   </label>
-                  <input
-                    type="number"
-                    value={getSelectedElement().radius}
-                    onChange={(e) =>
-                      updateSelectedElement(
-                        "radius",
-                        parseInt(e.target.value, 10)
-                      )
-                    }
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white"
-                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-xs text-gray-500 block mb-1">
+                        X
+                      </label>
+                      <input
+                        type="number"
+                        value={Math.round(getSelectedElement().x || 0)}
+                        onChange={(e) =>
+                          updateSelectedElement(
+                            "x",
+                            parseInt(e.target.value, 10)
+                          )
+                        }
+                        className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-500 block mb-1">
+                        Y
+                      </label>
+                      <input
+                        type="number"
+                        value={Math.round(getSelectedElement().y || 0)}
+                        onChange={(e) =>
+                          updateSelectedElement(
+                            "y",
+                            parseInt(e.target.value, 10)
+                          )
+                        }
+                        className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white text-sm"
+                      />
+                    </div>
+                  </div>
                 </div>
-              )}
-            </div>
-          ) : (
-            <p className="text-gray-500">
-              Select an element to see its properties.
-            </p>
-          )}
-        </div>
+
+                {/* Size Controls */}
+                {(getSelectedElement().type === "rect" ||
+                  getSelectedElement().type === "image" ||
+                  getSelectedElement().type === "text") && (
+                  <div className="border-t border-gray-700 pt-3 mt-3">
+                    <label className="text-sm text-gray-400 block mb-2 font-semibold">
+                      Size
+                    </label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-xs text-gray-500 block mb-1">
+                          Width
+                        </label>
+                        <input
+                          type="number"
+                          value={Math.round(getSelectedElement().width || 0)}
+                          onChange={(e) =>
+                            updateSelectedElement(
+                              "width",
+                              parseInt(e.target.value, 10)
+                            )
+                          }
+                          className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-gray-500 block mb-1">
+                          Height
+                        </label>
+                        <input
+                          type="number"
+                          value={Math.round(getSelectedElement().height || 0)}
+                          onChange={(e) =>
+                            updateSelectedElement(
+                              "height",
+                              parseInt(e.target.value, 10)
+                            )
+                          }
+                          className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white text-sm"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Radius for circle */}
+                {getSelectedElement().type === "circle" && (
+                  <div className="border-t border-gray-700 pt-3 mt-3">
+                    <label className="text-sm text-gray-400 block mb-1">
+                      Radius
+                    </label>
+                    <input
+                      type="number"
+                      value={getSelectedElement().radius}
+                      onChange={(e) =>
+                        updateSelectedElement(
+                          "radius",
+                          parseInt(e.target.value, 10)
+                        )
+                      }
+                      className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white"
+                    />
+                  </div>
+                )}
+
+                {/* Transform Controls */}
+                <div className="border-t border-gray-700 pt-3 mt-3">
+                  <label className="text-sm text-gray-400 block mb-2 font-semibold">
+                    Transform
+                  </label>
+                  <div className="space-y-2">
+                    <div>
+                      <label className="text-xs text-gray-500 block mb-1">
+                        Rotation:{" "}
+                        {Math.round(getSelectedElement().rotation || 0)}°
+                      </label>
+                      <input
+                        type="range"
+                        min="-180"
+                        max="180"
+                        step="1"
+                        value={getSelectedElement().rotation || 0}
+                        onChange={(e) =>
+                          updateSelectedElement(
+                            "rotation",
+                            parseInt(e.target.value, 10)
+                          )
+                        }
+                        className="w-full"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-xs text-gray-500 block mb-1">
+                          Scale X:{" "}
+                          {(getSelectedElement().scaleX || 1).toFixed(2)}
+                        </label>
+                        <input
+                          type="range"
+                          min="0.1"
+                          max="3"
+                          step="0.1"
+                          value={getSelectedElement().scaleX || 1}
+                          onChange={(e) =>
+                            updateSelectedElement(
+                              "scaleX",
+                              parseFloat(e.target.value)
+                            )
+                          }
+                          className="w-full"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-gray-500 block mb-1">
+                          Scale Y:{" "}
+                          {(getSelectedElement().scaleY || 1).toFixed(2)}
+                        </label>
+                        <input
+                          type="range"
+                          min="0.1"
+                          max="3"
+                          step="0.1"
+                          value={getSelectedElement().scaleY || 1}
+                          onChange={(e) =>
+                            updateSelectedElement(
+                              "scaleY",
+                              parseFloat(e.target.value)
+                            )
+                          }
+                          className="w-full"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-xs text-gray-500 block mb-1">
+                          Skew X: {getSelectedElement().skewX || 0}°
+                        </label>
+                        <input
+                          type="range"
+                          min="-45"
+                          max="45"
+                          step="1"
+                          value={getSelectedElement().skewX || 0}
+                          onChange={(e) =>
+                            updateSelectedElement(
+                              "skewX",
+                              parseInt(e.target.value, 10)
+                            )
+                          }
+                          className="w-full"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-gray-500 block mb-1">
+                          Skew Y: {getSelectedElement().skewY || 0}°
+                        </label>
+                        <input
+                          type="range"
+                          min="-45"
+                          max="45"
+                          step="1"
+                          value={getSelectedElement().skewY || 0}
+                          onChange={(e) =>
+                            updateSelectedElement(
+                              "skewY",
+                              parseInt(e.target.value, 10)
+                            )
+                          }
+                          className="w-full"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <p className="text-gray-500">
+                Select an element to see its properties.
+              </p>
+            )}
+          </div>
+        )}
+        {!showPropertiesPanel && (
+          <button
+            onClick={() => setShowPropertiesPanel(true)}
+            className="fixed right-4 top-1/2 transform -translate-y-1/2 bg-gray-900 hover:bg-gray-800 border border-gray-700 rounded-l-lg p-2 z-10 shadow-lg"
+            title="Show Properties Panel"
+          >
+            <span className="text-gray-400 text-sm">▶</span>
+          </button>
+        )}
       </div>
 
       {/* Preview Modal */}

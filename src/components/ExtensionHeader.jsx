@@ -15,7 +15,10 @@ const ExtensionHeader = () => {
   const [showMenu, setShowMenu] = useState(false);
 
   const toggleRole = () => {
-    const newRole = userRole === "issuer" ? "verifier" : "issuer";
+    // Switch between issuer and user/holder roles
+    // Normalize userRole for comparison (handle both "user" and "holder")
+    const isIssuer = userRole?.toLowerCase() === "issuer";
+    const newRole = isIssuer ? "user" : "issuer";
     setUserRole(newRole);
   };
 
@@ -34,7 +37,7 @@ const ExtensionHeader = () => {
             <div className="flex items-center space-x-1">
               <div
                 className={`w-1.5 h-1.5 rounded-full ${
-                  userRole === "issuer" ? "bg-purple-400" : "bg-blue-400"
+                  userRole?.toLowerCase() === "issuer" ? "bg-purple-400" : "bg-blue-400"
                 }`}
               ></div>
               <p className="text-xs text-gray-300 capitalize">{userRole}</p>
@@ -103,26 +106,30 @@ const ExtensionHeader = () => {
                     </div>
                   </div>
 
-                  {/* Role Switch */}
-                  <button
-                    onClick={() => {
-                      toggleRole();
-                      setShowMenu(false);
-                    }}
-                    className="w-full flex items-center space-x-3 px-3 py-3 text-sm text-gray-300 hover:bg-white/10 hover:text-white rounded-xl transition-all duration-200 group"
-                  >
-                    <div className="w-8 h-8 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-400/30 rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform">
-                      <Shield size={14} className="text-green-400" />
-                    </div>
-                    <div className="flex-1 text-left">
-                      <p className="font-medium">
-                        Switch to {userRole === "issuer" ? "Holder" : "Issuer"}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        View and verify documents
-                      </p>
-                    </div>
-                  </button>
+                  {/* Role Switch - Only show for ISSUER users */}
+                  {user?.role?.toLowerCase() === "issuer" && (
+                    <button
+                      onClick={() => {
+                        toggleRole();
+                        setShowMenu(false);
+                      }}
+                      className="w-full flex items-center space-x-3 px-3 py-3 text-sm text-gray-300 hover:bg-white/10 hover:text-white rounded-xl transition-all duration-200 group"
+                    >
+                      <div className="w-8 h-8 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-400/30 rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform">
+                        <Shield size={14} className="text-green-400" />
+                      </div>
+                      <div className="flex-1 text-left">
+                        <p className="font-medium">
+                          Switch to {userRole?.toLowerCase() === "issuer" ? "Holder" : "Issuer"}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {userRole?.toLowerCase() === "issuer"
+                            ? "View and verify documents"
+                            : "Issue and manage certificates"}
+                        </p>
+                      </div>
+                    </button>
+                  )}
 
                   {/* Settings */}
                   <button

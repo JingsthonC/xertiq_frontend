@@ -156,6 +156,44 @@ const CertificateGenerator = () => {
     }
   };
 
+  const handleUpdateTemplateWithFile = async (templateId, file) => {
+    if (!file) {
+      alert("Please select a file to upload");
+      return;
+    }
+
+    // Validate file type
+    const allowedTypes = ['application/pdf', 'image/png', 'image/jpeg', 'image/jpg', 
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 
+      'application/msword'];
+    if (!allowedTypes.includes(file.type)) {
+      alert("Invalid file type. Please upload PDF, PNG, JPG, or Word (.docx) files only.");
+      return;
+    }
+
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      alert("File size too large. Maximum size is 10MB.");
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      // Get current template data
+      const currentTemplate = template;
+      
+      // Update template with file
+      await apiService.updateTemplate(templateId, currentTemplate, file);
+      alert("Template updated successfully with file!");
+      loadMyTemplates();
+    } catch (error) {
+      console.error("Error updating template:", error);
+      alert("Failed to update template: " + (error.response?.data?.message || error.message));
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const handleDeleteTemplateFromPlatform = async (templateId) => {
     if (!window.confirm("Delete this template from the platform?")) {
       return;
@@ -478,7 +516,9 @@ const CertificateGenerator = () => {
           )}
 
           {/* Content */}
-          {renderContent()}
+          <div style={{ height: 'calc(100vh - 300px)', minHeight: '600px' }}>
+            {renderContent()}
+          </div>
         </div>
       </div>
     );
@@ -665,7 +705,7 @@ const CertificateGenerator = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {publicTemplates.map((tmpl) => (
                     <div
-                      key={tmpl._id}
+                      key={tmpl.id || tmpl._id}
                       className="bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition-colors"
                     >
                       {tmpl.thumbnail && (
@@ -687,7 +727,7 @@ const CertificateGenerator = () => {
                         By: {tmpl.createdBy?.name || "Anonymous"}
                       </p>
                       <button
-                        onClick={() => handleLoadTemplateFromPlatform(tmpl._id)}
+                        onClick={() => handleLoadTemplateFromPlatform(tmpl.id || tmpl._id)}
                         className="w-full px-4 py-2 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 hover:from-yellow-500/30 hover:to-orange-500/30 text-yellow-400 rounded-lg transition-colors text-sm"
                       >
                         Use Template
@@ -717,7 +757,7 @@ const CertificateGenerator = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {myTemplates.map((tmpl) => (
                     <div
-                      key={tmpl._id}
+                      key={tmpl.id || tmpl._id}
                       className="bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition-colors"
                     >
                       {tmpl.thumbnail && (
@@ -751,7 +791,7 @@ const CertificateGenerator = () => {
                         </div>
                         <button
                           onClick={() =>
-                            handleDeleteTemplateFromPlatform(tmpl._id)
+                            handleDeleteTemplateFromPlatform(tmpl.id || tmpl._id)
                           }
                           className="p-2 hover:bg-red-500/20 rounded-lg transition-colors"
                         >
@@ -761,15 +801,32 @@ const CertificateGenerator = () => {
                       <div className="space-y-2">
                         <button
                           onClick={() =>
-                            handleLoadTemplateFromPlatform(tmpl._id)
+                            handleLoadTemplateFromPlatform(tmpl.id || tmpl._id)
                           }
                           className="w-full px-4 py-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 rounded-lg transition-colors text-sm"
                         >
                           Load Template
                         </button>
+                        <label className="w-full px-4 py-2 bg-green-500/20 hover:bg-green-500/30 text-green-400 rounded-lg transition-colors text-sm cursor-pointer text-center block">
+                          <input
+                            type="file"
+                            accept=".pdf,.png,.jpg,.jpeg,.doc,.docx"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                handleUpdateTemplateWithFile(tmpl.id || tmpl._id, file);
+                              }
+                              // Reset input
+                              e.target.value = '';
+                            }}
+                            className="hidden"
+                            disabled={isSaving}
+                          />
+                          {isSaving ? "Uploading..." : "Update with File"}
+                        </label>
                         <button
                           onClick={() =>
-                            handleToggleVisibility(tmpl._id, tmpl.isPublic)
+                            handleToggleVisibility(tmpl.id || tmpl._id, tmpl.isPublic)
                           }
                           className="w-full px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg transition-colors text-sm"
                         >
@@ -815,7 +872,9 @@ const CertificateGenerator = () => {
             </div>
 
             {/* Content Area */}
-            <div className="lg:col-span-3">{renderContent()}</div>
+            <div className="lg:col-span-3" style={{ height: 'calc(100vh - 200px)', minHeight: '600px' }}>
+              {renderContent()}
+            </div>
           </div>
         </div>
       </div>
