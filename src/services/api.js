@@ -114,6 +114,17 @@ class ApiService {
     return response.data;
   }
 
+  // Credit defaults (admin)
+  async getCreditDefaults() {
+    const response = await this.api.get("/credit-defaults");
+    return response.data;
+  }
+
+  async updateCreditDefaults(payload) {
+    const response = await this.api.put("/credit-defaults/update", payload);
+    return response.data;
+  }
+
   async purchaseCredits(amount) {
     const response = await this.api.post("/credits/purchase", { amount });
     return response.data;
@@ -132,6 +143,13 @@ class ApiService {
     };
   }
 
+  async verifyPayMongoPaymentStatus(checkoutId) {
+    const response = await this.api.get(
+      `/payments/paymongo/status/${checkoutId}`
+    );
+    return response.data;
+  }
+
   // Documents endpoints
   async getDocuments() {
     const response = await this.api.get("/documents");
@@ -147,7 +165,7 @@ class ApiService {
       });
     }
 
-    const response = await this.api.post("/documents/upload", formData, {
+    const response = await this.api.post("/upload", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
@@ -233,11 +251,48 @@ class ApiService {
     return response.data;
   }
 
-  async updateTemplate(templateId, templateData) {
-    const response = await this.api.put(
-      `/templates/${templateId}`,
-      templateData
-    );
+  async updateTemplate(templateId, templateData, templateFile = null) {
+    let response;
+
+    // If file is provided, use FormData
+    if (templateFile) {
+      const formData = new FormData();
+
+      // Add file
+      formData.append("templateFile", templateFile);
+
+      // Add other template data as JSON string if provided
+      if (templateData) {
+        if (typeof templateData === "object") {
+          formData.append("templateData", JSON.stringify(templateData));
+        } else {
+          formData.append("templateData", templateData);
+        }
+
+        // Add other fields if they exist
+        if (templateData.name) formData.append("name", templateData.name);
+        if (templateData.description !== undefined)
+          formData.append("description", templateData.description);
+        if (templateData.isPublic !== undefined)
+          formData.append("isPublic", templateData.isPublic);
+        if (templateData.category)
+          formData.append("category", templateData.category);
+        if (templateData.tags)
+          formData.append("tags", JSON.stringify(templateData.tags));
+        if (templateData.thumbnail)
+          formData.append("thumbnail", templateData.thumbnail);
+      }
+
+      response = await this.api.put(`/templates/${templateId}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+    } else {
+      // No file, use regular JSON
+      response = await this.api.put(`/templates/${templateId}`, templateData);
+    }
+
     return response.data;
   }
 
@@ -253,6 +308,74 @@ class ApiService {
         isPublic,
       }
     );
+    return response.data;
+  }
+
+  // Admin endpoints
+  async get(endpoint) {
+    const response = await this.api.get(endpoint);
+    return response.data;
+  }
+
+  async post(endpoint, data) {
+    const response = await this.api.post(endpoint, data);
+    return response.data;
+  }
+
+  async patch(endpoint, data) {
+    const response = await this.api.patch(endpoint, data);
+    return response.data;
+  }
+
+  async delete(endpoint) {
+    const response = await this.api.delete(endpoint);
+    return response.data;
+  }
+
+  // Validator endpoints
+  async verifyDocumentByHash(hash) {
+    const response = await this.api.get(`/validator/verify/${hash}`);
+    return response.data;
+  }
+
+  async verifyDocumentByQR(qrData) {
+    const response = await this.api.post("/validator/verify-qr", { qrData });
+    return response.data;
+  }
+
+  // Holder endpoints
+  async getHolderDocuments(params = {}) {
+    const { page = 1, limit = 10, status, type } = params;
+    const response = await this.api.get("/holder/documents", {
+      params: { page, limit, status, type },
+    });
+    return response.data;
+  }
+
+  async getHolderStats() {
+    const response = await this.api.get("/holder/stats");
+    return response.data;
+  }
+
+  // Issuer endpoints
+  async getIssuerDocuments(params = {}) {
+    const { page = 1, limit = 10, batchId, holderEmail } = params;
+    const response = await this.api.get("/issuer/documents", {
+      params: { page, limit, batchId, holderEmail },
+    });
+    return response.data;
+  }
+
+  async getIssuerHolders(params = {}) {
+    const { page = 1, limit = 50 } = params;
+    const response = await this.api.get("/issuer/holders", {
+      params: { page, limit },
+    });
+    return response.data;
+  }
+
+  async getIssuerStats() {
+    const response = await this.api.get("/issuer/stats");
     return response.data;
   }
 

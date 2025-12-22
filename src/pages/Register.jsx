@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { UserPlus, Eye, EyeOff, Loader, Shield, Check, X } from "lucide-react";
+import { UserPlus, Eye, EyeOff, Loader, Shield, Check, X, Building2, User } from "lucide-react";
 import apiService from "../services/api";
 import { useNavigate } from "react-router-dom";
 
@@ -11,6 +11,7 @@ const Register = () => {
     email: "",
     password: "",
     confirmPassword: "",
+    role: "USER", // Default to USER (Holder)
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -54,6 +55,7 @@ const Register = () => {
         password: formData.password,
         firstName: formData.firstName,
         lastName: formData.lastName,
+        role: formData.role,
       });
 
       console.log("Registration successful:", response);
@@ -69,6 +71,7 @@ const Register = () => {
           email: "",
           password: "",
           confirmPassword: "",
+          role: "USER",
         });
         setSuccess(false);
         navigate("/login");
@@ -198,6 +201,96 @@ const Register = () => {
                 />
                 <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500/10 to-blue-500/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold text-gray-200 mb-3">
+                Account Type
+              </label>
+              <div className="grid grid-cols-2 gap-4">
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, role: "USER" })}
+                  className={`relative p-4 rounded-xl border-2 transition-all duration-300 ${
+                    formData.role === "USER"
+                      ? "border-purple-500 bg-purple-500/20"
+                      : "border-white/10 bg-white/5 hover:border-white/20"
+                  }`}
+                  disabled={isLoading}
+                >
+                  <div className="flex flex-col items-center space-y-2">
+                    <User
+                      size={24}
+                      className={
+                        formData.role === "USER"
+                          ? "text-purple-400"
+                          : "text-gray-400"
+                      }
+                    />
+                    <span
+                      className={`text-sm font-medium ${
+                        formData.role === "USER"
+                          ? "text-purple-300"
+                          : "text-gray-300"
+                      }`}
+                    >
+                      Holder
+                    </span>
+                    <span className="text-xs text-gray-400 text-center">
+                      Receive documents
+                    </span>
+                  </div>
+                  {formData.role === "USER" && (
+                    <div className="absolute top-2 right-2">
+                      <Check size={16} className="text-purple-400" />
+                    </div>
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, role: "ISSUER" })}
+                  className={`relative p-4 rounded-xl border-2 transition-all duration-300 ${
+                    formData.role === "ISSUER"
+                      ? "border-blue-500 bg-blue-500/20"
+                      : "border-white/10 bg-white/5 hover:border-white/20"
+                  }`}
+                  disabled={isLoading}
+                >
+                  <div className="flex flex-col items-center space-y-2">
+                    <Building2
+                      size={24}
+                      className={
+                        formData.role === "ISSUER"
+                          ? "text-blue-400"
+                          : "text-gray-400"
+                      }
+                    />
+                    <span
+                      className={`text-sm font-medium ${
+                        formData.role === "ISSUER"
+                          ? "text-blue-300"
+                          : "text-gray-300"
+                      }`}
+                    >
+                      Issuer
+                    </span>
+                    <span className="text-xs text-gray-400 text-center">
+                      Issue documents
+                    </span>
+                  </div>
+                  {formData.role === "ISSUER" && (
+                    <div className="absolute top-2 right-2">
+                      <Check size={16} className="text-blue-400" />
+                    </div>
+                  )}
+                </button>
+              </div>
+              <p className="text-xs text-gray-400 mt-2">
+                {formData.role === "USER"
+                  ? "Holders can view documents issued to them"
+                  : "Issuers can create and manage document batches"}
+              </p>
             </div>
 
             <div className="space-y-2">

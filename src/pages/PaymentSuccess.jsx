@@ -10,6 +10,7 @@ import {
 import NavigationHeader from "../components/NavigationHeader";
 import useWalletPolling from "../hooks/useWalletPolling";
 import useWalletStore from "../store/wallet";
+import apiService from "../services/api";
 
 const MAX_POLL_ATTEMPTS = 6;
 
@@ -50,6 +51,8 @@ const PaymentSuccess = () => {
   const { credits } = useWalletStore();
   const [checkoutMeta, setCheckoutMeta] = useState(null);
   const [hasStarted, setHasStarted] = useState(false);
+  const [paymentVerified, setPaymentVerified] = useState(false);
+  const [verificationError, setVerificationError] = useState(null);
 
   const {
     status,
@@ -68,7 +71,10 @@ const PaymentSuccess = () => {
   const checkoutIdFromQuery = queryParams.get("checkoutId");
   const packageIdFromQuery = queryParams.get("package");
 
-  console.log("[PaymentSuccess] checkoutId from URL query:", checkoutIdFromQuery);
+  console.log(
+    "[PaymentSuccess] checkoutId from URL query:",
+    checkoutIdFromQuery
+  );
   console.log("[PaymentSuccess] packageId from URL query:", packageIdFromQuery);
 
   useEffect(() => {
@@ -80,24 +86,114 @@ const PaymentSuccess = () => {
         if (checkoutIdFromQuery && !parsed.checkoutId) {
           parsed.checkoutId = checkoutIdFromQuery;
         }
-        console.log("[PaymentSuccess] Merged checkoutMeta from sessionStorage:", parsed);
+        console.log(
+          "[PaymentSuccess] Merged checkoutMeta from sessionStorage:",
+          parsed
+        );
         setCheckoutMeta(parsed);
       } else if (checkoutIdFromQuery) {
         // No sessionStorage but we have the checkoutId from query
-        console.log("[PaymentSuccess] No sessionStorage; using query checkoutId:", checkoutIdFromQuery);
-        setCheckoutMeta({ checkoutId: checkoutIdFromQuery, packageId: packageIdFromQuery });
+        console.log(
+          "[PaymentSuccess] No sessionStorage; using query checkoutId:",
+          checkoutIdFromQuery
+        );
+        setCheckoutMeta({
+          checkoutId: checkoutIdFromQuery,
+          packageId: packageIdFromQuery,
+        });
       }
     } catch (err) {
       console.warn("Unable to read checkout metadata", err);
     }
   }, [checkoutIdFromQuery, packageIdFromQuery]);
 
+  // Verify payment status with backend when checkoutId is available
   useEffect(() => {
-    if (!hasStarted) {
+    const verifyPayment = async () => {
+      const checkoutId = checkoutMeta?.checkoutId || checkoutIdFromQuery;
+
+      if (!checkoutId || paymentVerified) {
+        return;
+      }
+
+      try {
+        console.log(
+          "[PaymentSuccess] Verifying payment status for checkoutId:",
+          checkoutId
+        );
+        const result = await apiService.verifyPayMongoPaymentStatus(checkoutId);
+
+        if (result.success && result.data) {
+          console.log(
+            "[PaymentSuccess] Payment verification result:",
+            result.data
+          );
+
+          if (result.data.paid && result.data.creditsAdded) {
+            setPaymentVerified(true);
+            // Refresh credits immediately after verification
+            await useWalletStore.getState().fetchCredits();
+            // Start polling to ensure UI updates
+            if (!hasStarted) {
+              startPolling();
+              setHasStarted(true);
+            }
+          } else if (result.data.paid && !result.data.creditsAdded) {
+            // Payment is paid but credits weren't added - this shouldn't happen
+            // but the backend should have added them via verifyPayMongoPaymentStatus
+            console.warn(
+              "[PaymentSuccess] Payment paid but credits not added yet"
+            );
+            setVerificationError(
+              "Payment verified but credits are being processed. Please wait..."
+            );
+            // Start polling to wait for credits
+            if (!hasStarted) {
+              startPolling();
+              setHasStarted(true);
+            }
+          } else {
+            // Payment not completed yet
+            console.log(
+              "[PaymentSuccess] Payment not completed yet, status:",
+              result.data.status
+            );
+            setVerificationError("Payment not completed yet. Please wait...");
+            // Start polling to wait for payment
+            if (!hasStarted) {
+              startPolling();
+              setHasStarted(true);
+            }
+          }
+        }
+      } catch (error) {
+        console.error("[PaymentSuccess] Payment verification error:", error);
+        setVerificationError(
+          "Unable to verify payment status. Credits will be added automatically."
+        );
+        // Start polling anyway - webhook might still process it
+        if (!hasStarted) {
+          startPolling();
+          setHasStarted(true);
+        }
+      }
+    };
+
+    verifyPayment();
+  }, [
+    checkoutMeta,
+    checkoutIdFromQuery,
+    paymentVerified,
+    hasStarted,
+    startPolling,
+  ]);
+
+  useEffect(() => {
+    if (!hasStarted && paymentVerified) {
       startPolling();
       setHasStarted(true);
     }
-  }, [hasStarted, startPolling]);
+  }, [hasStarted, paymentVerified, startPolling]);
 
   useEffect(() => {
     if (status === "synced") {
@@ -147,13 +243,18 @@ const PaymentSuccess = () => {
             </div>
           </div>
           <p className="text-gray-400 text-sm mt-4">
-            We automatically refresh your wallet every few seconds to confirm
-            the payment with PayMongo.
+            {paymentVerified
+              ? "Payment verified! Your credits have been added."
+              : verificationError
+              ? verificationError
+              : "We're verifying your payment and refreshing your wallet balance."}
           </p>
-          <p className="text-gray-400 text-sm">
-            Attempt {Math.min(attempts, MAX_POLL_ATTEMPTS)} of{" "}
-            {MAX_POLL_ATTEMPTS}
-          </p>
+          {!paymentVerified && (
+            <p className="text-gray-400 text-sm">
+              Attempt {Math.min(attempts, MAX_POLL_ATTEMPTS)} of{" "}
+              {MAX_POLL_ATTEMPTS}
+            </p>
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

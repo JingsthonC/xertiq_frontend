@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Type,
   Image as ImageIcon,
@@ -28,6 +28,8 @@ const PDFTemplateDesigner = ({
   const [dragStart, setDragStart] = useState(null);
   const [showGrid, setShowGrid] = useState(true);
   const [zoom, setZoom] = useState(0.8); // Increased from 0.5 for larger editing area
+  const [zoomInputValue, setZoomInputValue] = useState(''); // For editable zoom input
+  const [isEditingZoom, setIsEditingZoom] = useState(false); // Track if zoom input is being edited
   const canvasRef = useRef(null);
 
   // Get canvas dimensions based on template orientation
@@ -228,6 +230,76 @@ const PDFTemplateDesigner = ({
     }
   };
 
+  // Keyboard shortcuts for zoom
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Only handle if not typing in an input/textarea
+      if (
+        e.target.tagName === "INPUT" ||
+        e.target.tagName === "TEXTAREA" ||
+        e.target.isContentEditable
+      ) {
+        return;
+      }
+
+      // Ctrl/Cmd + Plus/Equal - Zoom In
+      if ((e.ctrlKey || e.metaKey) && (e.key === "+" || e.key === "=")) {
+        e.preventDefault();
+        setZoom((prev) => Math.min(1.5, prev + 0.1));
+        return;
+      }
+
+      // Ctrl/Cmd + Minus - Zoom Out
+      if ((e.ctrlKey || e.metaKey) && e.key === "-") {
+        e.preventDefault();
+        setZoom((prev) => Math.max(0.3, prev - 0.1));
+        return;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
+  // Zoom input handlers
+  const handleZoomInputChange = (e) => {
+    setZoomInputValue(e.target.value);
+  };
+
+  const handleZoomInputBlur = () => {
+    setIsEditingZoom(false);
+    const numValue = parseFloat(zoomInputValue);
+    if (!isNaN(numValue) && numValue > 0) {
+      const percentage = Math.max(30, Math.min(150, numValue));
+      setZoom(percentage / 100);
+    }
+    setZoomInputValue('');
+  };
+
+  const handleZoomInputKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.target.blur();
+    } else if (e.key === 'Escape') {
+      setZoomInputValue('');
+      setIsEditingZoom(false);
+      e.target.blur();
+    }
+  };
+
+  const handleZoomInputFocus = () => {
+    setIsEditingZoom(true);
+    setZoomInputValue(Math.round(zoom * 100).toString());
+  };
+
+  // Reset zoom input when not editing and zoom changes externally
+  useEffect(() => {
+    if (!isEditingZoom) {
+      setZoomInputValue('');
+    }
+  }, [zoom, isEditingZoom]);
+
   return (
     <div className="space-y-4">
       {/* Top Toolbar */}
@@ -254,17 +326,34 @@ const PDFTemplateDesigner = ({
             <button
               onClick={() => setZoom(Math.max(0.3, zoom - 0.1))}
               className="p-2 text-gray-400 hover:bg-white/10 rounded-lg transition-colors"
-              title="Zoom Out"
+              title="Zoom Out (Ctrl/Cmd + -)"
             >
               <ZoomOut size={16} />
             </button>
-            <span className="text-xs text-gray-400 w-12 text-center">
-              {Math.round(zoom * 100)}%
-            </span>
+            {isEditingZoom ? (
+              <input
+                type="text"
+                value={zoomInputValue}
+                onChange={handleZoomInputChange}
+                onBlur={handleZoomInputBlur}
+                onKeyDown={handleZoomInputKeyDown}
+                onFocus={handleZoomInputFocus}
+                className="w-16 px-2 py-1 bg-white/5 border border-white/20 rounded-lg text-xs text-white text-center focus:outline-none focus:border-blue-500"
+                autoFocus
+              />
+            ) : (
+              <span
+                onClick={handleZoomInputFocus}
+                className="text-xs text-gray-400 w-12 text-center cursor-text hover:bg-white/10 rounded px-1 py-1"
+                title="Click to edit zoom percentage"
+              >
+                {Math.round(zoom * 100)}%
+              </span>
+            )}
             <button
               onClick={() => setZoom(Math.min(1.5, zoom + 0.1))}
               className="p-2 text-gray-400 hover:bg-white/10 rounded-lg transition-colors"
-              title="Zoom In"
+              title="Zoom In (Ctrl/Cmd + +)"
             >
               <ZoomIn size={16} />
             </button>
@@ -433,7 +522,20 @@ const PDFTemplateDesigner = ({
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
         {/* Canvas */}
         <div className="lg:col-span-3 bg-white/5 border border-white/10 rounded-xl p-4">
-          <div className="overflow-auto">
+          <div 
+            className="overflow-auto"
+            onWheel={(e) => {
+              // Zoom with Ctrl/Cmd + wheel
+              if (e.ctrlKey || e.metaKey) {
+                e.preventDefault();
+                const delta = e.deltaY > 0 ? -0.1 : 0.1;
+                setZoom((prev) => {
+                  const newZoom = prev + delta;
+                  return Math.max(0.3, Math.min(1.5, newZoom));
+                });
+              }
+            }}
+          >
             <div
               ref={canvasRef}
               className="canvas-bg relative mx-auto cursor-crosshair shadow-2xl"

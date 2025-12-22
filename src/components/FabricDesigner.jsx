@@ -24,6 +24,8 @@ const FabricDesigner = ({ template, onTemplateChange }) => {
   const fabricCanvasRef = useRef(null);
   const [selectedObject, setSelectedObject] = useState(null);
   const [zoom, setZoom] = useState(0.8);
+  const [zoomInputValue, setZoomInputValue] = useState(''); // For editable zoom input
+  const [isEditingZoom, setIsEditingZoom] = useState(false); // Track if zoom input is being edited
   const [history, setHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
 
@@ -406,6 +408,76 @@ const FabricDesigner = ({ template, onTemplateChange }) => {
     }
   };
 
+  // Keyboard shortcuts for zoom
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Only handle if not typing in an input/textarea
+      if (
+        e.target.tagName === "INPUT" ||
+        e.target.tagName === "TEXTAREA" ||
+        e.target.isContentEditable
+      ) {
+        return;
+      }
+
+      // Ctrl/Cmd + Plus/Equal - Zoom In
+      if ((e.ctrlKey || e.metaKey) && (e.key === "+" || e.key === "=")) {
+        e.preventDefault();
+        setZoom((prev) => Math.min(1.5, prev + 0.1));
+        return;
+      }
+
+      // Ctrl/Cmd + Minus - Zoom Out
+      if ((e.ctrlKey || e.metaKey) && e.key === "-") {
+        e.preventDefault();
+        setZoom((prev) => Math.max(0.3, prev - 0.1));
+        return;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
+  // Zoom input handlers
+  const handleZoomInputChange = (e) => {
+    setZoomInputValue(e.target.value);
+  };
+
+  const handleZoomInputBlur = () => {
+    setIsEditingZoom(false);
+    const numValue = parseFloat(zoomInputValue);
+    if (!isNaN(numValue) && numValue > 0) {
+      const percentage = Math.max(30, Math.min(150, numValue));
+      setZoom(percentage / 100);
+    }
+    setZoomInputValue('');
+  };
+
+  const handleZoomInputKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.target.blur();
+    } else if (e.key === 'Escape') {
+      setZoomInputValue('');
+      setIsEditingZoom(false);
+      e.target.blur();
+    }
+  };
+
+  const handleZoomInputFocus = () => {
+    setIsEditingZoom(true);
+    setZoomInputValue(Math.round(zoom * 100).toString());
+  };
+
+  // Reset zoom input when not editing and zoom changes externally
+  useEffect(() => {
+    if (!isEditingZoom) {
+      setZoomInputValue('');
+    }
+  }, [zoom, isEditingZoom]);
+
   return (
     <div className="flex gap-4 h-full">
       {/* Toolbar */}
@@ -492,15 +564,34 @@ const FabricDesigner = ({ template, onTemplateChange }) => {
           <button
             onClick={() => setZoom(Math.max(0.3, zoom - 0.1))}
             className="p-2 bg-white/5 hover:bg-white/10 rounded-lg text-gray-400"
+            title="Zoom Out (Ctrl/Cmd + -)"
           >
             <ZoomOut size={16} />
           </button>
-          <span className="text-sm text-gray-400 min-w-[60px] text-center">
-            {Math.round(zoom * 100)}%
-          </span>
+          {isEditingZoom ? (
+            <input
+              type="text"
+              value={zoomInputValue}
+              onChange={handleZoomInputChange}
+              onBlur={handleZoomInputBlur}
+              onKeyDown={handleZoomInputKeyDown}
+              onFocus={handleZoomInputFocus}
+              className="w-16 px-2 py-1 bg-white/5 border border-white/20 rounded-lg text-sm text-white text-center focus:outline-none focus:border-blue-500"
+              autoFocus
+            />
+          ) : (
+            <span
+              onClick={handleZoomInputFocus}
+              className="text-sm text-gray-400 min-w-[60px] text-center cursor-text hover:bg-white/10 rounded px-2 py-1"
+              title="Click to edit zoom percentage"
+            >
+              {Math.round(zoom * 100)}%
+            </span>
+          )}
           <button
             onClick={() => setZoom(Math.min(1.5, zoom + 0.1))}
             className="p-2 bg-white/5 hover:bg-white/10 rounded-lg text-gray-400"
+            title="Zoom In (Ctrl/Cmd + +)"
           >
             <ZoomIn size={16} />
           </button>
@@ -524,7 +615,20 @@ const FabricDesigner = ({ template, onTemplateChange }) => {
         </div>
 
         {/* Canvas Container */}
-        <div className="flex-1 bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl p-8 overflow-auto flex items-center justify-center">
+        <div 
+          className="flex-1 bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl p-8 overflow-auto flex items-center justify-center"
+          onWheel={(e) => {
+            // Zoom with Ctrl/Cmd + wheel
+            if (e.ctrlKey || e.metaKey) {
+              e.preventDefault();
+              const delta = e.deltaY > 0 ? -0.1 : 0.1;
+              setZoom((prev) => {
+                const newZoom = prev + delta;
+                return Math.max(0.3, Math.min(1.5, newZoom));
+              });
+            }
+          }}
+        >
           <div className="relative">
             <canvas ref={canvasRef} className="shadow-2xl" />
             <div className="mt-3 text-center text-xs text-gray-400">

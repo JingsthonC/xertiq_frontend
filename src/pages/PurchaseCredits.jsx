@@ -27,7 +27,7 @@ const PurchaseCredits = () => {
       payMongoPackageId: "starter",
       name: "Starter Pack",
       credits: 100,
-      price: 10,
+      price: 100,
       popular: false,
       description: "Perfect for small batches",
       certificates: 50, // 100 credits = 50 certificates (2 credits each)
@@ -37,7 +37,7 @@ const PurchaseCredits = () => {
       payMongoPackageId: "professional",
       name: "Professional Pack",
       credits: 500,
-      price: 45,
+      price: 500,
       popular: true,
       description: "Best value for regular use",
       certificates: 250,
@@ -48,7 +48,7 @@ const PurchaseCredits = () => {
       payMongoPackageId: "enterprise",
       name: "Enterprise Pack",
       credits: 1000,
-      price: 80,
+      price: 1000,
       popular: false,
       description: "For high-volume needs",
       certificates: 500,
@@ -59,7 +59,7 @@ const PurchaseCredits = () => {
       payMongoPackageId: "ultimate",
       name: "Ultimate Pack",
       credits: 5000,
-      price: 350,
+      price: 5000,
       popular: false,
       description: "Maximum value",
       certificates: 2500,
@@ -96,23 +96,21 @@ const PurchaseCredits = () => {
     resetCheckoutState();
 
     try {
-      // First call without successUrl so backend creates session and returns checkoutId
+      // Start checkout - backend will create PayMongo session
+      // Note: PayMongo doesn't support placeholders in URLs, so we'll use a base URL
+      // and the checkoutId will be passed via query params when PayMongo redirects
       const { checkoutUrl, checkoutReference, referenceNumber } =
         await startCheckout(selectedPackage, {
           autoRedirect: false,
-          // Send successUrl with placeholder; backend ideally passes it to PayMongo
-          successUrl: `${window.location.origin}/payment/success?checkoutId=CHECKOUT_ID_PLACEHOLDER`,
+          // Use base success URL - PayMongo will redirect here, and we'll get checkoutId from query params
+          successUrl: `${window.location.origin}/payment/success`,
           cancelUrl: `${window.location.origin}/purchase-credits`,
         });
 
-      // Replace placeholder with actual checkoutId (if backend echoes it into the URL)
-      console.log("[PurchaseCredits] checkoutReference returned:", checkoutReference);
-      console.log("[PurchaseCredits] Building successUrl with checkoutId:", checkoutReference);
-      const finalCheckoutUrl = checkoutUrl?.replace(
-        "CHECKOUT_ID_PLACEHOLDER",
-        checkoutReference || ""
-      );
-      console.log("[PurchaseCredits] Final checkout URL:", finalCheckoutUrl);
+      console.log("[PurchaseCredits] Checkout session created:");
+      console.log("  - Checkout ID:", checkoutReference);
+      console.log("  - Reference Number:", referenceNumber);
+      console.log("  - Checkout URL:", checkoutUrl);
 
       const checkoutMeta = {
         reference: checkoutReference || referenceNumber,
@@ -135,7 +133,7 @@ const PurchaseCredits = () => {
       }
 
       setRedirectInfo({
-        redirectUrl: finalCheckoutUrl || checkoutUrl,
+        redirectUrl: checkoutUrl,
         credits: selectedPackage.credits,
         price: selectedPackage.price,
       });
@@ -211,7 +209,7 @@ const PurchaseCredits = () => {
                   You're about to purchase {redirectInfo.credits} credits
                 </p>
                 <p className="text-gray-300 text-sm">
-                  Package: {redirectInfo.packageName} · ${redirectInfo.price}
+                  Package: {redirectInfo.packageName} · ₱{redirectInfo.price}
                 </p>
               </div>
             </div>
@@ -279,10 +277,10 @@ const PurchaseCredits = () => {
                 </div>
 
                 <div className="text-3xl font-bold text-blue-400 mb-2">
-                  ${pkg.price}
+                  ₱{pkg.price}
                 </div>
                 <p className="text-gray-400 text-xs">
-                  ${(pkg.price / pkg.credits).toFixed(3)} per credit
+                  ₱{(pkg.price / pkg.credits).toFixed(2)} per credit
                 </p>
               </div>
 
@@ -320,7 +318,7 @@ const PurchaseCredits = () => {
                 <CreditCard className="w-5 h-5" />
                 <span>
                   {selectedPackage
-                    ? `Purchase ${selectedPackage.credits} credits for $${selectedPackage.price}`
+                    ? `Purchase ${selectedPackage.credits} credits for ₱${selectedPackage.price}`
                     : "Select a package"}
                 </span>
               </>
