@@ -2640,8 +2640,16 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                           textarea.focus();
                           textarea.select();
 
+                          let outsideClickTimeoutId = null;
+                          let isTextareaRemoved = false;
+
                           function removeTextarea() {
                             if (!textarea.parentNode) return;
+                            isTextareaRemoved = true;
+                            if (outsideClickTimeoutId) {
+                              clearTimeout(outsideClickTimeoutId);
+                              outsideClickTimeoutId = null;
+                            }
 
                             const finalText = textarea.value;
                             textarea.parentNode.removeChild(textarea);
@@ -2691,11 +2699,9 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                           }
 
                           // Delay adding click listener to prevent immediate trigger
-                          setTimeout(() => {
-                            window.addEventListener(
-                              "click",
-                              handleOutsideClick
-                            );
+                          outsideClickTimeoutId = setTimeout(() => {
+                            if (isTextareaRemoved) return;
+                            window.addEventListener("click", handleOutsideClick);
                           }, 100);
                         }}
                       />

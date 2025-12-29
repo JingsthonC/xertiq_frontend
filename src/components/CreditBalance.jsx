@@ -9,19 +9,33 @@ const CreditBalance = ({ showDetails = false, size = "md" }) => {
     useWalletStore();
 
   useEffect(() => {
-    // Fetch credits on mount and refresh every 30 seconds
-    fetchCredits();
-    const interval = setInterval(fetchCredits, 30000);
-    return () => clearInterval(interval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    // Fetch credits on mount and refresh every 30 seconds.
+    // Use setTimeout recursion to avoid overlapping requests if a fetch is slow.
+    let isActive = true;
+    let timeoutId = null;
+
+    const poll = async () => {
+      if (!isActive) return;
+      await fetchCredits();
+      if (!isActive) return;
+      timeoutId = setTimeout(poll, 30000);
+    };
+
+    poll();
+
+    return () => {
+      isActive = false;
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [fetchCredits]);
 
   const handleRefresh = async () => {
     await fetchCredits();
   };
 
-  const isLowCredits = credits <= 5;
-  const isMediumCredits = credits > 5 && credits <= 10;
+  const creditsValue = Number.isFinite(credits) ? credits : 0;
+  const isLowCredits = creditsValue <= 5;
+  const isMediumCredits = creditsValue > 5 && creditsValue <= 10;
 
   const badgeStyles = (() => {
     if (isLowCredits) {
@@ -48,7 +62,7 @@ const CreditBalance = ({ showDetails = false, size = "md" }) => {
         title="Click to buy more credits"
       >
         <Coins className="w-4 h-4" />
-        <span className="font-semibold">{credits}</span>
+        <span className="font-semibold">{creditsValue}</span>
         <span className="text-xs opacity-75">credits</span>
       </button>
 

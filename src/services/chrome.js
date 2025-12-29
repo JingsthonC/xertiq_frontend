@@ -138,17 +138,21 @@ class ChromeService {
 
   // Network status checking
   async checkNetworkStatus() {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
     try {
       const response = await fetch(
         `${import.meta.env.VITE_API_BASE_URL}/health`,
         {
           method: "GET",
-          timeout: 5000,
+          signal: controller.signal,
         }
       );
       return response.ok;
     } catch {
       return false;
+    } finally {
+      clearTimeout(timeoutId);
     }
   }
 
