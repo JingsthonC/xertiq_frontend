@@ -1,6 +1,11 @@
 import axios from "axios";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+// Default to Render backend URL if VITE_API_BASE_URL is not set
+const API_BASE_URL = 
+  import.meta.env.VITE_API_BASE_URL || 
+  (import.meta.env.PROD 
+    ? "https://xertiq-backend.onrender.com/api" 
+    : "http://localhost:3000/api");
 
 // Credit cost constants
 export const CREDIT_COSTS = {
