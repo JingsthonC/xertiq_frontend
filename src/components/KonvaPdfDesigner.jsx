@@ -1126,21 +1126,33 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
         if (import.meta.env.DEV) {
           console.log("Insufficient credits, showing modal");
         }
-        setShowCreditModal(true);
+        // Close any open dropdowns before showing modal
+        setShowUploadMenu(false);
+        setShowExportMenu(false);
         setPendingExportAction({ operation, count, cost });
+        setTimeout(() => {
+          setShowCreditModal(true);
+        }, 50);
         setCreditCheckLoading(false);
         return;
       }
 
+      // Close any open dropdowns before showing modal
+      setShowUploadMenu(false);
+      setShowExportMenu(false);
+      
       // Show confirmation modal
       if (import.meta.env.DEV) {
         console.log("Sufficient credits, showing confirmation modal", { operation, count, cost, hasExportFunction: !!exportFunction });
       }
       setPendingExportAction({ operation, count, cost, exportFunction });
-      setShowCreditModal(true);
       
-      // Debug: Log modal state in production too (for troubleshooting)
-      console.log("Credit modal opened:", { operation, count, cost, currentCredits });
+      // Use setTimeout to ensure dropdowns close first, then show modal
+      setTimeout(() => {
+        setShowCreditModal(true);
+        // Debug: Log modal state in production too (for troubleshooting)
+        console.log("Credit modal opened:", { operation, count, cost, currentCredits });
+      }, 50);
     } catch (error) {
       console.error("Credit check failed:", error);
       const errorMessage = error?.message || error?.toString() || "Unknown error";
@@ -2166,9 +2178,9 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
             <>
               {/* Backdrop to close menu */}
               <div
-                className="fixed inset-0 z-40"
+                className="fixed inset-0"
                 onClick={() => setShowUploadMenu(false)}
-                style={{ pointerEvents: 'auto' }}
+                style={{ pointerEvents: 'auto', zIndex: 40 }}
               />
 
               {/* Dropdown Menu */}
@@ -2283,9 +2295,9 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
             <>
               {/* Backdrop to close menu */}
               <div
-                className="fixed inset-0 z-40"
+                className="fixed inset-0"
                 onClick={() => setShowExportMenu(false)}
-                style={{ pointerEvents: 'auto' }}
+                style={{ pointerEvents: 'auto', zIndex: 40 }}
               />
 
               {/* Dropdown Menu */}
