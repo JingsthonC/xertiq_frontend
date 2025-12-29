@@ -1081,25 +1081,67 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
 
   // Credit system check function
   const checkCreditsAndExecute = async (operation, count, exportFunction) => {
+    // Production-safe logging (only in development)
+    if (import.meta.env.DEV) {
+      console.log("checkCreditsAndExecute called:", { operation, count, credits, exportFunction: !!exportFunction });
+    }
+    
     setCreditCheckLoading(true);
 
     try {
+      // Always fetch latest credits to ensure accuracy
+      if (import.meta.env.DEV) {
+        console.log("Fetching latest credits from server...");
+      }
+      
+      let currentCredits = typeof credits === 'number' ? credits : null;
+      
+      try {
+        const fetchedCredits = await fetchCredits();
+        currentCredits = fetchedCredits !== null && fetchedCredits !== undefined 
+          ? fetchedCredits 
+          : (typeof credits === 'number' ? credits : 0);
+      } catch (fetchError) {
+        console.error("Failed to fetch credits:", fetchError);
+        // Try to use cached credits if available
+        currentCredits = typeof credits === 'number' ? credits : 0;
+      }
+      
+      if (currentCredits === null || currentCredits === undefined || isNaN(currentCredits)) {
+        console.error("Unable to determine credit balance");
+        showToast.error("Unable to fetch credit balance. Please refresh the page or contact support.");
+        setCreditCheckLoading(false);
+        return;
+      }
+
       // Calculate cost
       const cost = CREDIT_COSTS[operation] * count;
+      
+      if (import.meta.env.DEV) {
+        console.log("Credit check:", { currentCredits, cost, operation, count });
+      }
 
       // Check if sufficient credits
-      if (credits < cost) {
+      if (currentCredits < cost) {
+        if (import.meta.env.DEV) {
+          console.log("Insufficient credits, showing modal");
+        }
         setShowCreditModal(true);
         setPendingExportAction({ operation, count, cost });
+        setCreditCheckLoading(false);
         return;
       }
 
       // Show confirmation modal
+      if (import.meta.env.DEV) {
+        console.log("Sufficient credits, showing confirmation modal");
+      }
       setPendingExportAction({ operation, count, cost, exportFunction });
       setShowCreditModal(true);
     } catch (error) {
       console.error("Credit check failed:", error);
-      showToast.error("Failed to check credits. Please try again.");
+      const errorMessage = error?.message || error?.toString() || "Unknown error";
+      showToast.error(`Failed to check credits: ${errorMessage}`);
     } finally {
       setCreditCheckLoading(false);
     }
@@ -2078,13 +2120,20 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
         </button>
 
         {/* Upload to Blockchain Dropdown */}
-        <div className="relative mr-2">
+        <div className="relative mr-2" style={{ zIndex: 100 }}>
           <button
-            onClick={() => setShowUploadMenu(!showUploadMenu)}
-            disabled={isUploading}
-            className="p-2 bg-green-600 hover:bg-green-700 rounded flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-            title="Upload to Blockchain"
-            style={{ pointerEvents: 'auto' }}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (!isUploading) {
+                setShowUploadMenu(!showUploadMenu);
+              }
+            }}
+            disabled={isUploading || creditCheckLoading}
+            className="p-2 bg-green-600 hover:bg-green-700 rounded flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-all"
+            title={isUploading ? "Uploading..." : creditCheckLoading ? "Checking credits..." : "Upload to Blockchain"}
+            style={{ pointerEvents: 'auto', position: 'relative', zIndex: 101 }}
+            type="button"
           >
             {isUploading ? (
               <>
@@ -2117,15 +2166,28 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                       </p>
                     </div>
                     <button
-                      onClick={async () => {
-                        setShowUploadMenu(false);
-                        await checkCreditsAndExecute(
-                          "uploadToBlockChain",
-                          csvData.length,
-                          handleUploadBatchToBlockchain
-                        );
+                      onClick={async (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        e.nativeEvent?.stopImmediatePropagation?.();
+                        try {
+                          setShowUploadMenu(false);
+                          // Small delay to ensure menu closes before credit check
+                          await new Promise(resolve => setTimeout(resolve, 50));
+                          await checkCreditsAndExecute(
+                            "uploadToBlockChain",
+                            csvData.length,
+                            handleUploadBatchToBlockchain
+                          );
+                        } catch (error) {
+                          console.error("Error in upload batch click:", error);
+                          const errorMessage = error?.message || error?.toString() || "Unknown error";
+                          showToast.error(`Failed to initiate upload: ${errorMessage}`);
+                        }
                       }}
-                      className="w-full px-4 py-3 text-left hover:bg-gray-700 transition-colors flex items-start gap-3 border-b border-gray-700"
+                      className="w-full px-4 py-3 text-left hover:bg-gray-700 transition-colors flex items-start gap-3 border-b border-gray-700 cursor-pointer"
+                      type="button"
+                      style={{ pointerEvents: 'auto' }}
                     >
                       <CloudUpload
                         size={18}
@@ -2146,17 +2208,30 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                   </>
                 ) : (
                   <button
-                    onClick={async () => {
-                      setShowUploadMenu(false);
-                      await checkCreditsAndExecute(
-                        "uploadToBlockChain",
-                        1,
-                        () => {
-                          handleUploadToBlockchain();
-                        }
-                      );
+                    onClick={async (e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      e.nativeEvent?.stopImmediatePropagation?.();
+                      try {
+                        setShowUploadMenu(false);
+                        // Small delay to ensure menu closes before credit check
+                        await new Promise(resolve => setTimeout(resolve, 50));
+                        await checkCreditsAndExecute(
+                          "uploadToBlockChain",
+                          1,
+                          () => {
+                            handleUploadToBlockchain();
+                          }
+                        );
+                      } catch (error) {
+                        console.error("Error in upload click:", error);
+                        const errorMessage = error?.message || error?.toString() || "Unknown error";
+                        showToast.error(`Failed to initiate upload: ${errorMessage}`);
+                      }
                     }}
-                    className="w-full px-4 py-3 text-left hover:bg-gray-700 transition-colors flex items-start gap-3"
+                    className="w-full px-4 py-3 text-left hover:bg-gray-700 transition-colors flex items-start gap-3 cursor-pointer"
+                    type="button"
+                    style={{ pointerEvents: 'auto' }}
                   >
                     <CloudUpload
                       size={18}
@@ -2640,8 +2715,16 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                           textarea.focus();
                           textarea.select();
 
+                          let outsideClickTimeoutId = null;
+                          let isTextareaRemoved = false;
+
                           function removeTextarea() {
                             if (!textarea.parentNode) return;
+                            isTextareaRemoved = true;
+                            if (outsideClickTimeoutId) {
+                              clearTimeout(outsideClickTimeoutId);
+                              outsideClickTimeoutId = null;
+                            }
 
                             const finalText = textarea.value;
                             textarea.parentNode.removeChild(textarea);
@@ -2691,11 +2774,9 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                           }
 
                           // Delay adding click listener to prevent immediate trigger
-                          setTimeout(() => {
-                            window.addEventListener(
-                              "click",
-                              handleOutsideClick
-                            );
+                          outsideClickTimeoutId = setTimeout(() => {
+                            if (isTextareaRemoved) return;
+                            window.addEventListener("click", handleOutsideClick);
                           }, 100);
                         }}
                       />

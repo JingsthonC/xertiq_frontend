@@ -138,17 +138,26 @@ class ChromeService {
 
   // Network status checking
   async checkNetworkStatus() {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
     try {
+      const apiBaseUrl = 
+        import.meta.env.VITE_API_BASE_URL || 
+        (import.meta.env.PROD 
+          ? "https://xertiq-backend.onrender.com/api" 
+          : "http://localhost:3000/api");
       const response = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/health`,
+        `${apiBaseUrl}/health`,
         {
           method: "GET",
-          timeout: 5000,
+          signal: controller.signal,
         }
       );
       return response.ok;
     } catch {
       return false;
+    } finally {
+      clearTimeout(timeoutId);
     }
   }
 

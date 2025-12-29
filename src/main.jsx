@@ -1,3 +1,6 @@
+// IMPORTANT: This must be imported FIRST to suppress Konva warnings
+import "./utils/suppressKonvaWarning.js";
+
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";

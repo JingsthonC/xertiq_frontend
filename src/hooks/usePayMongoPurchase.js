@@ -2,7 +2,10 @@ import { useCallback, useState } from "react";
 import useWalletStore from "../store/wallet";
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") || "";
+  (import.meta.env.VITE_API_BASE_URL || 
+   (import.meta.env.PROD 
+     ? "https://xertiq-backend.onrender.com/api" 
+     : "http://localhost:3000/api"))?.replace(/\/$/, "") || "";
 
 const getEndpoint = (path) =>
   API_BASE_URL ? `${API_BASE_URL}${path}` : `/api${path}`;
