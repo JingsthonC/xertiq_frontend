@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import showToast from "../utils/toast";
 import {
   Download,
   Eye,
@@ -91,27 +92,27 @@ const CertificateGenerator = () => {
 
   const handleSaveTemplate = () => {
     if (!template.name) {
-      alert("Please enter a template name in settings");
+      showToast.warning("Please enter a template name in settings");
       return;
     }
 
     const success = templateStorage.saveTemplate(template);
     if (success) {
-      alert("Template saved locally!");
+      showToast.success("Template saved locally!");
       loadSavedTemplates();
     } else {
-      alert("Failed to save template");
+      showToast.error("Failed to save template");
     }
   };
 
   const handleSaveTemplateToPlatform = async () => {
     if (!template.name) {
-      alert("Please enter a template name in settings");
+      showToast.warning("Please enter a template name in settings");
       return;
     }
 
     if (!user) {
-      alert("Please login to save templates to the platform");
+      showToast.warning("Please login to save templates to the platform");
       return;
     }
 
@@ -130,11 +131,11 @@ const CertificateGenerator = () => {
       };
 
       await apiService.saveTemplateToBackend(templateData);
-      alert("Template saved to platform successfully!");
+      showToast.success("Template saved to platform successfully!");
       loadMyTemplates();
     } catch (error) {
       console.error("Error saving template to platform:", error);
-      alert(
+      showToast.error(
         "Failed to save template to platform: " +
           (error.response?.data?.message || error.message)
       );
@@ -149,16 +150,16 @@ const CertificateGenerator = () => {
       setTemplate(templateData.templateData);
       setShowPublicLibrary(false);
       setShowMyTemplates(false);
-      alert("Template loaded successfully!");
+      showToast.success("Template loaded successfully!");
     } catch (error) {
       console.error("Error loading template:", error);
-      alert("Failed to load template");
+      showToast.error("Failed to load template");
     }
   };
 
   const handleUpdateTemplateWithFile = async (templateId, file) => {
     if (!file) {
-      alert("Please select a file to upload");
+      showToast.warning("Please select a file to upload");
       return;
     }
 
@@ -167,13 +168,13 @@ const CertificateGenerator = () => {
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 
       'application/msword'];
     if (!allowedTypes.includes(file.type)) {
-      alert("Invalid file type. Please upload PDF, PNG, JPG, or Word (.docx) files only.");
+      showToast.error("Invalid file type. Please upload PDF, PNG, JPG, or Word (.docx) files only.");
       return;
     }
 
     // Validate file size (max 10MB)
     if (file.size > 10 * 1024 * 1024) {
-      alert("File size too large. Maximum size is 10MB.");
+      showToast.error("File size too large. Maximum size is 10MB.");
       return;
     }
 
@@ -184,11 +185,11 @@ const CertificateGenerator = () => {
       
       // Update template with file
       await apiService.updateTemplate(templateId, currentTemplate, file);
-      alert("Template updated successfully with file!");
+      showToast.success("Template updated successfully with file!");
       loadMyTemplates();
     } catch (error) {
       console.error("Error updating template:", error);
-      alert("Failed to update template: " + (error.response?.data?.message || error.message));
+      showToast.error("Failed to update template: " + (error.response?.data?.message || error.message));
     } finally {
       setIsSaving(false);
     }
@@ -201,22 +202,22 @@ const CertificateGenerator = () => {
 
     try {
       await apiService.deleteTemplateFromBackend(templateId);
-      alert("Template deleted successfully!");
+      showToast.success("Template deleted successfully!");
       loadMyTemplates();
     } catch (error) {
       console.error("Error deleting template:", error);
-      alert("Failed to delete template");
+      showToast.error("Failed to delete template");
     }
   };
 
   const handleToggleVisibility = async (templateId, currentVisibility) => {
     try {
       await apiService.toggleTemplateVisibility(templateId, !currentVisibility);
-      alert(`Template is now ${!currentVisibility ? "public" : "private"}`);
+      showToast.success(`Template is now ${!currentVisibility ? "public" : "private"}`);
       loadMyTemplates();
     } catch (error) {
       console.error("Error toggling visibility:", error);
-      alert("Failed to update visibility");
+      showToast.error("Failed to update visibility");
     }
   };
 
@@ -262,16 +263,16 @@ const CertificateGenerator = () => {
       try {
         const importedTemplate = await templateStorage.importTemplate(file);
         setTemplate(importedTemplate);
-        alert("Template imported successfully!");
+        showToast.success("Template imported successfully!");
       } catch (error) {
-        alert("Failed to import template: " + error.message);
+        showToast.error("Failed to import template: " + error.message);
       }
     }
   };
 
   const handleGeneratePreview = () => {
     if (csvData.length === 0) {
-      alert("Please upload CSV data first");
+      showToast.warning("Please upload CSV data first");
       return;
     }
 
@@ -282,7 +283,7 @@ const CertificateGenerator = () => {
 
   const handleGeneratePDFs = async (separateFiles = false) => {
     if (csvData.length === 0) {
-      alert("Please upload CSV data first");
+      showToast.warning("Please upload CSV data first");
       return;
     }
 
@@ -309,10 +310,10 @@ const CertificateGenerator = () => {
         pdfGenerator.downloadPDF(pdf, `certificates_batch_${Date.now()}.pdf`);
       }
 
-      alert(`Successfully generated ${csvData.length} certificate(s)!`);
+      showToast.success(`Successfully generated ${csvData.length} certificate(s)!`);
     } catch (error) {
       console.error("Error generating PDFs:", error);
-      alert("Failed to generate PDFs. Please check your template and data.");
+      showToast.error("Failed to generate PDFs. Please check your template and data.");
     } finally {
       setIsGenerating(false);
     }

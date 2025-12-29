@@ -379,6 +379,83 @@ class ApiService {
     return response.data;
   }
 
+  // Super Admin endpoints
+  async getSuperAdminStats() {
+    const response = await this.api.get("/super-admin/stats");
+    return response.data;
+  }
+
+  async getSuperAdminIssuers(params = {}) {
+    const { page = 1, limit = 20, search } = params;
+    const response = await this.api.get("/super-admin/issuers", {
+      params: { page, limit, search },
+    });
+    return response.data;
+  }
+
+  async getSuperAdminHolders(params = {}) {
+    const { page = 1, limit = 20, search } = params;
+    const response = await this.api.get("/super-admin/holders", {
+      params: { page, limit, search },
+    });
+    return response.data;
+  }
+
+  async getSuperAdminDocuments(params = {}) {
+    const { page = 1, limit = 50, search, issuerId } = params;
+    const response = await this.api.get("/super-admin/documents", {
+      params: { page, limit, search, issuerId },
+    });
+    return response.data;
+  }
+
+  async getSuperAdminRevenue(params = {}) {
+    const { startDate, endDate } = params;
+    const response = await this.api.get("/super-admin/revenue", {
+      params: { startDate, endDate },
+    });
+    return response.data;
+  }
+
+  async getSuperAdminUsers(params = {}) {
+    const { page = 1, limit = 50, role, search } = params;
+    const response = await this.api.get("/super-admin/users", {
+      params: { page, limit, role, search },
+    });
+    return response.data;
+  }
+
+  async getSuperAdminAnalytics() {
+    const response = await this.api.get("/super-admin/analytics");
+    return response.data;
+  }
+
+  async getSuperAdminUserActivity(userId, params = {}) {
+    const { page = 1, limit = 50, action, resource } = params;
+    const response = await this.api.get(`/super-admin/users/${userId}/activity`, {
+      params: { page, limit, action, resource },
+    });
+    return response.data;
+  }
+
+  async updateSuperAdminUserCredits(userId, credits, reason) {
+    const response = await this.api.patch(`/super-admin/users/${userId}/credits`, {
+      credits,
+      reason,
+    });
+    return response.data;
+  }
+
+  async getSuperAdminPackages() {
+    const response = await this.api.get("/super-admin/packages");
+    return response.data;
+  }
+
+  async updateSuperAdminPackages(packages) {
+    const response = await this.api.put("/super-admin/packages", { packages });
+    return response.data;
+  }
+
   // Helper method to manually set token (useful for testing)
   setAuthToken(token) {
     if (token) {

@@ -165,7 +165,9 @@ import {
   createBrowserRouter,
   RouterProvider,
   Navigate,
+  useLocation,
 } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
 import useWalletStore from "./store/wallet";
 import chromeService from "./services/chrome";
 import apiService from "./services/api";
@@ -183,6 +185,7 @@ import PaymentSuccess from "./pages/PaymentSuccess";
 import SmartTemplateEditor from "./pages/SmartTemplateEditor";
 import HolderDashboard from "./pages/HolderDashboard";
 import IssuerDashboard from "./pages/IssuerDashboard";
+import SuperAdminDashboard from "./pages/SuperAdminDashboard";
 import LoadingSpinner from "./components/LoadingSpinner";
 
 // Detect if running as Chrome extension
@@ -204,15 +207,62 @@ const getContainerClass = () => {
 };
 
 // Protected route wrapper
-const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated } = useWalletStore();
-  return isAuthenticated ? children : <Navigate to="/login" replace />;
+const ProtectedRoute = ({ children, allowedRoles = null }) => {
+  const location = useLocation();
+  const { isAuthenticated, userRole, user } = useWalletStore();
+  const normalizedRole = userRole?.toUpperCase() || user?.role?.toUpperCase() || "USER";
+  const isSuperAdmin = normalizedRole === "SUPER_ADMIN";
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  // SUPER_ADMIN can ONLY access /super-admin routes
+  // If they try to access any other route, redirect them
+  if (isSuperAdmin) {
+    // Allow access to super-admin routes (including sub-routes)
+    if (location.pathname.startsWith("/super-admin")) {
+      return children;
+    }
+    // Redirect all other routes to super-admin
+    return <Navigate to="/super-admin/platform-overview" replace />;
+  }
+  
+  // If route has specific role requirements and user doesn't match, redirect
+  if (allowedRoles && !allowedRoles.includes(normalizedRole)) {
+    // Redirect to appropriate dashboard based on role
+    if (normalizedRole === "ISSUER") {
+      return <Navigate to="/issuer-dashboard" replace />;
+    }
+    return <Navigate to="/dashboard" replace />;
+  }
+  
+  return children;
 };
 
 // Public route wrapper for authenticated users
 const PublicRoute = ({ children }) => {
-  const { isAuthenticated } = useWalletStore();
-  return isAuthenticated ? <Navigate to="/dashboard" replace /> : children;
+  const { isAuthenticated, userRole, user } = useWalletStore();
+  const normalizedRole = userRole?.toUpperCase() || user?.role?.toUpperCase() || "USER";
+  const isSuperAdmin = normalizedRole === "SUPER_ADMIN";
+  
+  if (isAuthenticated) {
+    // Redirect SUPER_ADMIN to super admin dashboard, others to regular dashboard
+    return <Navigate to={isSuperAdmin ? "/super-admin" : "/dashboard"} replace />;
+  }
+  return children;
+};
+
+// Root redirect component
+const RootRedirect = () => {
+  const { isAuthenticated, userRole, user } = useWalletStore();
+  const normalizedRole = userRole?.toUpperCase() || user?.role?.toUpperCase() || "USER";
+  const isSuperAdmin = normalizedRole === "SUPER_ADMIN";
+  
+  if (isAuthenticated) {
+    return <Navigate to={isSuperAdmin ? "/super-admin" : "/dashboard"} replace />;
+  }
+  return <Navigate to="/login" replace />;
 };
 
 function App() {
@@ -280,7 +330,7 @@ function App() {
     {
       path: "/dashboard",
       element: (
-        <ProtectedRoute>
+        <ProtectedRoute allowedRoles={["USER", "HOLDER", "ISSUER", "ADMIN", "VALIDATOR"]}>
           <Dashboard />
         </ProtectedRoute>
       ),
@@ -288,7 +338,7 @@ function App() {
     {
       path: "/batch-upload",
       element: (
-        <ProtectedRoute>
+        <ProtectedRoute allowedRoles={["ISSUER"]}>
           <BatchUpload />
         </ProtectedRoute>
       ),
@@ -296,7 +346,7 @@ function App() {
     {
       path: "/certificate-generator",
       element: (
-        <ProtectedRoute>
+        <ProtectedRoute allowedRoles={["ISSUER"]}>
           <CertificateGenerator />
         </ProtectedRoute>
       ),
@@ -304,7 +354,7 @@ function App() {
     {
       path: "/designer-comparison",
       element: (
-        <ProtectedRoute>
+        <ProtectedRoute allowedRoles={["ISSUER"]}>
           <DesignerComparison />
         </ProtectedRoute>
       ),
@@ -312,7 +362,7 @@ function App() {
     {
       path: "/purchase-credits",
       element: (
-        <ProtectedRoute>
+        <ProtectedRoute allowedRoles={["USER", "HOLDER", "ISSUER", "ADMIN", "VALIDATOR"]}>
           <PurchaseCredits />
         </ProtectedRoute>
       ),
@@ -336,7 +386,7 @@ function App() {
     {
       path: "/holder-dashboard",
       element: (
-        <ProtectedRoute>
+        <ProtectedRoute allowedRoles={["USER", "HOLDER"]}>
           <HolderDashboard />
         </ProtectedRoute>
       ),
@@ -344,22 +394,34 @@ function App() {
     {
       path: "/issuer-dashboard",
       element: (
-        <ProtectedRoute>
+        <ProtectedRoute allowedRoles={["ISSUER"]}>
           <IssuerDashboard />
         </ProtectedRoute>
       ),
     },
     {
-      path: "/",
+      path: "/super-admin",
       element: (
-        <Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />
+        <ProtectedRoute>
+          <SuperAdminDashboard />
+        </ProtectedRoute>
       ),
     },
     {
-      path: "*",
+      path: "/super-admin/:tab",
       element: (
-        <Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />
+        <ProtectedRoute>
+          <SuperAdminDashboard />
+        </ProtectedRoute>
       ),
+    },
+    {
+      path: "/",
+      element: <RootRedirect />,
+    },
+    {
+      path: "*",
+      element: <RootRedirect />,
     },
   ]);
 
@@ -379,6 +441,18 @@ function App() {
   return (
     <div className={getContainerClass()}>
       <RouterProvider router={router} />
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+      />
     </div>
   );
 }

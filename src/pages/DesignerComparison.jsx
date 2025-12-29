@@ -4,6 +4,7 @@ import pdfGenerator from "../services/pdfGenerator";
 import canvasPdfGenerator from "../services/canvasPdfGenerator";
 import templateStorage from "../services/templateStorage";
 import thumbnailGenerator from "../services/thumbnailGenerator";
+import showToast from "../utils/toast";
 import {
   Download,
   X,
@@ -14,6 +15,8 @@ import {
   FileText,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 
 const DesignerComparison = () => {
@@ -27,7 +30,7 @@ const DesignerComparison = () => {
   const [templateThumbnails, setTemplateThumbnails] = useState({}); // Store thumbnails by template name
   const [templateName, setTemplateName] = useState("POC Test Certificate");
   const [loadedTemplate, setLoadedTemplate] = useState(null); // Template to pass to Konva
-  const [showSidebar, setShowSidebar] = useState(true); // Sidebar visibility
+  const [showSidebar, setShowSidebar] = useState(false); // Sidebar visibility - hidden by default
   const [template, setTemplate] = useState({
     name: "POC Test Certificate",
     orientation: "landscape",
@@ -61,7 +64,7 @@ const DesignerComparison = () => {
       `);
     } catch (error) {
       console.error("Error generating preview:", error);
-      alert("Error generating preview. Check console for details.");
+      showToast.error("Error generating preview. Check console for details.");
     }
   };
 
@@ -71,7 +74,7 @@ const DesignerComparison = () => {
       pdfGenerator.downloadPDF(pdf, "test-certificate.pdf");
     } catch (error) {
       console.error("Error downloading PDF:", error);
-      alert("Error downloading PDF. Check console for details.");
+      showToast.error("Error downloading PDF. Check console for details.");
     }
   };
 
@@ -142,7 +145,7 @@ const DesignerComparison = () => {
           setShowPreviewModal(true);
         } catch (error) {
           console.error("Error generating batch PDFs:", error);
-          alert("Error generating PDFs. Check console for details.");
+          showToast.error("Error generating PDFs. Check console for details.");
         }
 
         // Clear the flags
@@ -190,7 +193,7 @@ const DesignerComparison = () => {
           setShowPreviewModal(true);
         } catch (error) {
           console.error("Error generating PDF:", error);
-          alert("Error generating PDF. Check console for details.");
+          showToast.error("Error generating PDF. Check console for details.");
         }
 
         // Clear the flags
@@ -212,7 +215,7 @@ const DesignerComparison = () => {
       batchPreviews.forEach(({ pdf, filename }) => {
         pdfGenerator.downloadPDF(pdf, filename);
       });
-      alert(`Successfully downloaded ${batchPreviews.length} certificate(s)!`);
+      showToast.success(`Successfully downloaded ${batchPreviews.length} certificate(s)!`);
     }
   };
 
@@ -228,7 +231,7 @@ const DesignerComparison = () => {
 
   const handleSaveTemplate = () => {
     if (!templateName.trim()) {
-      alert("Please enter a template name");
+      showToast.warning("Please enter a template name");
       setShowSaveDialog(true);
       return;
     }
@@ -240,11 +243,11 @@ const DesignerComparison = () => {
 
     const success = templateStorage.saveTemplate(templateToSave);
     if (success) {
-      alert(`Template "${templateName}" saved successfully!`);
+      showToast.success(`Template "${templateName}" saved successfully!`);
       setShowSaveDialog(false);
       loadSavedTemplates(); // Refresh the list
     } else {
-      alert("Failed to save template");
+      showToast.error("Failed to save template");
     }
   };
 
@@ -290,7 +293,7 @@ const DesignerComparison = () => {
       const success = templateStorage.deleteTemplate(templateName);
       if (success) {
         loadSavedTemplates();
-        alert("Template deleted!");
+        showToast.success("Template deleted!");
       }
     }
   };
@@ -314,6 +317,7 @@ const DesignerComparison = () => {
   useEffect(() => {
     loadSavedTemplates();
   }, []);
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 p-4">
@@ -409,103 +413,95 @@ const DesignerComparison = () => {
           </div>
         )}
 
-        {/* Main Content Area with Sidebar */}
-        <div className="flex gap-4 h-[calc(100vh-120px)] relative">
-          {/* Template Sidebar */}
-          {showSidebar && (
-            <div className="w-80 bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-xl flex flex-col">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                  <FolderOpen size={20} className="text-purple-400" />
-                  Templates ({savedTemplates.length})
-                </h3>
-                <button
-                  onClick={() => setShowSidebar(false)}
-                  className="p-1.5 hover:bg-white/10 rounded-lg transition-all"
-                  title="Hide sidebar"
-                >
-                  <ChevronLeft size={18} className="text-gray-400" />
-                </button>
-              </div>
+        {/* Templates Sidebar - Between Header and Editor */}
+        <div className={`bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-4 mb-4 shadow-xl transition-all duration-300 ease-in-out overflow-hidden ${
+          showSidebar ? 'max-h-[400px] opacity-100' : 'max-h-0 opacity-0 p-0 border-0 mb-0'
+        }`}>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+              <FolderOpen size={20} className="text-purple-400" />
+              Templates ({savedTemplates.length})
+            </h3>
+            <button
+              onClick={() => setShowSidebar(false)}
+              className="p-1.5 hover:bg-white/10 rounded-lg transition-all"
+              title="Hide templates"
+            >
+              <ChevronUp size={18} className="text-gray-400" />
+            </button>
+          </div>
 
-              <div className="flex-1 overflow-y-auto space-y-3 pr-2">
-                {savedTemplates.length > 0 ? (
-                  savedTemplates.map((tmpl) => (
-                    <div
-                      key={tmpl.name}
-                      className="bg-white/5 border border-white/10 rounded-xl overflow-hidden hover:bg-white/10 hover:border-purple-500/30 transition-all cursor-pointer group"
-                      onClick={() => handleLoadTemplate(tmpl)}
-                    >
-                      {/* Template Preview - Emphasize the design */}
-                      <div className="relative aspect-[3/2] bg-white overflow-hidden">
-                        {templateThumbnails[tmpl.name] ? (
-                          <img
-                            src={templateThumbnails[tmpl.name]}
-                            alt={tmpl.name}
-                            className="w-full h-full object-contain"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                            <FolderOpen size={32} className="text-gray-400" />
-                          </div>
-                        )}
-                        {/* Overlay on hover */}
-                        <div className="absolute inset-0 bg-purple-500/0 group-hover:bg-purple-500/10 transition-colors flex items-center justify-center">
-                          <span className="text-white text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                            Click to Load
-                          </span>
+          <div className="overflow-y-auto max-h-[320px]">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+              {savedTemplates.length > 0 ? (
+                savedTemplates.map((tmpl) => (
+                  <div
+                    key={tmpl.name}
+                    className="bg-white/5 border border-white/10 rounded-xl overflow-hidden hover:bg-white/10 hover:border-purple-500/30 transition-all cursor-pointer group"
+                    onClick={() => handleLoadTemplate(tmpl)}
+                  >
+                    {/* Template Preview - Emphasize the design */}
+                    <div className="relative aspect-[3/2] bg-white overflow-hidden">
+                      {templateThumbnails[tmpl.name] ? (
+                        <img
+                          src={templateThumbnails[tmpl.name]}
+                          alt={tmpl.name}
+                          className="w-full h-full object-contain"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                          <FolderOpen size={32} className="text-gray-400" />
                         </div>
-                      </div>
-                      
-                      {/* Template Name - Below preview, readable */}
-                      <div className="p-3">
-                        <p className="text-white font-medium text-sm truncate" title={tmpl.name}>
-                          {tmpl.name}
-                        </p>
-                        <div className="flex items-center justify-between mt-1">
-                          <p className="text-xs text-gray-400">
-                            {tmpl.elements?.length || 0} elements
-                          </p>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteTemplate(tmpl.name);
-                            }}
-                            className="p-1 hover:bg-red-500/20 rounded transition-colors opacity-0 group-hover:opacity-100"
-                            title="Delete template"
-                          >
-                            <X size={14} className="text-red-400" />
-                          </button>
-                        </div>
+                      )}
+                      {/* Overlay on hover */}
+                      <div className="absolute inset-0 bg-purple-500/0 group-hover:bg-purple-500/10 transition-colors flex items-center justify-center">
+                        <span className="text-white text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                          Click to Load
+                        </span>
                       </div>
                     </div>
-                  ))
-                ) : (
-                  <div className="text-center py-8">
-                    <FolderOpen size={48} className="text-gray-600 mx-auto mb-3" />
-                    <p className="text-gray-400 mb-2 text-sm">No saved templates yet</p>
-                    <p className="text-xs text-gray-500">
-                      Design and save your first template
-                    </p>
+                    
+                    {/* Template Name - Below preview, readable */}
+                    <div className="p-3">
+                      <p className="text-white font-medium text-sm truncate" title={tmpl.name}>
+                        {tmpl.name}
+                      </p>
+                      <div className="flex items-center justify-between mt-1">
+                        <p className="text-xs text-gray-400">
+                          {tmpl.elements?.length || 0} elements
+                        </p>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteTemplate(tmpl.name);
+                          }}
+                          className="p-1 hover:bg-red-500/20 rounded transition-colors opacity-0 group-hover:opacity-100"
+                          title="Delete template"
+                        >
+                          <X size={14} className="text-red-400" />
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                )}
-              </div>
+                ))
+              ) : (
+                <div className="col-span-full text-center py-8">
+                  <FolderOpen size={48} className="text-gray-600 mx-auto mb-3" />
+                  <p className="text-gray-400 mb-2 text-sm">No saved templates yet</p>
+                  <p className="text-xs text-gray-500">
+                    Design and save your first template
+                  </p>
+                </div>
+              )}
             </div>
-          )}
+          </div>
+        </div>
 
-          {/* Sidebar Toggle Button (when hidden) */}
-          {!showSidebar && (
-            <button
-              onClick={() => setShowSidebar(true)}
-              className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 rounded-lg transition-all shadow-lg z-10"
-              title="Show templates"
-            >
-              <ChevronRight size={20} />
-            </button>
-          )}
-
-          {/* Designer Container - Full Screen */}
-          <div className={`bg-gradient-to-br from-gray-800/40 to-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-2 shadow-2xl transition-all ${showSidebar ? 'flex-1' : 'w-full'}`}>
+        {/* Main Content Area - Editor */}
+        <div className={`relative overflow-hidden transition-all duration-300 ${
+          showSidebar ? 'h-[calc(100vh-540px)]' : 'h-[calc(100vh-120px)]'
+        }`}>
+          <div className="bg-gradient-to-br from-gray-800/40 to-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-2 shadow-2xl h-full">
             <div className="h-full">
               <KonvaPdfDesigner
                 template={loadedTemplate || template}

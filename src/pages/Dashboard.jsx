@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import {
   FileText,
   Shield,
@@ -9,6 +10,9 @@ import {
   Clock,
   User,
   Coins,
+  FolderOpen,
+  Award,
+  Crown,
 } from "lucide-react";
 import useWalletStore from "../store/wallet";
 import Header from "../components/Header";
@@ -28,23 +32,40 @@ const isExtension = () => {
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { credits, documents, userRole } = useWalletStore();
+  const { credits, documents, userRole, user } = useWalletStore();
   const isExt = isExtension();
+  
+  // Normalize role for comparison (handle both uppercase and lowercase)
+  const normalizedRole = userRole?.toUpperCase() || user?.role?.toUpperCase() || "USER";
+  const isSuperAdmin = normalizedRole === "SUPER_ADMIN";
+
+  // Redirect SUPER_ADMIN users immediately to super admin dashboard
+  useEffect(() => {
+    if (isSuperAdmin) {
+      navigate("/super-admin", { replace: true });
+    }
+  }, [isSuperAdmin, navigate]);
+
+  // Don't render anything for SUPER_ADMIN - they should be redirected
+  if (isSuperAdmin) {
+    return null;
+  }
 
   const quickActions = [
     {
-      title: userRole === "issuer" ? "Issue Certificate" : "Verify Document",
+      title: normalizedRole === "ISSUER" ? "Issue Certificate" : "Verify Document",
       description:
-        userRole === "issuer"
+        normalizedRole === "ISSUER"
           ? "Create new certificates"
           : "Verify authenticity",
-      icon: userRole === "issuer" ? Plus : Shield,
+      icon: normalizedRole === "ISSUER" ? Plus : Shield,
       action: () =>
-        navigate(userRole === "issuer" ? "/batch-upload" : "/verify"),
+        navigate(normalizedRole === "ISSUER" ? "/batch-upload" : "/verify"),
       gradient:
-        userRole === "issuer"
+        normalizedRole === "ISSUER"
           ? "from-purple-500 to-pink-500"
           : "from-green-500 to-emerald-400",
+      visible: !isSuperAdmin,
     },
     {
       title: "Buy Credits",
@@ -53,7 +74,7 @@ const Dashboard = () => {
       action: () => navigate("/purchase-credits"),
       gradient: "from-green-500 to-teal-400",
       badge: "💰",
-      visible: true,
+      visible: !isSuperAdmin,
     },
     {
       title: "PDF Generator",
@@ -61,7 +82,7 @@ const Dashboard = () => {
       icon: FileText,
       action: () => navigate("/certificate-generator"),
       gradient: "from-orange-500 to-red-400",
-      visible: userRole === "issuer",
+      visible: normalizedRole === "ISSUER" && !isSuperAdmin,
     },
     {
       title: "Designer POC",
@@ -69,7 +90,7 @@ const Dashboard = () => {
       icon: Zap,
       action: () => navigate("/designer-comparison"),
       gradient: "from-yellow-500 to-orange-400",
-      visible: userRole === "issuer",
+      visible: normalizedRole === "ISSUER" && !isSuperAdmin,
       badge: "NEW",
     },
     {
@@ -78,7 +99,32 @@ const Dashboard = () => {
       icon: Upload,
       action: () => navigate("/batch-upload"),
       gradient: "from-blue-500 to-cyan-400",
-      visible: userRole === "issuer",
+      visible: normalizedRole === "ISSUER" && !isSuperAdmin,
+    },
+    {
+      title: "My Issued Documents",
+      description: "View all documents you've issued",
+      icon: FolderOpen,
+      action: () => navigate("/issuer-dashboard"),
+      gradient: "from-purple-500 to-indigo-500",
+      visible: normalizedRole === "ISSUER" && !isSuperAdmin,
+    },
+    {
+      title: "My Documents",
+      description: "View all your certificates and documents",
+      icon: Award,
+      action: () => navigate("/holder-dashboard"),
+      gradient: "from-green-500 to-emerald-500",
+      visible: (normalizedRole === "USER" || normalizedRole === "HOLDER") && !isSuperAdmin,
+    },
+    {
+      title: "Super Admin",
+      description: "Full platform visibility and control",
+      icon: Crown,
+      action: () => navigate("/super-admin"),
+      gradient: "from-yellow-500 to-orange-500",
+      visible: userRole === "SUPER_ADMIN",
+      badge: "OWNER",
     },
   ];
 
@@ -356,32 +402,35 @@ const Dashboard = () => {
           </div>
 
           {/* Role Information */}
-          <div className="mt-8 bg-gradient-to-r from-white/5 to-white/10 border border-white/10 rounded-2xl p-8">
-            <div className="flex items-center space-x-4 mb-4">
-              <div
-                className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                  userRole === "issuer" ? "bg-purple-500/20" : "bg-blue-500/20"
-                }`}
-              >
-                <User
-                  size={24}
-                  className={
-                    userRole === "issuer" ? "text-purple-400" : "text-blue-400"
-                  }
-                />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-white capitalize">
-                  {userRole} Mode
-                </h3>
-                <p className="text-gray-400">
-                  {userRole === "issuer"
-                    ? "Create and manage certificates with advanced metadata and blockchain verification."
-                    : "Verify document authenticity using blockchain technology and explore certificate details."}
-                </p>
+          {!isSuperAdmin && (
+            <div className="mt-8 bg-gradient-to-r from-white/5 to-white/10 border border-white/10 rounded-2xl p-8">
+              <div className="flex items-center space-x-4 mb-4">
+                <div
+                  className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                    normalizedRole === "ISSUER" ? "bg-purple-500/20" : "bg-blue-500/20"
+                  }`}
+                >
+                  <User
+                    size={24}
+                    className={
+                      normalizedRole === "ISSUER" ? "text-purple-400" : "text-blue-400"
+                    }
+                  />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-white capitalize">
+                    {userRole || "User"} Mode
+                  </h3>
+                  <p className="text-gray-400">
+                    {normalizedRole === "ISSUER"
+                      ? "Create and manage certificates with advanced metadata and blockchain verification."
+                      : "Verify document authenticity using blockchain technology and explore certificate details."}
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
+          )}
+
         </div>
       </div>
     </div>

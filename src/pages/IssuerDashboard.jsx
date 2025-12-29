@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import showToast from "../utils/toast";
 import {
   FileText,
   Users,
@@ -11,6 +12,7 @@ import {
   Wand2,
   FolderOpen,
   Plus,
+  Eye,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import useWalletStore from "../store/wallet";
@@ -18,6 +20,7 @@ import apiService from "../services/api";
 import Header from "../components/Header";
 import ExtensionHeader from "../components/ExtensionHeader";
 import NavigationHeader from "../components/NavigationHeader";
+import PDFPreviewModal from "../components/PDFPreviewModal";
 
 const isExtension = () => {
   return (
@@ -32,14 +35,15 @@ const IssuerDashboard = () => {
   const { user } = useWalletStore();
   const navigate = useNavigate();
   const isExt = isExtension();
-  const [documents, setDocuments] = useState([]);
-  const [holders, setHolders] = useState([]);
+  const [issuedDocuments, setIssuedDocuments] = useState([]); // Documents issued by issuer
+  const [heldDocuments, setHeldDocuments] = useState([]); // Personal documents held by issuer
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("documents"); // "documents" or "holders"
+  const [activeTab, setActiveTab] = useState("issued"); // "issued" or "held"
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState(null);
+  const [previewDoc, setPreviewDoc] = useState(null); // { title, pdfUrl, docId }
 
   // Quick actions for issuers
   const quickActions = [
@@ -75,35 +79,36 @@ const IssuerDashboard = () => {
   ];
 
   useEffect(() => {
-    if (activeTab === "documents") {
-      fetchDocuments();
-    } else {
-      fetchHolders();
+    if (activeTab === "issued") {
+      fetchIssuedDocuments();
+    } else if (activeTab === "held") {
+      fetchHeldDocuments();
     }
     fetchStats();
   }, [activeTab, page]);
 
-  const fetchDocuments = async () => {
+  const fetchIssuedDocuments = async () => {
     try {
       setLoading(true);
       const response = await apiService.getIssuerDocuments({ page, limit: 10 });
-      setDocuments(response.documents || []);
+      setIssuedDocuments(response.documents || []);
       setPagination(response.pagination);
     } catch (error) {
-      console.error("Failed to fetch documents:", error);
+      console.error("Failed to fetch issued documents:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchHolders = async () => {
+  const fetchHeldDocuments = async () => {
     try {
       setLoading(true);
-      const response = await apiService.getIssuerHolders({ page, limit: 50 });
-      setHolders(response.holders || []);
+      // Use holder endpoint to get personal authenticated documents
+      const response = await apiService.getHolderDocuments({ page, limit: 10 });
+      setHeldDocuments(response.documents || []);
       setPagination(response.pagination);
     } catch (error) {
-      console.error("Failed to fetch holders:", error);
+      console.error("Failed to fetch held documents:", error);
     } finally {
       setLoading(false);
     }
@@ -118,18 +123,49 @@ const IssuerDashboard = () => {
     }
   };
 
-  const filteredDocuments = documents.filter(
+  const filteredIssuedDocuments = issuedDocuments.filter(
     (doc) =>
       doc.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       doc.studentName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       doc.identityEmail?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const filteredHolders = holders.filter(
-    (holder) =>
-      holder.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      holder.name?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredHeldDocuments = heldDocuments.filter(
+    (doc) =>
+      doc.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      doc.studentName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      doc.issuer?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleViewPDF = (doc) => {
+    // Prefer displayCid (with QR code) over canonicalCid
+    // Handle both formats: nested ipfs object or direct fields
+    const pdfCid = 
+      doc.ipfs?.displayCid || 
+      doc.ipfs?.canonicalCid || 
+      doc.displayCid || 
+      doc.canonicalCid;
+    
+    console.log("View PDF - Document data:", {
+      doc,
+      pdfCid,
+      ipfs: doc.ipfs,
+      displayCid: doc.displayCid,
+      canonicalCid: doc.canonicalCid,
+      allKeys: Object.keys(doc),
+    });
+    
+    if (pdfCid) {
+      setPreviewDoc({
+        title: doc.title || doc.studentName || "Document",
+        pdfUrl: pdfCid,
+        docId: doc.docId || doc.id,
+      });
+    } else {
+      showToast.warning("PDF not available for this document. The document may not have been uploaded to IPFS yet.");
+    }
+  };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
@@ -230,29 +266,29 @@ const IssuerDashboard = () => {
           <div className="flex items-center gap-4 mb-6">
             <button
               onClick={() => {
-                setActiveTab("documents");
+                setActiveTab("issued");
                 setPage(1);
               }}
               className={`px-6 py-3 rounded-xl font-semibold transition-all ${
-                activeTab === "documents"
+                activeTab === "issued"
                   ? "bg-purple-500 text-white"
                   : "bg-white/5 text-gray-400 hover:bg-white/10"
               }`}
             >
-              Documents
+              Issued Documents
             </button>
             <button
               onClick={() => {
-                setActiveTab("holders");
+                setActiveTab("held");
                 setPage(1);
               }}
               className={`px-6 py-3 rounded-xl font-semibold transition-all ${
-                activeTab === "holders"
+                activeTab === "held"
                   ? "bg-purple-500 text-white"
                   : "bg-white/5 text-gray-400 hover:bg-white/10"
               }`}
             >
-              Holders
+              Held Documents
             </button>
           </div>
 
@@ -262,9 +298,9 @@ const IssuerDashboard = () => {
             <input
               type="text"
               placeholder={
-                activeTab === "documents"
-                  ? "Search documents..."
-                  : "Search holders..."
+                activeTab === "issued"
+                  ? "Search issued documents..."
+                  : "Search held documents..."
               }
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -274,21 +310,24 @@ const IssuerDashboard = () => {
         </div>
 
         {/* Content */}
-        {activeTab === "documents" ? (
+        {activeTab === "issued" ? (
           <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
             <h2 className="text-2xl font-bold text-white mb-6">
               Issued Documents
             </h2>
+            <p className="text-gray-400 text-sm mb-6">
+              Documents you have issued to others (single or multiple)
+            </p>
 
             {loading ? (
               <div className="text-center py-12">
                 <Clock className="animate-spin text-purple-400 mx-auto mb-4" size={32} />
                 <p className="text-gray-400">Loading documents...</p>
               </div>
-            ) : filteredDocuments.length === 0 ? (
+            ) : filteredIssuedDocuments.length === 0 ? (
               <div className="text-center py-12">
                 <FileText className="text-gray-500 mx-auto mb-4" size={48} />
-                <p className="text-gray-400 text-lg">No documents found</p>
+                <p className="text-gray-400 text-lg">No issued documents found</p>
                 <p className="text-gray-500 text-sm mt-2">
                   Documents you issue will appear here
                 </p>
@@ -296,7 +335,7 @@ const IssuerDashboard = () => {
             ) : (
               <>
                 <div className="space-y-4">
-                  {filteredDocuments.map((doc) => (
+                  {filteredIssuedDocuments.map((doc) => (
                     <div
                       key={doc.id || doc.docId}
                       className="bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition-all"
@@ -352,6 +391,15 @@ const IssuerDashboard = () => {
                             )}
                           </div>
                         </div>
+                        <div className="mt-4 flex gap-2">
+                          <button
+                            onClick={() => handleViewPDF(doc)}
+                            className="flex items-center gap-2 px-4 py-2 bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/30 rounded-xl text-purple-400 transition-all"
+                          >
+                            <Eye size={16} />
+                            View PDF
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -386,62 +434,112 @@ const IssuerDashboard = () => {
           </div>
         ) : (
           <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
-            <h2 className="text-2xl font-bold text-white mb-6">Holders</h2>
+            <h2 className="text-2xl font-bold text-white mb-6">Held Documents</h2>
+            <p className="text-gray-400 text-sm mb-6">
+              Your personal authenticated documents (like a holder would see)
+            </p>
 
             {loading ? (
               <div className="text-center py-12">
                 <Clock className="animate-spin text-purple-400 mx-auto mb-4" size={32} />
-                <p className="text-gray-400">Loading holders...</p>
+                <p className="text-gray-400">Loading documents...</p>
               </div>
-            ) : filteredHolders.length === 0 ? (
+            ) : filteredHeldDocuments.length === 0 ? (
               <div className="text-center py-12">
-                <Users className="text-gray-500 mx-auto mb-4" size={48} />
-                <p className="text-gray-400 text-lg">No holders found</p>
+                <FileText className="text-gray-500 mx-auto mb-4" size={48} />
+                <p className="text-gray-400 text-lg">No held documents found</p>
+                <p className="text-gray-500 text-sm mt-2">
+                  Documents issued to you will appear here
+                </p>
               </div>
             ) : (
               <>
                 <div className="space-y-4">
-                  {filteredHolders.map((holder, index) => (
-                    <div
-                      key={holder.email || index}
-                      className="bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition-all"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <h3 className="text-lg font-semibold text-white mb-1">
-                            {holder.name || holder.email}
-                          </h3>
-                          <p className="text-gray-400 text-sm mb-3">
-                            {holder.email}
-                          </p>
-                          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-                            <div>
-                              <p className="text-gray-400">Documents</p>
-                              <p className="text-white font-semibold">
-                                {holder.documentCount || 0}
-                              </p>
+                  {filteredHeldDocuments.map((doc) => {
+                    const getDocumentTypeBadge = (type) => {
+                      if (type === "BATCH_DOCUMENT") {
+                        return (
+                          <span className="px-2 py-1 text-xs font-medium bg-blue-500/20 text-blue-300 rounded-full">
+                            Batch Document
+                          </span>
+                        );
+                      }
+                      return (
+                        <span className="px-2 py-1 text-xs font-medium bg-purple-500/20 text-purple-300 rounded-full">
+                          Certificate
+                        </span>
+                      );
+                    };
+
+                    return (
+                      <div
+                        key={doc.id || doc.docId}
+                        className="bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition-all"
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-2">
+                              <h3 className="text-lg font-semibold text-white">
+                                {doc.title}
+                              </h3>
+                              {getDocumentTypeBadge(doc.type)}
                             </div>
-                            <div>
-                              <p className="text-gray-400">Latest Document</p>
-                              <p className="text-white">
-                                {holder.latestDocument?.title || "N/A"}
-                              </p>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                              <div>
+                                <p className="text-gray-400">Issuer</p>
+                                <p className="text-white">{doc.issuer || "N/A"}</p>
+                              </div>
+                              <div>
+                                <p className="text-gray-400">Issued</p>
+                                <p className="text-white">
+                                  {doc.issuedAt
+                                    ? new Date(doc.issuedAt).toLocaleDateString()
+                                    : "N/A"}
+                                </p>
+                              </div>
+                              {doc.blockchain?.transactionId && (
+                                <div>
+                                  <p className="text-gray-400">Transaction</p>
+                                  <a
+                                    href={doc.blockchain.explorerUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-purple-400 hover:text-purple-300 flex items-center gap-1"
+                                  >
+                                    View
+                                    <ExternalLink size={14} />
+                                  </a>
+                                </div>
+                              )}
+                              {doc.verification?.verifyUrl && (
+                                <div>
+                                  <p className="text-gray-400">Verification</p>
+                                  <a
+                                    href={doc.verification.verifyUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-400 hover:text-blue-300 flex items-center gap-1"
+                                  >
+                                    Verify
+                                    <ExternalLink size={14} />
+                                  </a>
+                                </div>
+                              )}
                             </div>
-                            <div>
-                              <p className="text-gray-400">Last Issued</p>
-                              <p className="text-white">
-                                {holder.latestDocumentDate
-                                  ? new Date(
-                                      holder.latestDocumentDate
-                                    ).toLocaleDateString()
-                                  : "N/A"}
-                              </p>
-                            </div>
+                          </div>
+                          <div className="ml-4">
+                            <button
+                              onClick={() => handleViewPDF(doc)}
+                              className="flex items-center gap-2 px-4 py-2 bg-green-500/20 hover:bg-green-500/30 border border-green-500/30 rounded-xl text-green-400 transition-all"
+                            >
+                              <Eye size={16} />
+                              View PDF
+                            </button>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 {/* Pagination */}
@@ -473,6 +571,15 @@ const IssuerDashboard = () => {
           </div>
         )}
       </div>
+
+      {/* PDF Preview Modal */}
+      <PDFPreviewModal
+        isOpen={!!previewDoc}
+        onClose={() => setPreviewDoc(null)}
+        pdfUrl={previewDoc?.pdfUrl}
+        title={previewDoc?.title}
+        docId={previewDoc?.docId}
+      />
     </div>
   );
 };

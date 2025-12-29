@@ -1538,7 +1538,7 @@ const FabricDesignerV2 = ({ template, onTemplateChange }) => {
                       onChange={(e) =>
                         updateTextProperty("fontSize", parseInt(e.target.value))
                       }
-                      className="flex-1 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                      className="flex-1 appearance-none cursor-pointer"
                     />
                     <input
                       type="number"
@@ -1832,7 +1832,7 @@ const FabricDesignerV2 = ({ template, onTemplateChange }) => {
                           parseFloat(e.target.value)
                         )
                       }
-                      className="flex-1 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                      className="flex-1 appearance-none cursor-pointer"
                     />
                     <input
                       type="number"
