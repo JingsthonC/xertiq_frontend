@@ -1134,10 +1134,13 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
 
       // Show confirmation modal
       if (import.meta.env.DEV) {
-        console.log("Sufficient credits, showing confirmation modal");
+        console.log("Sufficient credits, showing confirmation modal", { operation, count, cost, hasExportFunction: !!exportFunction });
       }
       setPendingExportAction({ operation, count, cost, exportFunction });
       setShowCreditModal(true);
+      
+      // Debug: Log modal state in production too (for troubleshooting)
+      console.log("Credit modal opened:", { operation, count, cost, currentCredits });
     } catch (error) {
       console.error("Credit check failed:", error);
       const errorMessage = error?.message || error?.toString() || "Unknown error";
@@ -1149,12 +1152,21 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
 
   // Handle credit modal confirmation
   const handleCreditConfirmation = async () => {
-    if (!pendingExportAction || !pendingExportAction.exportFunction) return;
+    console.log("Credit confirmation clicked", { pendingExportAction, hasFunction: !!pendingExportAction?.exportFunction });
+    
+    if (!pendingExportAction || !pendingExportAction.exportFunction) {
+      console.error("No pending action or export function available");
+      showToast.error("No action to execute. Please try again.");
+      setShowCreditModal(false);
+      setPendingExportAction(null);
+      return;
+    }
 
     setCreditCheckLoading(true);
     setShowCreditModal(false);
 
     try {
+      console.log("Executing export function:", pendingExportAction.operation);
       // Execute the export function
       await pendingExportAction.exportFunction();
 
@@ -1164,9 +1176,12 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
 
       // Fetch latest balance from server
       await fetchCredits();
+      
+      console.log("Export completed successfully");
     } catch (error) {
       console.error("Export failed:", error);
-      showToast.error("Export failed. Credits were not deducted.");
+      const errorMessage = error?.message || error?.toString() || "Unknown error";
+      showToast.error(`Export failed: ${errorMessage}. Credits were not deducted.`);
     } finally {
       setCreditCheckLoading(false);
       setPendingExportAction(null);
@@ -2283,15 +2298,25 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                       </p>
                     </div>
                     <button
-                      onClick={async () => {
-                        setShowExportMenu(false);
-                        await checkCreditsAndExecute(
-                          "generatePDF",
-                          csvData.length,
-                          handleExportAllPDFs
-                        );
+                      onClick={async (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        try {
+                          setShowExportMenu(false);
+                          await checkCreditsAndExecute(
+                            "generatePDF",
+                            csvData.length,
+                            handleExportAllPDFs
+                          );
+                        } catch (error) {
+                          console.error("Error in export all PDFs click:", error);
+                          const errorMessage = error?.message || error?.toString() || "Unknown error";
+                          showToast.error(`Failed to initiate export: ${errorMessage}`);
+                        }
                       }}
-                      className="w-full px-4 py-3 text-left hover:bg-gray-700 transition-colors flex items-start gap-3 border-b border-gray-700"
+                      className="w-full px-4 py-3 text-left hover:bg-gray-700 transition-colors flex items-start gap-3 border-b border-gray-700 cursor-pointer"
+                      type="button"
+                      style={{ pointerEvents: 'auto' }}
                     >
                       <Download
                         size={18}
@@ -2308,15 +2333,25 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                       </div>
                     </button>
                     <button
-                      onClick={async () => {
-                        setShowExportMenu(false);
-                        await checkCreditsAndExecute(
-                          "generatePDF",
-                          csvData.length,
-                          handleExportAllAsSinglePDF
-                        );
+                      onClick={async (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        try {
+                          setShowExportMenu(false);
+                          await checkCreditsAndExecute(
+                            "generatePDF",
+                            csvData.length,
+                            handleExportAllAsSinglePDF
+                          );
+                        } catch (error) {
+                          console.error("Error in export single PDF click:", error);
+                          const errorMessage = error?.message || error?.toString() || "Unknown error";
+                          showToast.error(`Failed to initiate export: ${errorMessage}`);
+                        }
                       }}
-                      className="w-full px-4 py-3 text-left hover:bg-gray-700 transition-colors flex items-start gap-3"
+                      className="w-full px-4 py-3 text-left hover:bg-gray-700 transition-colors flex items-start gap-3 cursor-pointer"
+                      type="button"
+                      style={{ pointerEvents: 'auto' }}
                     >
                       <Download
                         size={18}
@@ -2335,13 +2370,23 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                   </>
                 ) : (
                   <button
-                    onClick={() => {
-                      setShowExportMenu(false);
-                      checkCreditsAndExecute("generatePDF", 1, () => {
-                        handleExportPDF();
-                      });
+                    onClick={async (e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      try {
+                        setShowExportMenu(false);
+                        await checkCreditsAndExecute("generatePDF", 1, () => {
+                          handleExportPDF();
+                        });
+                      } catch (error) {
+                        console.error("Error in export PDF click:", error);
+                        const errorMessage = error?.message || error?.toString() || "Unknown error";
+                        showToast.error(`Failed to initiate export: ${errorMessage}`);
+                      }
                     }}
-                    className="w-full px-4 py-3 text-left hover:bg-gray-700 transition-colors flex items-start gap-3"
+                    className="w-full px-4 py-3 text-left hover:bg-gray-700 transition-colors flex items-start gap-3 cursor-pointer"
+                    type="button"
+                    style={{ pointerEvents: 'auto' }}
                   >
                     <Download
                       size={18}
@@ -4595,7 +4640,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
           setPendingExportAction(null);
         }}
         onConfirm={handleCreditConfirmation}
-        operation="generatePDF"
+        operation={pendingExportAction?.operation || "generatePDF"}
         count={pendingExportAction?.count || 1}
         currentBalance={credits}
         loading={creditCheckLoading}
