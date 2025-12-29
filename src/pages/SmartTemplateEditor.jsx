@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import showToast from "../utils/toast";
 import { Wand2, Download, Eye, FileText, CheckCircle } from "lucide-react";
 import NavigationHeader from "../components/NavigationHeader";
 import Header from "../components/Header";
@@ -38,7 +39,7 @@ const SmartTemplateEditor = () => {
 
   const handleGeneratePreview = () => {
     if (!template || !dataSource || dataSource.data.length === 0) {
-      alert("Please upload template and data source first");
+      showToast.warning("Please upload template and data source first");
       return;
     }
 
@@ -49,7 +50,7 @@ const SmartTemplateEditor = () => {
 
   const handleGeneratePDFs = async (separateFiles = false) => {
     if (!template || !dataSource || dataSource.data.length === 0) {
-      alert("Please upload template and data source first");
+      showToast.warning("Please upload template and data source first");
       return;
     }
 
@@ -76,10 +77,10 @@ const SmartTemplateEditor = () => {
         pdfGenerator.downloadPDF(pdf, `certificates_batch_${Date.now()}.pdf`);
       }
 
-      alert(`Successfully generated ${dataSource.data.length} certificate(s)!`);
+      showToast.success(`Successfully generated ${dataSource.data.length} certificate(s)!`);
     } catch (error) {
       console.error("Error generating PDFs:", error);
-      alert("Failed to generate PDFs. Please check your template and data.");
+      showToast.error("Failed to generate PDFs. Please check your template and data.");
     } finally {
       setIsGenerating(false);
     }
@@ -222,4 +223,7 @@ const SmartTemplateEditor = () => {
 };
 
 export default SmartTemplateEditor;
+
+
+
 

@@ -7,7 +7,24 @@ import usePayMongoPurchase from "../hooks/usePayMongoPurchase";
 
 const PurchaseCredits = () => {
   const navigate = useNavigate();
-  const { credits, fetchCredits } = useWalletStore();
+  const { credits, fetchCredits, userRole, user } = useWalletStore();
+
+  // Normalize role for comparison
+  const normalizedRole =
+    userRole?.toUpperCase() || user?.role?.toUpperCase() || "USER";
+  const isSuperAdmin = normalizedRole === "SUPER_ADMIN";
+
+  // Redirect super admins away from purchase credits page
+  useEffect(() => {
+    if (isSuperAdmin) {
+      navigate("/super-admin", { replace: true });
+    }
+  }, [isSuperAdmin, navigate]);
+
+  // Don't render for super admins
+  if (isSuperAdmin) {
+    return null;
+  }
   const [selectedPackage, setSelectedPackage] = useState(null);
   const [clientError, setClientError] = useState(null);
   const [statusMessage, setStatusMessage] = useState(null);

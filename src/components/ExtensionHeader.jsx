@@ -7,12 +7,16 @@ import {
   ChevronDown,
   Zap,
   Menu,
+  FolderOpen,
+  Award,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import useWalletStore from "../store/wallet";
 
 const ExtensionHeader = () => {
   const { user, userRole, setUserRole, logout, credits } = useWalletStore();
   const [showMenu, setShowMenu] = useState(false);
+  const navigate = useNavigate();
 
   const toggleRole = () => {
     // Switch between issuer and user/holder roles
@@ -126,6 +130,49 @@ const ExtensionHeader = () => {
                           {userRole?.toLowerCase() === "issuer"
                             ? "View and verify documents"
                             : "Issue and manage certificates"}
+                        </p>
+                      </div>
+                    </button>
+                  )}
+
+                  {/* Issuer Dashboard Link */}
+                  {user?.role?.toLowerCase() === "issuer" && (
+                    <button
+                      onClick={() => {
+                        navigate("/issuer-dashboard");
+                        setShowMenu(false);
+                      }}
+                      className="w-full flex items-center space-x-3 px-3 py-3 text-sm text-gray-300 hover:bg-white/10 hover:text-white rounded-xl transition-all duration-200 group"
+                    >
+                      <div className="w-8 h-8 bg-gradient-to-r from-purple-500/20 to-indigo-500/20 border border-purple-400/30 rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform">
+                        <FolderOpen size={14} className="text-purple-400" />
+                      </div>
+                      <div className="flex-1 text-left">
+                        <p className="font-medium">My Issued Documents</p>
+                        <p className="text-xs text-gray-500">
+                          View all documents you've issued
+                        </p>
+                      </div>
+                    </button>
+                  )}
+
+                  {/* Holder Dashboard Link */}
+                  {(userRole?.toLowerCase() === "user" ||
+                    userRole?.toLowerCase() === "holder") && (
+                    <button
+                      onClick={() => {
+                        navigate("/holder-dashboard");
+                        setShowMenu(false);
+                      }}
+                      className="w-full flex items-center space-x-3 px-3 py-3 text-sm text-gray-300 hover:bg-white/10 hover:text-white rounded-xl transition-all duration-200 group"
+                    >
+                      <div className="w-8 h-8 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-400/30 rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform">
+                        <Award size={14} className="text-green-400" />
+                      </div>
+                      <div className="flex-1 text-left">
+                        <p className="font-medium">My Documents</p>
+                        <p className="text-xs text-gray-500">
+                          View all your certificates
                         </p>
                       </div>
                     </button>

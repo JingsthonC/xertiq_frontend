@@ -8,12 +8,20 @@ import {
   ChevronDown,
   Zap,
   Crown,
+  FolderOpen,
+  Award,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import useWalletStore from "../store/wallet";
 
 const Header = () => {
   const { user, userRole, setUserRole, logout, credits } = useWalletStore();
   const [showMenu, setShowMenu] = useState(false);
+  const navigate = useNavigate();
+  
+  // Normalize role for comparison
+  const normalizedRole = userRole?.toUpperCase() || user?.role?.toUpperCase() || "USER";
+  const isSuperAdmin = normalizedRole === "SUPER_ADMIN";
 
   return (
     <header className="bg-white/5 backdrop-blur-xl border-b border-white/10 p-4 sticky top-0 z-50 overflow-visible">
@@ -40,18 +48,20 @@ const Header = () => {
           </div>
         </div>
 
-        {/* Center - Credits Display */}
-        <div className="hidden md:flex items-center space-x-4">
-          <div className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/20 rounded-xl px-4 py-2">
-            <div className="flex items-center space-x-2">
-              <Zap size={14} className="text-green-400" />
-              <span className="text-green-400 font-semibold text-sm">
-                {credits}
-              </span>
-              <span className="text-gray-400 text-xs">Credits</span>
+        {/* Center - Credits Display (hidden for super admins) */}
+        {!isSuperAdmin && (
+          <div className="hidden md:flex items-center space-x-4">
+            <div className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/20 rounded-xl px-4 py-2">
+              <div className="flex items-center space-x-2">
+                <Zap size={14} className="text-green-400" />
+                <span className="text-green-400 font-semibold text-sm">
+                  {credits}
+                </span>
+                <span className="text-gray-400 text-xs">Credits</span>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* User Menu */}
         <div className="relative z-50">
@@ -104,20 +114,22 @@ const Header = () => {
                     </div>
                   </div>
 
-                  {/* Credits on mobile */}
-                  <div className="md:hidden mt-3 p-2 bg-green-500/10 border border-green-500/20 rounded-lg">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <Zap size={14} className="text-green-400" />
-                        <span className="text-green-400 font-semibold text-sm">
-                          {credits}
+                  {/* Credits on mobile (hidden for super admins) */}
+                  {!isSuperAdmin && (
+                    <div className="md:hidden mt-3 p-2 bg-green-500/10 border border-green-500/20 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <Zap size={14} className="text-green-400" />
+                          <span className="text-green-400 font-semibold text-sm">
+                            {credits}
+                          </span>
+                        </div>
+                        <span className="text-gray-400 text-xs">
+                          Credits Available
                         </span>
                       </div>
-                      <span className="text-gray-400 text-xs">
-                        Credits Available
-                      </span>
                     </div>
-                  </div>
+                  )}
                 </div>
 
                 {/* Menu Items */}
@@ -156,6 +168,59 @@ const Header = () => {
                           {userRole?.toLowerCase() === "issuer"
                             ? "View and verify documents"
                             : "Issue and manage certificates"}
+                        </p>
+                      </div>
+                    </button>
+                  )}
+
+                  {/* Issuer Dashboard Link */}
+                  {user?.role?.toLowerCase() === "issuer" && (
+                    <button
+                      onClick={() => {
+                        navigate("/issuer-dashboard");
+                        setShowMenu(false);
+                      }}
+                      className="w-full text-left px-3 py-3 text-sm text-gray-300 hover:bg-white/10 rounded-xl transition-all duration-200 flex items-center space-x-3 group"
+                    >
+                      <div className="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center">
+                        <FolderOpen
+                          size={16}
+                          className="text-purple-400 group-hover:text-white transition-colors"
+                        />
+                      </div>
+                      <div>
+                        <p className="font-medium group-hover:text-white transition-colors">
+                          My Issued Documents
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          View all documents you've issued
+                        </p>
+                      </div>
+                    </button>
+                  )}
+
+                  {/* Holder Dashboard Link */}
+                  {(userRole?.toLowerCase() === "user" ||
+                    userRole?.toLowerCase() === "holder") && (
+                    <button
+                      onClick={() => {
+                        navigate("/holder-dashboard");
+                        setShowMenu(false);
+                      }}
+                      className="w-full text-left px-3 py-3 text-sm text-gray-300 hover:bg-white/10 rounded-xl transition-all duration-200 flex items-center space-x-3 group"
+                    >
+                      <div className="w-8 h-8 bg-green-500/20 rounded-lg flex items-center justify-center">
+                        <Award
+                          size={16}
+                          className="text-green-400 group-hover:text-white transition-colors"
+                        />
+                      </div>
+                      <div>
+                        <p className="font-medium group-hover:text-white transition-colors">
+                          My Documents
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          View all your certificates
                         </p>
                       </div>
                     </button>

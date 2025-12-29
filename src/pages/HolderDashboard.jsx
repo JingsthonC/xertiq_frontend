@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import showToast from "../utils/toast";
 import {
   FileText,
   Shield,
@@ -7,12 +8,14 @@ import {
   Search,
   Download,
   ExternalLink,
+  Eye,
 } from "lucide-react";
 import useWalletStore from "../store/wallet";
 import apiService from "../services/api";
 import Header from "../components/Header";
 import ExtensionHeader from "../components/ExtensionHeader";
 import NavigationHeader from "../components/NavigationHeader";
+import PDFPreviewModal from "../components/PDFPreviewModal";
 
 const isExtension = () => {
   return (
@@ -32,6 +35,7 @@ const HolderDashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState(null);
+  const [previewDoc, setPreviewDoc] = useState(null); // { title, pdfUrl, docId }
 
   useEffect(() => {
     fetchDocuments();
@@ -80,6 +84,27 @@ const HolderDashboard = () => {
         Certificate
       </span>
     );
+  };
+
+  const handleViewPDF = (doc) => {
+    // Prefer displayCid (with QR code) over canonicalCid
+    const pdfCid = doc.ipfs?.displayCid || doc.ipfs?.canonicalCid || doc.displayCid || doc.canonicalCid;
+    console.log("View PDF - Document data:", {
+      doc,
+      pdfCid,
+      ipfs: doc.ipfs,
+      displayCid: doc.displayCid,
+      canonicalCid: doc.canonicalCid,
+    });
+    if (pdfCid) {
+      setPreviewDoc({
+        title: doc.title,
+        pdfUrl: pdfCid,
+        docId: doc.docId || doc.id,
+      });
+    } else {
+      showToast.warning("PDF not available for this document. The document may not have been uploaded to IPFS yet.");
+    }
   };
 
   return (
@@ -216,6 +241,15 @@ const HolderDashboard = () => {
                             </div>
                           )}
                         </div>
+                        <div className="mt-4 flex gap-2">
+                          <button
+                            onClick={() => handleViewPDF(doc)}
+                            className="flex items-center gap-2 px-4 py-2 bg-green-500/20 hover:bg-green-500/30 border border-green-500/30 rounded-xl text-green-400 transition-all"
+                          >
+                            <Eye size={16} />
+                            View PDF
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -250,6 +284,15 @@ const HolderDashboard = () => {
           )}
         </div>
       </div>
+
+      {/* PDF Preview Modal */}
+      <PDFPreviewModal
+        isOpen={!!previewDoc}
+        onClose={() => setPreviewDoc(null)}
+        pdfUrl={previewDoc?.pdfUrl}
+        title={previewDoc?.title}
+        docId={previewDoc?.docId}
+      />
     </div>
   );
 };

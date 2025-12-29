@@ -3,3 +3,151 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Smooth fade-in animation for tab transitions */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Custom Range Slider Styles - Dynamic Thumb */
+input[type="range"],
+input[type="range"].w-full,
+input[type="range"].flex-1 {
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  width: 100%;
+  height: 6px !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-radius: 3px !important;
+  outline: none !important;
+  transition: background 0.2s ease;
+  cursor: pointer;
+  margin: 8px 0;
+}
+
+input[type="range"]:hover,
+input[type="range"].w-full:hover,
+input[type="range"].flex-1:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Webkit (Chrome, Safari, Edge) - Thumb */
+input[type="range"]::-webkit-slider-thumb,
+input[type="range"].w-full::-webkit-slider-thumb,
+input[type="range"].flex-1::-webkit-slider-thumb {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  width: 14px !important;
+  height: 14px !important;
+  background: #fbbf24 !important;
+  border-radius: 50% !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+  margin-top: -4px !important;
+  border: none !important;
+}
+
+input[type="range"]:hover::-webkit-slider-thumb,
+input[type="range"].w-full:hover::-webkit-slider-thumb,
+input[type="range"].flex-1:hover::-webkit-slider-thumb {
+  width: 18px !important;
+  height: 18px !important;
+  background: #f59e0b !important;
+  box-shadow: 0 3px 6px rgba(251, 191, 36, 0.4) !important;
+  margin-top: -6px !important;
+}
+
+input[type="range"]:active::-webkit-slider-thumb,
+input[type="range"]:focus::-webkit-slider-thumb,
+input[type="range"].w-full:active::-webkit-slider-thumb,
+input[type="range"].w-full:focus::-webkit-slider-thumb,
+input[type="range"].flex-1:active::-webkit-slider-thumb,
+input[type="range"].flex-1:focus::-webkit-slider-thumb {
+  width: 20px !important;
+  height: 20px !important;
+  background: #d97706 !important;
+  box-shadow: 0 4px 8px rgba(251, 191, 36, 0.6) !important;
+  margin-top: -7px !important;
+}
+
+/* Firefox - Thumb */
+input[type="range"]::-moz-range-thumb,
+input[type="range"].w-full::-moz-range-thumb,
+input[type="range"].flex-1::-moz-range-thumb {
+  width: 14px !important;
+  height: 14px !important;
+  background: #fbbf24 !important;
+  border-radius: 50% !important;
+  cursor: pointer !important;
+  border: none !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+}
+
+input[type="range"]:hover::-moz-range-thumb,
+input[type="range"].w-full:hover::-moz-range-thumb,
+input[type="range"].flex-1:hover::-moz-range-thumb {
+  width: 18px !important;
+  height: 18px !important;
+  background: #f59e0b !important;
+  box-shadow: 0 3px 6px rgba(251, 191, 36, 0.4) !important;
+}
+
+input[type="range"]:active::-moz-range-thumb,
+input[type="range"]:focus::-moz-range-thumb,
+input[type="range"].w-full:active::-moz-range-thumb,
+input[type="range"].w-full:focus::-moz-range-thumb,
+input[type="range"].flex-1:active::-moz-range-thumb,
+input[type="range"].flex-1:focus::-moz-range-thumb {
+  width: 20px !important;
+  height: 20px !important;
+  background: #d97706 !important;
+  box-shadow: 0 4px 8px rgba(251, 191, 36, 0.6) !important;
+}
+
+/* Track styling - Webkit */
+input[type="range"]::-webkit-slider-runnable-track,
+input[type="range"].w-full::-webkit-slider-runnable-track,
+input[type="range"].flex-1::-webkit-slider-runnable-track {
+  width: 100% !important;
+  height: 6px !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-radius: 3px !important;
+  cursor: pointer;
+}
+
+input[type="range"]:hover::-webkit-slider-runnable-track,
+input[type="range"].w-full:hover::-webkit-slider-runnable-track,
+input[type="range"].flex-1:hover::-webkit-slider-runnable-track {
+  background: rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Track styling - Firefox */
+input[type="range"]::-moz-range-track,
+input[type="range"].w-full::-moz-range-track,
+input[type="range"].flex-1::-moz-range-track {
+  width: 100% !important;
+  height: 6px !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-radius: 3px !important;
+  cursor: pointer;
+}
+
+input[type="range"]:hover::-moz-range-track,
+input[type="range"].w-full:hover::-moz-range-track,
+input[type="range"].flex-1:hover::-moz-range-track {
+  background: rgba(255, 255, 255, 0.15) !important;
+}

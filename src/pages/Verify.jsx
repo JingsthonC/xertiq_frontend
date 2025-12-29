@@ -187,6 +187,49 @@ const Verify = () => {
               </div>
             </div>
 
+            {/* Holder Information - Mobile Responsive */}
+            {verificationData.valid && verificationData.holder && (
+              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 sm:p-6">
+                <h3 className="text-lg sm:text-xl font-bold text-white mb-4 flex items-center space-x-2">
+                  <User size={20} className="text-purple-400" />
+                  <span>Holder Information</span>
+                </h3>
+
+                <div className="space-y-3 sm:space-y-4">
+                  <div className="bg-white/5 rounded-xl p-3 sm:p-4">
+                    <p className="text-xs sm:text-sm text-gray-400 mb-1">
+                      Holder Name
+                    </p>
+                    <p className="text-white text-sm sm:text-base font-medium">
+                      {verificationData.holder.name}
+                    </p>
+                  </div>
+
+                  {verificationData.holder.email && (
+                    <div className="bg-white/5 rounded-xl p-3 sm:p-4">
+                      <p className="text-xs sm:text-sm text-gray-400 mb-1">
+                        Email
+                      </p>
+                      <p className="text-white text-sm sm:text-base break-all">
+                        {verificationData.holder.email}
+                      </p>
+                    </div>
+                  )}
+
+                  {verificationData.holder.position && (
+                    <div className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-400/40 rounded-xl p-3 sm:p-4">
+                      <p className="text-xs sm:text-sm text-gray-400 mb-1">
+                        Document Position
+                      </p>
+                      <p className="text-white text-base sm:text-lg font-bold">
+                        {verificationData.holder.position.display}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Document Information - Mobile Responsive */}
             {verificationData.valid && verificationData.document && (
               <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 sm:p-6">
@@ -233,6 +276,72 @@ const Verify = () => {
                       </p>
                       <p className="text-white text-sm sm:text-base capitalize">
                         {verificationData.document.gender}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Merkle Hashes - Mobile Responsive */}
+            {verificationData.merkleHashes && (
+              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 sm:p-6">
+                <h3 className="text-lg sm:text-xl font-bold text-white mb-4 flex items-center space-x-2">
+                  <Hash size={20} className="text-green-400" />
+                  <span>Merkle Hashes</span>
+                </h3>
+
+                <div className="space-y-3 sm:space-y-4">
+                  {verificationData.merkleHashes.personal && (
+                    <div className="bg-white/5 rounded-xl p-3 sm:p-4">
+                      <div className="flex items-center justify-between mb-1">
+                        <p className="text-xs sm:text-sm text-gray-400">
+                          Personal Merkle Hash
+                        </p>
+                        <button
+                          onClick={() =>
+                            copyToClipboard(
+                              verificationData.merkleHashes.personal
+                            )
+                          }
+                          className="p-1 hover:bg-white/10 rounded transition-colors"
+                        >
+                          {copied ? (
+                            <Check size={14} className="text-green-400" />
+                          ) : (
+                            <Copy size={14} className="text-gray-400" />
+                          )}
+                        </button>
+                      </div>
+                      <p className="text-white font-mono text-xs sm:text-sm break-all">
+                        {verificationData.merkleHashes.personal}
+                      </p>
+                    </div>
+                  )}
+
+                  {verificationData.merkleHashes.root && (
+                    <div className="bg-white/5 rounded-xl p-3 sm:p-4">
+                      <div className="flex items-center justify-between mb-1">
+                        <p className="text-xs sm:text-sm text-gray-400">
+                          Root Merkle Hash
+                        </p>
+                        <button
+                          onClick={() =>
+                            copyToClipboard(
+                              verificationData.merkleHashes.root
+                            )
+                          }
+                          className="p-1 hover:bg-white/10 rounded transition-colors"
+                        >
+                          {copied ? (
+                            <Check size={14} className="text-green-400" />
+                          ) : (
+                            <Copy size={14} className="text-gray-400" />
+                          )}
+                        </button>
+                      </div>
+                      <p className="text-white font-mono text-xs sm:text-sm break-all">
+                        {verificationData.merkleHashes.root}
                       </p>
                     </div>
                   )}

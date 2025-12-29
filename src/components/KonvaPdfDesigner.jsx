@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import showToast from "../utils/toast";
 import {
   Stage,
   Layer,
@@ -80,6 +81,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
   const [previewSamples, setPreviewSamples] = useState([]);
   const [draggedField, setDraggedField] = useState(null); // Track field being dragged
   const [previewRecordIndex, setPreviewRecordIndex] = useState(0); // Track which CSV record is being previewed
+  const [showActualData, setShowActualData] = useState(false); // Toggle between placeholder and actual data
 
   // Multi-select states
   const [selectedIds, setSelectedIds] = useState([]); // Array of selected IDs
@@ -830,7 +832,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
         };
         img.onerror = (error) => {
           console.error("Error loading image:", error);
-          alert("Failed to load image. Please try a different image file.");
+          showToast.error("Failed to load image. Please try a different image file.");
         };
       };
       reader.readAsDataURL(file);
@@ -899,7 +901,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
       }
     } catch (error) {
       console.error("Error generating preview:", error);
-      alert("Failed to generate preview: " + error.message);
+      showToast.error("Failed to generate preview: " + error.message);
     }
   };
 
@@ -947,7 +949,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
 
   const handlePreviewBatch = async () => {
     if (csvData.length === 0) {
-      alert("Please upload CSV data first");
+      showToast.warning("Please upload CSV data first");
       return;
     }
 
@@ -1010,7 +1012,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
 
   const generateBatchPDFs = async () => {
     if (csvData.length === 0) {
-      alert("Please upload CSV data first");
+      showToast.warning("Please upload CSV data first");
       return;
     }
 
@@ -1057,7 +1059,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
       setShowCsvModal(false);
     } catch (error) {
       console.error("Error generating batch PDFs:", error);
-      alert("Failed to generate PDFs: " + error.message);
+      showToast.error("Failed to generate PDFs: " + error.message);
     }
   };
 
@@ -1069,7 +1071,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
     batchPreviews.forEach(({ pdf, filename }) => {
       pdf.save(filename);
     });
-    alert(`Successfully downloaded ${batchPreviews.length} certificate(s)!`);
+    showToast.success(`Successfully downloaded ${batchPreviews.length} certificate(s)!`);
   };
 
   const closeBatchPreview = () => {
@@ -1097,7 +1099,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
       setShowCreditModal(true);
     } catch (error) {
       console.error("Credit check failed:", error);
-      alert("Failed to check credits. Please try again.");
+      showToast.error("Failed to check credits. Please try again.");
     } finally {
       setCreditCheckLoading(false);
     }
@@ -1122,7 +1124,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
       await fetchCredits();
     } catch (error) {
       console.error("Export failed:", error);
-      alert("Export failed. Credits were not deducted.");
+      showToast.error("Export failed. Credits were not deducted.");
     } finally {
       setCreditCheckLoading(false);
       setPendingExportAction(null);
@@ -1152,7 +1154,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
           konvaPdfGenerator.downloadPDF(pdf, "certificate.pdf");
         } catch (error) {
           console.error("Error generating PDF:", error);
-          alert("Failed to generate PDF: " + error.message);
+          showToast.error("Failed to generate PDF: " + error.message);
         }
       }
     }, 100);
@@ -1190,13 +1192,13 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
       }
     } catch (error) {
       console.error("Error generating PDF:", error);
-      alert("Failed to generate PDF: " + error.message);
+      showToast.error("Failed to generate PDF: " + error.message);
     }
   };
 
   const handleExportAllPDFs = async () => {
     if (csvData.length === 0) {
-      alert("No CSV data to export");
+      showToast.warning("No CSV data to export");
       return;
     }
 
@@ -1231,16 +1233,16 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
         }
       }
 
-      alert(`✓ Successfully generated ${pdfs.length} PDF certificates!`);
+      showToast.success(`✓ Successfully generated ${pdfs.length} PDF certificates!`);
     } catch (error) {
       console.error("Error generating batch PDFs:", error);
-      alert("Failed to generate PDFs: " + error.message);
+      showToast.error("Failed to generate PDFs: " + error.message);
     }
   };
 
   const handleExportAllAsSinglePDF = async () => {
     if (csvData.length === 0) {
-      alert("No CSV data to export");
+      showToast.warning("No CSV data to export");
       return;
     }
 
@@ -1331,7 +1333,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
 
     // Download the single multi-page PDF
     pdf.save(`certificates_all_${csvData.length}_pages.pdf`);
-    alert(`✓ Successfully generated 1 PDF with ${csvData.length} pages!`);
+    showToast.success(`✓ Successfully generated 1 PDF with ${csvData.length} pages!`);
   };
 
   // Upload to Blockchain functions
@@ -1345,13 +1347,13 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
 
     const stage = stageRef.current;
     if (!stage) {
-      alert("Stage not available. Please try again.");
+      showToast.error("Stage not available. Please try again.");
       return;
     }
 
     // Check if user email is available
     if (!user?.email) {
-      alert("User email not found. Please log in again.");
+      showToast.error("User email not found. Please log in again.");
       return;
     }
 
@@ -1374,10 +1376,42 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
       // Get template name or default title
       const title = initialTemplate?.name || "Certificate";
 
+      // Extract email from PDF content (text elements)
+      // This is smarter - it reads the actual email from the certificate content
+      const extractEmailFromContent = () => {
+        // Email regex pattern
+        const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
+        
+        // Scan all text elements for email addresses
+        for (const element of elements) {
+          if (element.type === "text" && element.text) {
+            const matches = element.text.match(emailRegex);
+            if (matches && matches.length > 0) {
+              // Return the first email found
+              return matches[0];
+            }
+          }
+        }
+        
+        return null;
+      };
+
+      const extractedEmail = extractEmailFromContent();
+      
+      if (!extractedEmail) {
+        showToast.warning("No email address found in the certificate content. Please add an email address to the certificate text.");
+        setIsUploading(false);
+        return;
+      }
+
+      console.log("📧 Extracted email from PDF content:", extractedEmail);
+      console.log("📄 Certificate elements:", elements);
+
       // Auto-generate CSV file for single document upload
+      // Uses the email extracted from the actual PDF content
       const csvFile = konvaPdfGenerator.generateSingleDocumentCSV(
         pdfFilename,
-        user.email,
+        extractedEmail, // Uses email from PDF content, not logged-in user
         title,
         {
           course: title,
@@ -1414,7 +1448,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
         successMessage += `\n\nView on blockchain: ${explorerUrl}`;
       }
 
-      alert(successMessage);
+      showToast.success(successMessage);
 
       // Refresh credits after upload
       await fetchCredits();
@@ -1422,7 +1456,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
       console.error("Error uploading to blockchain:", error);
       const errorMessage =
         error.response?.data?.message || error.message || "Upload failed";
-      alert(`Failed to upload to blockchain: ${errorMessage}`);
+      showToast.error(`Failed to upload to blockchain: ${errorMessage}`);
     } finally {
       setIsUploading(false);
     }
@@ -1430,7 +1464,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
 
   const handleUploadBatchToBlockchain = async () => {
     if (csvData.length === 0) {
-      alert("No CSV data to upload");
+      showToast.warning("No CSV data to upload");
       return;
     }
 
@@ -1442,14 +1476,14 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
 
     const stage = stageRef.current;
     if (!stage) {
-      alert("Stage not available. Please try again.");
+      showToast.error("Stage not available. Please try again.");
       return;
     }
 
     setIsUploading(true);
 
     try {
-      // Generate all PDFs
+      // Generate all PDFs (filenames will be sanitized in konvaPdfGenerator)
       const pdfs = await konvaPdfGenerator.generateBatch(stage, csvData, {
         orientation: STAGE_WIDTH > STAGE_HEIGHT ? "landscape" : "portrait",
         format: "a4",
@@ -1459,14 +1493,48 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
         filenamePattern: "certificate_{{name}}_{{index}}.pdf",
       });
 
+      // Log generated filenames for debugging
+      console.log("Generated PDF filenames:", pdfs.map(p => p.filename));
+
       // Convert PDFs to Files
       const pdfFiles = pdfs.map((item) =>
         konvaPdfGenerator.pdfToFile(item.pdf, item.filename)
       );
 
-      // Generate CSV File
+      // Add filename column to CSV data to match PDF filenames exactly
+      // Use the same filename generation logic as PDF generation (with sanitization)
+      const csvDataWithFilenames = csvData.map((row, index) => {
+        // Generate filename using the same pattern and sanitization as PDF generation
+        const sanitize = (value) => {
+          if (!value) return "";
+          return value
+            .toString()
+            .replace(/\s+/g, "_") // Replace spaces with underscores
+            .replace(/[^a-zA-Z0-9_-]/g, "") // Remove special characters
+            .substring(0, 50); // Limit length
+        };
+
+        let filename = "certificate_{{name}}_{{index}}.pdf";
+        const nameValue = row.name || row.Name || `record_${index + 1}`;
+        filename = filename.replace(/\{\{name\}\}/g, sanitize(nameValue));
+        filename = filename.replace(/\{\{index\}\}/g, index + 1);
+        Object.keys(row).forEach((key) => {
+          const regex = new RegExp(`\\{\\{${key}\\}\\}`, "g");
+          filename = filename.replace(regex, sanitize(row[key]));
+        });
+
+        return {
+          ...row,
+          filename: filename, // Must match PDF filename exactly (sanitized)
+        };
+      });
+
+      // Log CSV filenames for debugging
+      console.log("CSV filenames:", csvDataWithFilenames.map(r => r.filename));
+
+      // Generate CSV File with filename column
       const csvFile = konvaPdfGenerator.generateCSVFile(
-        csvData,
+        csvDataWithFilenames,
         "metadata.csv"
       );
 
@@ -1480,10 +1548,10 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
       // Upload via batch API
       const response = await apiService.createBatch(formData);
 
-      alert(
-        `✓ Successfully uploaded batch to blockchain!\n\nBatch ID: ${
+      showToast.success(
+        `✓ Successfully uploaded batch to blockchain! Batch ID: ${
           response.batch?.id || response.id || "N/A"
-        }\nDocuments: ${pdfFiles.length}`
+        } - ${pdfFiles.length} documents`
       );
 
       // Refresh credits after upload
@@ -1492,7 +1560,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
       console.error("Error uploading batch to blockchain:", error);
       const errorMessage =
         error.response?.data?.message || error.message || "Batch upload failed";
-      alert(`Failed to upload batch to blockchain: ${errorMessage}`);
+      showToast.error(`Failed to upload batch to blockchain: ${errorMessage}`);
     } finally {
       setIsUploading(false);
     }
@@ -1634,8 +1702,8 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
     if (index !== -1) {
       newElements[index] = { ...newElements[index], ...newAttrs };
       setElements(newElements);
-      // Note: For performance, you might want to debounce history saving
-      // for frequent updates like dragging.
+      // Save history for undo/redo
+      saveHistory(newElements);
     }
   };
 
@@ -1724,45 +1792,46 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
   return (
     <div className="h-full flex flex-col bg-gray-800 text-white">
       {/* Toolbar */}
-      <div className="bg-gray-900 p-2 flex items-center gap-2 border-b border-gray-700">
+      <div className="bg-gray-900 p-2 flex items-center gap-2 border-b border-gray-700 relative z-50 flex-shrink-0 overflow-x-auto" style={{ pointerEvents: 'auto', minHeight: '48px' }}>
         <button
           onClick={handleAddText}
-          className="p-2 hover:bg-gray-700 rounded"
+          className="p-2 hover:bg-gray-700 rounded cursor-pointer"
           title="Add Text"
+          style={{ pointerEvents: 'auto' }}
         >
           <Type />
         </button>
         <button
           onClick={handleAddRect}
-          className="p-2 hover:bg-gray-700 rounded"
+          className="p-2 hover:bg-gray-700 rounded cursor-pointer"
           title="Add Rectangle"
         >
           <RectangleHorizontal />
         </button>
         <button
           onClick={handleAddCircle}
-          className="p-2 hover:bg-gray-700 rounded"
+          className="p-2 hover:bg-gray-700 rounded cursor-pointer"
           title="Add Circle"
         >
           <CircleIcon />
         </button>
         <button
           onClick={handleAddStar}
-          className="p-2 hover:bg-gray-700 rounded"
+          className="p-2 hover:bg-gray-700 rounded cursor-pointer"
           title="Add Star"
         >
           <StarIcon />
         </button>
         <button
           onClick={handleAddLine}
-          className="p-2 hover:bg-gray-700 rounded"
+          className="p-2 hover:bg-gray-700 rounded cursor-pointer"
           title="Add Line"
         >
           <Minus />
         </button>
         <button
           onClick={handleAddArrow}
-          className="p-2 hover:bg-gray-700 rounded"
+          className="p-2 hover:bg-gray-700 rounded cursor-pointer"
           title="Add Arrow"
         >
           <ArrowRight />
@@ -1788,7 +1857,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
         </button>
         <button
           onClick={() => fileUploadRef.current.click()}
-          className="p-2 hover:bg-gray-700 rounded"
+          className="p-2 hover:bg-gray-700 rounded cursor-pointer"
           title="Upload Image"
         >
           <ImageIcon />
@@ -1882,6 +1951,48 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
             <Database />
           </button>
         )}
+        {csvData.length > 0 && (
+          <>
+            <div className="w-px h-6 bg-gray-700 mx-2"></div>
+            <div className="flex items-center gap-2 px-2">
+              <span className="text-xs text-gray-400">Display:</span>
+              <button
+                onClick={() => setShowActualData(!showActualData)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                  showActualData
+                    ? "bg-green-600 hover:bg-green-700 text-white"
+                    : "bg-gray-700 hover:bg-gray-600 text-gray-300"
+                }`}
+                title={showActualData ? "Switch to placeholder mode" : "Switch to actual data mode"}
+              >
+                {showActualData ? "Actual Data" : "Placeholder"}
+              </button>
+              {showActualData && csvData.length > 1 && (
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setPreviewRecordIndex(Math.max(0, previewRecordIndex - 1))}
+                    disabled={previewRecordIndex === 0}
+                    className="px-2 py-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed rounded text-white text-xs"
+                    title="Previous record"
+                  >
+                    ←
+                  </button>
+                  <span className="text-xs text-gray-400 px-1">
+                    {previewRecordIndex + 1}/{csvData.length}
+                  </span>
+                  <button
+                    onClick={() => setPreviewRecordIndex(Math.min(csvData.length - 1, previewRecordIndex + 1))}
+                    disabled={previewRecordIndex === csvData.length - 1}
+                    className="px-2 py-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed rounded text-white text-xs"
+                    title="Next record"
+                  >
+                    →
+                  </button>
+                </div>
+              )}
+            </div>
+          </>
+        )}
         <input
           type="file"
           ref={csvUploadRef}
@@ -1893,8 +2004,9 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
         <button
           onClick={handleDelete}
           disabled={!selectedId}
-          className="p-2 hover:bg-red-700 rounded disabled:opacity-50"
+          className="p-2 hover:bg-red-700 rounded disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
           title="Delete"
+          style={{ pointerEvents: 'auto' }}
         >
           <Trash2 />
         </button>
@@ -1902,16 +2014,18 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
         <button
           onClick={handleUndo}
           disabled={historyStep === 0}
-          className="p-2 hover:bg-gray-700 rounded disabled:opacity-50"
+          className="p-2 hover:bg-gray-700 rounded disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
           title="Undo"
+          style={{ pointerEvents: 'auto' }}
         >
           <Undo />
         </button>
         <button
           onClick={handleRedo}
           disabled={historyStep === history.length - 1}
-          className="p-2 hover:bg-gray-700 rounded disabled:opacity-50"
+          className="p-2 hover:bg-gray-700 rounded disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
           title="Redo"
+          style={{ pointerEvents: 'auto' }}
         >
           <Redo />
         </button>
@@ -1919,8 +2033,9 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
         {/* Zoom Controls */}
         <button
           onClick={handleZoomOut}
-          className="p-2 hover:bg-gray-700 rounded"
+          className="p-2 hover:bg-gray-700 rounded cursor-pointer"
           title="Zoom Out (Ctrl/Cmd + -)"
+          style={{ pointerEvents: 'auto' }}
         >
           <ZoomOut size={18} />
         </button>
@@ -1946,16 +2061,18 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
         )}
         <button
           onClick={handleZoomIn}
-          className="p-2 hover:bg-gray-700 rounded"
+          className="p-2 hover:bg-gray-700 rounded cursor-pointer"
           title="Zoom In (Ctrl/Cmd + +)"
+          style={{ pointerEvents: 'auto' }}
         >
           <ZoomIn size={18} />
         </button>
         <div className="flex-grow"></div>
         <button
           onClick={handlePreview}
-          className="p-2 bg-purple-600 hover:bg-purple-700 rounded flex items-center gap-2 mr-2"
+          className="p-2 bg-purple-600 hover:bg-purple-700 rounded flex items-center gap-2 mr-2 cursor-pointer"
           title="Preview"
+          style={{ pointerEvents: 'auto' }}
         >
           <Eye /> Preview
         </button>
@@ -1965,8 +2082,9 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
           <button
             onClick={() => setShowUploadMenu(!showUploadMenu)}
             disabled={isUploading}
-            className="p-2 bg-green-600 hover:bg-green-700 rounded flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="p-2 bg-green-600 hover:bg-green-700 rounded flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             title="Upload to Blockchain"
+            style={{ pointerEvents: 'auto' }}
           >
             {isUploading ? (
               <>
@@ -1984,12 +2102,13 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
             <>
               {/* Backdrop to close menu */}
               <div
-                className="fixed inset-0 z-10"
+                className="fixed inset-0 z-40"
                 onClick={() => setShowUploadMenu(false)}
+                style={{ pointerEvents: 'auto' }}
               />
 
               {/* Dropdown Menu */}
-              <div className="absolute right-0 mt-2 w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-2xl z-20 overflow-hidden">
+              <div className="absolute right-0 mt-2 w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-2xl z-50 overflow-hidden" style={{ pointerEvents: 'auto' }}>
                 {csvData.length > 0 ? (
                   <>
                     <div className="px-4 py-2 bg-gray-700 border-b border-gray-600">
@@ -2063,8 +2182,9 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
         <div className="relative">
           <button
             onClick={() => setShowExportMenu(!showExportMenu)}
-            className="p-2 bg-blue-600 hover:bg-blue-700 rounded flex items-center gap-2"
+            className="p-2 bg-blue-600 hover:bg-blue-700 rounded flex items-center gap-2 cursor-pointer"
             title="Export PDF Options"
+            style={{ pointerEvents: 'auto' }}
           >
             <Download /> Export PDF
           </button>
@@ -2073,12 +2193,13 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
             <>
               {/* Backdrop to close menu */}
               <div
-                className="fixed inset-0 z-10"
+                className="fixed inset-0 z-40"
                 onClick={() => setShowExportMenu(false)}
+                style={{ pointerEvents: 'auto' }}
               />
 
               {/* Dropdown Menu */}
-              <div className="absolute right-0 mt-2 w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-2xl z-20 overflow-hidden">
+              <div className="absolute right-0 mt-2 w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-2xl z-50 overflow-hidden" style={{ pointerEvents: 'auto' }}>
                 {csvData.length > 0 ? (
                   <>
                     <div className="px-4 py-2 bg-gray-700 border-b border-gray-600">
@@ -2341,6 +2462,67 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                   if (el.type === "text") {
                     // Apply text transform
                     let displayText = el.text || "Text";
+                    
+                    // Handle dynamic elements: show placeholder or actual data based on mode
+                    if (el.isDynamic && el.dataField) {
+                      if (showActualData && csvData.length > 0) {
+                        // Actual Data Mode: Replace placeholder with actual CSV value
+                        const currentRecord = csvData[previewRecordIndex] || csvData[0];
+                        const actualValue = currentRecord[el.dataField];
+                        if (actualValue !== undefined && actualValue !== null) {
+                          // Replace {{fieldName}} pattern with actual value
+                          displayText = displayText.replace(
+                            new RegExp(`\\{\\{${el.dataField}\\}\\}`, 'g'),
+                            String(actualValue)
+                          );
+                          // If the text is just the placeholder pattern, replace the whole thing
+                          const trimmedText = displayText.trim();
+                          if (trimmedText === `{{${el.dataField}}}` || trimmedText === el.dataField) {
+                            displayText = String(actualValue);
+                          }
+                        } else {
+                          // If value is missing, show placeholder with indicator
+                          displayText = displayText.replace(
+                            new RegExp(`\\{\\{${el.dataField}\\}\\}`, 'g'),
+                            `[${el.dataField} - missing]`
+                          );
+                        }
+                      } else {
+                        // Placeholder Mode: Always show {{fieldName}} for dynamic elements
+                        // This ensures designers can see the variable names while designing
+                        // Replace any actual values with the placeholder format
+                        if (csvData.length > 0) {
+                          const firstRecord = csvData[0];
+                          const actualValue = firstRecord[el.dataField];
+                          // If current text matches an actual value, show placeholder instead
+                          if (actualValue !== undefined && actualValue !== null && displayText === String(actualValue)) {
+                            displayText = `{{${el.dataField}}}`;
+                          } else {
+                            // Replace {{fieldName}} pattern if it exists, or ensure it's present
+                            if (displayText.includes(`{{${el.dataField}}}`)) {
+                              // Already has placeholder, keep it
+                            } else if (displayText.trim() === el.dataField) {
+                              // Just the field name, add braces
+                              displayText = `{{${el.dataField}}}`;
+                            } else {
+                              // Mixed text - replace any actual value occurrences with placeholder
+                              displayText = displayText.replace(
+                                new RegExp(String(actualValue).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'),
+                                `{{${el.dataField}}}`
+                              );
+                            }
+                          }
+                        } else {
+                          // No CSV data yet, ensure placeholder format is shown
+                          if (!displayText.includes(`{{${el.dataField}}}`)) {
+                            if (displayText.trim() === el.dataField) {
+                              displayText = `{{${el.dataField}}}`;
+                            }
+                          }
+                        }
+                      }
+                    }
+                    
                     if (el.textTransform === "uppercase") {
                       displayText = displayText.toUpperCase();
                     } else if (el.textTransform === "lowercase") {
@@ -2469,24 +2651,12 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                             );
 
                             // Update text content but maintain position
+                            // handleElementChange now saves history automatically
                             handleElementChange(el.id, {
                               text: finalText,
                               x: originalX, // Explicitly maintain position
                               y: originalY,
                             });
-
-                            saveHistory(
-                              elements.map((elem) =>
-                                elem.id === el.id
-                                  ? {
-                                      ...elem,
-                                      text: finalText,
-                                      x: originalX,
-                                      y: originalY,
-                                    }
-                                  : elem
-                              )
-                            );
 
                             textNode.show();
                             transformerRef.current.show();

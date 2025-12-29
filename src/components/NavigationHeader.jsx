@@ -13,12 +13,17 @@ import {
 import { useNavigate, useLocation } from "react-router-dom";
 import useWalletStore from "../store/wallet";
 import CreditBalance from "./CreditBalance";
+import { Crown } from "lucide-react";
 
 const NavigationHeader = ({ title, showBack = true }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { userRole } = useWalletStore();
+  const { userRole, user } = useWalletStore();
   const [showSideNav, setShowSideNav] = useState(false);
+  
+  // Normalize role for comparison
+  const normalizedRole = userRole?.toUpperCase() || user?.role?.toUpperCase() || "USER";
+  const isSuperAdmin = normalizedRole === "SUPER_ADMIN";
 
   const getPageTitle = () => {
     switch (location.pathname) {
@@ -69,16 +74,23 @@ const NavigationHeader = ({ title, showBack = true }) => {
       visible: true,
     },
     {
-      name: userRole === "issuer" ? "Issue Certificates" : "Verify Document",
-      path: userRole === "issuer" ? "/batch-upload" : "/verify",
-      icon: userRole === "issuer" ? Upload : Shield,
-      visible: true,
+      name: normalizedRole === "ISSUER" ? "Issue Certificates" : "Verify Document",
+      path: normalizedRole === "ISSUER" ? "/batch-upload" : "/verify",
+      icon: normalizedRole === "ISSUER" ? Upload : Shield,
+      visible: !isSuperAdmin,
+    },
+    {
+      name: "Super Admin",
+      path: "/super-admin",
+      icon: Crown,
+      visible: isSuperAdmin,
+      highlight: true,
     },
     {
       name: "Batch Upload",
       path: "/batch-upload",
       icon: Upload,
-      visible: userRole === "issuer",
+      visible: normalizedRole === "ISSUER" && !isSuperAdmin,
     },
     {
       name: "Verify Document",
@@ -90,7 +102,7 @@ const NavigationHeader = ({ title, showBack = true }) => {
       name: "Buy Credits",
       path: "/purchase-credits",
       icon: Coins,
-      visible: true,
+      visible: !isSuperAdmin,
       highlight: true,
     },
   ];
@@ -153,7 +165,7 @@ const NavigationHeader = ({ title, showBack = true }) => {
 
           {/* Center/Right Side - Credit Balance & Menu Button */}
           <div className="flex items-center gap-3">
-            <CreditBalance size="sm" />
+            {!isSuperAdmin && <CreditBalance size="sm" />}
 
             <button
               onClick={() => setShowSideNav(true)}
@@ -229,23 +241,41 @@ const NavigationHeader = ({ title, showBack = true }) => {
               </div>
 
               {/* Role Info */}
-              <div className="mt-6 p-3 bg-gradient-to-r from-white/5 to-white/10 border border-white/10 rounded-xl">
-                <div className="flex items-center space-x-2 mb-2">
-                  <div
-                    className={`w-2 h-2 rounded-full ${
-                      userRole === "issuer" ? "bg-purple-400" : "bg-blue-400"
-                    }`}
-                  />
-                  <span className="text-sm font-semibold text-white capitalize">
-                    {userRole} Mode
-                  </span>
+              {!isSuperAdmin && (
+                <div className="mt-6 p-3 bg-gradient-to-r from-white/5 to-white/10 border border-white/10 rounded-xl">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <div
+                      className={`w-2 h-2 rounded-full ${
+                        normalizedRole === "ISSUER" ? "bg-purple-400" : "bg-blue-400"
+                      }`}
+                    />
+                    <span className="text-sm font-semibold text-white capitalize">
+                      {userRole || "User"} Mode
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-400">
+                    {normalizedRole === "ISSUER"
+                      ? "Create and manage certificates"
+                      : "Verify document authenticity"}
+                  </p>
                 </div>
-                <p className="text-xs text-gray-400">
-                  {userRole === "issuer"
-                    ? "Create and manage certificates"
-                    : "Verify document authenticity"}
-                </p>
-              </div>
+              )}
+              {isSuperAdmin && (
+                <div className="mt-6 p-3 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 rounded-xl">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <Crown size={14} className="text-yellow-400" />
+                    <span className="text-sm font-semibold text-white">
+                      Super Admin Mode
+                    </span>
+                    <span className="ml-auto text-xs bg-yellow-400 text-gray-900 px-2 py-0.5 rounded-full font-bold">
+                      OWNER
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-300">
+                    Full platform management and control
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </>

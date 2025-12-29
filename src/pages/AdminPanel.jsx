@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import showToast from "../utils/toast";
 import {
   Users,
   CreditCard,
@@ -74,10 +75,10 @@ const AdminPanel = () => {
     try {
       await apiService.patch(`/admin/users/${userId}/role`, { role: newRole });
       await loadData();
-      alert("User role updated successfully");
+      showToast.success("User role updated successfully");
     } catch (error) {
       console.error("Failed to update role:", error);
-      alert("Failed to update user role");
+      showToast.error("Failed to update user role");
     }
   };
 
@@ -88,10 +89,10 @@ const AdminPanel = () => {
         reason: "Admin adjustment",
       });
       await loadData();
-      alert("User credits updated successfully");
+      showToast.success("User credits updated successfully");
     } catch (error) {
       console.error("Failed to update credits:", error);
-      alert("Failed to update user credits");
+      showToast.error("Failed to update user credits");
     }
   };
 
@@ -141,10 +142,10 @@ const AdminPanel = () => {
       const res = await apiService.updateCreditDefaults(payload);
       setCreditDefaults(res.data);
       setDefaultsForm(res.data);
-      alert("Credit settings updated");
+        showToast.success("Credit settings updated");
     } catch (error) {
       console.error("Failed to update credit defaults:", error);
-      alert(
+      showToast.error(
         error.response?.data?.message || "Failed to update credit defaults"
       );
     } finally {
@@ -635,5 +636,7 @@ const AdminPanel = () => {
 };
 
 export default AdminPanel;
+
+
 
 
