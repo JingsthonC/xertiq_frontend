@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import showToast from "../utils/toast";
 import {
   Stage,
@@ -117,8 +118,10 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
   const layerRef = useRef(null);
   const fileUploadRef = useRef(null);
   const csvUploadRef = useRef(null);
+  const uploadMenuButtonRef = useRef(null);
   const isLoadingTemplate = useRef(false); // Track if we're loading a template
   const lastSyncedElements = useRef(null); // Track last synced elements to prevent loops
+  const isProgrammaticTransform = useRef(false); // Track if transform is programmatic (flip, etc.)
 
   // Convert Konva elements back to template format (pixels to mm)
   const convertToTemplateFormat = (konvaElements) => {
@@ -430,6 +433,11 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
 
   // Attach transformer to selected node
   useEffect(() => {
+    // Skip transformer updates during programmatic transforms (like flip)
+    if (isProgrammaticTransform.current) {
+      return;
+    }
+
     if (transformerRef.current) {
       const stage = stageRef.current;
 
@@ -832,7 +840,9 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
         };
         img.onerror = (error) => {
           console.error("Error loading image:", error);
-          showToast.error("Failed to load image. Please try a different image file.");
+          showToast.error(
+            "Failed to load image. Please try a different image file."
+          );
         };
       };
       reader.readAsDataURL(file);
@@ -1071,7 +1081,9 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
     batchPreviews.forEach(({ pdf, filename }) => {
       pdf.save(filename);
     });
-    showToast.success(`Successfully downloaded ${batchPreviews.length} certificate(s)!`);
+    showToast.success(
+      `Successfully downloaded ${batchPreviews.length} certificate(s)!`
+    );
   };
 
   const closeBatchPreview = () => {
@@ -1083,9 +1095,14 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
   const checkCreditsAndExecute = async (operation, count, exportFunction) => {
     // Production-safe logging (only in development)
     if (import.meta.env.DEV) {
-      console.log("checkCreditsAndExecute called:", { operation, count, credits, exportFunction: !!exportFunction });
+      console.log("checkCreditsAndExecute called:", {
+        operation,
+        count,
+        credits,
+        exportFunction: !!exportFunction,
+      });
     }
-    
+
     setCreditCheckLoading(true);
 
     try {
@@ -1093,32 +1110,46 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
       if (import.meta.env.DEV) {
         console.log("Fetching latest credits from server...");
       }
-      
-      let currentCredits = typeof credits === 'number' ? credits : null;
-      
+
+      let currentCredits = typeof credits === "number" ? credits : null;
+
       try {
         const fetchedCredits = await fetchCredits();
-        currentCredits = fetchedCredits !== null && fetchedCredits !== undefined 
-          ? fetchedCredits 
-          : (typeof credits === 'number' ? credits : 0);
+        currentCredits =
+          fetchedCredits !== null && fetchedCredits !== undefined
+            ? fetchedCredits
+            : typeof credits === "number"
+            ? credits
+            : 0;
       } catch (fetchError) {
         console.error("Failed to fetch credits:", fetchError);
         // Try to use cached credits if available
-        currentCredits = typeof credits === 'number' ? credits : 0;
+        currentCredits = typeof credits === "number" ? credits : 0;
       }
-      
-      if (currentCredits === null || currentCredits === undefined || isNaN(currentCredits)) {
+
+      if (
+        currentCredits === null ||
+        currentCredits === undefined ||
+        isNaN(currentCredits)
+      ) {
         console.error("Unable to determine credit balance");
-        showToast.error("Unable to fetch credit balance. Please refresh the page or contact support.");
+        showToast.error(
+          "Unable to fetch credit balance. Please refresh the page or contact support."
+        );
         setCreditCheckLoading(false);
         return;
       }
 
       // Calculate cost
       const cost = CREDIT_COSTS[operation] * count;
-      
+
       if (import.meta.env.DEV) {
-        console.log("Credit check:", { currentCredits, cost, operation, count });
+        console.log("Credit check:", {
+          currentCredits,
+          cost,
+          operation,
+          count,
+        });
       }
 
       // Check if sufficient credits
@@ -1140,22 +1171,33 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
       // Close any open dropdowns before showing modal
       setShowUploadMenu(false);
       setShowExportMenu(false);
-      
+
       // Show confirmation modal
       if (import.meta.env.DEV) {
-        console.log("Sufficient credits, showing confirmation modal", { operation, count, cost, hasExportFunction: !!exportFunction });
+        console.log("Sufficient credits, showing confirmation modal", {
+          operation,
+          count,
+          cost,
+          hasExportFunction: !!exportFunction,
+        });
       }
       setPendingExportAction({ operation, count, cost, exportFunction });
-      
+
       // Use setTimeout to ensure dropdowns close first, then show modal
       setTimeout(() => {
         setShowCreditModal(true);
         // Debug: Log modal state in production too (for troubleshooting)
-        console.log("Credit modal opened:", { operation, count, cost, currentCredits });
+        console.log("Credit modal opened:", {
+          operation,
+          count,
+          cost,
+          currentCredits,
+        });
       }, 50);
     } catch (error) {
       console.error("Credit check failed:", error);
-      const errorMessage = error?.message || error?.toString() || "Unknown error";
+      const errorMessage =
+        error?.message || error?.toString() || "Unknown error";
       showToast.error(`Failed to check credits: ${errorMessage}`);
     } finally {
       setCreditCheckLoading(false);
@@ -1164,8 +1206,11 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
 
   // Handle credit modal confirmation
   const handleCreditConfirmation = async () => {
-    console.log("Credit confirmation clicked", { pendingExportAction, hasFunction: !!pendingExportAction?.exportFunction });
-    
+    console.log("Credit confirmation clicked", {
+      pendingExportAction,
+      hasFunction: !!pendingExportAction?.exportFunction,
+    });
+
     if (!pendingExportAction || !pendingExportAction.exportFunction) {
       console.error("No pending action or export function available");
       showToast.error("No action to execute. Please try again.");
@@ -1188,12 +1233,15 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
 
       // Fetch latest balance from server
       await fetchCredits();
-      
+
       console.log("Export completed successfully");
     } catch (error) {
       console.error("Export failed:", error);
-      const errorMessage = error?.message || error?.toString() || "Unknown error";
-      showToast.error(`Export failed: ${errorMessage}. Credits were not deducted.`);
+      const errorMessage =
+        error?.message || error?.toString() || "Unknown error";
+      showToast.error(
+        `Export failed: ${errorMessage}. Credits were not deducted.`
+      );
     } finally {
       setCreditCheckLoading(false);
       setPendingExportAction(null);
@@ -1302,7 +1350,9 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
         }
       }
 
-      showToast.success(`✓ Successfully generated ${pdfs.length} PDF certificates!`);
+      showToast.success(
+        `✓ Successfully generated ${pdfs.length} PDF certificates!`
+      );
     } catch (error) {
       console.error("Error generating batch PDFs:", error);
       showToast.error("Failed to generate PDFs: " + error.message);
@@ -1402,7 +1452,9 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
 
     // Download the single multi-page PDF
     pdf.save(`certificates_all_${csvData.length}_pages.pdf`);
-    showToast.success(`✓ Successfully generated 1 PDF with ${csvData.length} pages!`);
+    showToast.success(
+      `✓ Successfully generated 1 PDF with ${csvData.length} pages!`
+    );
   };
 
   // Upload to Blockchain functions
@@ -1450,7 +1502,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
       const extractEmailFromContent = () => {
         // Email regex pattern
         const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
-        
+
         // Scan all text elements for email addresses
         for (const element of elements) {
           if (element.type === "text" && element.text) {
@@ -1461,14 +1513,16 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
             }
           }
         }
-        
+
         return null;
       };
 
       const extractedEmail = extractEmailFromContent();
-      
+
       if (!extractedEmail) {
-        showToast.warning("No email address found in the certificate content. Please add an email address to the certificate text.");
+        showToast.warning(
+          "No email address found in the certificate content. Please add an email address to the certificate text."
+        );
         setIsUploading(false);
         return;
       }
@@ -1563,7 +1617,10 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
       });
 
       // Log generated filenames for debugging
-      console.log("Generated PDF filenames:", pdfs.map(p => p.filename));
+      console.log(
+        "Generated PDF filenames:",
+        pdfs.map((p) => p.filename)
+      );
 
       // Convert PDFs to Files
       const pdfFiles = pdfs.map((item) =>
@@ -1599,7 +1656,10 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
       });
 
       // Log CSV filenames for debugging
-      console.log("CSV filenames:", csvDataWithFilenames.map(r => r.filename));
+      console.log(
+        "CSV filenames:",
+        csvDataWithFilenames.map((r) => r.filename)
+      );
 
       // Generate CSV File with filename column
       const csvFile = konvaPdfGenerator.generateCSVFile(
@@ -1777,47 +1837,150 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
   };
 
   const handleDragEnd = (e, id) => {
-    const newAttrs = { x: e.target.x(), y: e.target.y() };
-    const updatedElements = elements.map((el) =>
-      el.id === id ? { ...el, ...newAttrs } : el
-    );
-    setElements(updatedElements);
-    saveHistory(updatedElements);
+    const element = elements.find((el) => el.id === id);
+    const node = e.target;
+
+    // For images, convert adjusted position back to stored position
+    if (element?.type === "image") {
+      const imageWidth = element.width || 100;
+      const imageHeight = element.height || 100;
+      const scaleX = element.scaleX !== undefined ? element.scaleX : 1;
+      const scaleY = element.scaleY !== undefined ? element.scaleY : 1;
+      const nodeX = node.x();
+      const nodeY = node.y();
+      // Reverse the adjustment we applied during render
+      const topLeftX = nodeX - (scaleX < 0 ? imageWidth : 0);
+      const topLeftY = nodeY - (scaleY < 0 ? imageHeight : 0);
+      const newAttrs = { x: topLeftX, y: topLeftY };
+      const updatedElements = elements.map((el) =>
+        el.id === id ? { ...el, ...newAttrs } : el
+      );
+      setElements(updatedElements);
+      saveHistory(updatedElements);
+    } else {
+      const newAttrs = { x: node.x(), y: node.y() };
+      const updatedElements = elements.map((el) =>
+        el.id === id ? { ...el, ...newAttrs } : el
+      );
+      setElements(updatedElements);
+      saveHistory(updatedElements);
+    }
   };
 
   const handleTransformEnd = (e, id) => {
-    const node = e.target;
-    const scaleX = node.scaleX();
-    const scaleY = node.scaleY();
-    node.scaleX(1);
-    node.scaleY(1);
+    // Skip if this is a programmatic transform (like flip)
+    if (isProgrammaticTransform.current) {
+      console.log("Skipping handleTransformEnd - programmatic transform");
+      return; // Don't reset the flag here, let the flip handler manage it
+    }
 
-    const newAttrs = {
-      x: node.x(),
-      y: node.y(),
-      width: Math.max(5, node.width() * scaleX),
-      height: Math.max(5, node.height() * scaleY),
-      rotation: node.rotation(),
-    };
-    const updatedElements = elements.map((el) =>
-      el.id === id ? { ...el, ...newAttrs } : el
-    );
-    setElements(updatedElements);
-    saveHistory(updatedElements);
+    const node = e.target;
+
+    // Use functional update to get latest element state
+    setElements((prevElements) => {
+      const element = prevElements.find((el) => el.id === id);
+      if (!element) return prevElements;
+
+      const scaleX = node.scaleX();
+      const scaleY = node.scaleY();
+
+      // For images, preserve the flip state (sign of scaleX/scaleY)
+      // For other elements, reset scale to 1 and apply to width/height
+      if (element.type === "image") {
+        // Get the original scale values (for flip state) from current element
+        const elementScaleX = element.scaleX !== undefined ? element.scaleX : 1;
+        const elementScaleY = element.scaleY !== undefined ? element.scaleY : 1;
+        const signX = elementScaleX < 0 ? -1 : 1;
+        const signY = elementScaleY < 0 ? -1 : 1;
+
+        // Get original dimensions from element (not node, as node may be scaled)
+        const originalWidth = element.width || 100;
+        const originalHeight = element.height || 100;
+
+        // Calculate new dimensions based on absolute scale from transformer
+        // The transformer applies scale multiplicatively, so we use the absolute value
+        const newWidth = Math.max(5, originalWidth * Math.abs(scaleX));
+        const newHeight = Math.max(5, originalHeight * Math.abs(scaleY));
+
+        // Reset node scale to preserve flip state
+        node.scaleX(signX);
+        node.scaleY(signY);
+
+        // For images, convert adjusted position back to stored position
+        const nodeX = node.x();
+        const nodeY = node.y();
+        // Reverse the adjustment we apply during render
+        const topLeftX = nodeX - (signX < 0 ? newWidth : 0);
+        const topLeftY = nodeY - (signY < 0 ? newHeight : 0);
+
+        const newAttrs = {
+          x: topLeftX,
+          y: topLeftY,
+          width: newWidth,
+          height: newHeight,
+          rotation: node.rotation(),
+          scaleX: signX,
+          scaleY: signY,
+          // Preserve opacity and other properties
+          opacity: element.opacity !== undefined ? element.opacity : 1,
+        };
+        const updatedElements = prevElements.map((el) =>
+          el.id === id ? { ...el, ...newAttrs } : el
+        );
+        saveHistory(updatedElements);
+
+        // Force transformer to update with new bounds
+        if (transformerRef.current) {
+          setTimeout(() => {
+            const updatedNode = stageRef.current?.findOne(`#${id}`);
+            if (updatedNode && transformerRef.current) {
+              transformerRef.current.nodes([updatedNode]);
+              transformerRef.current.forceUpdate();
+              layerRef.current?.batchDraw();
+            }
+          }, 0);
+        }
+
+        return updatedElements;
+      } else {
+        // For non-image elements, use the standard approach
+        node.scaleX(1);
+        node.scaleY(1);
+
+        const newAttrs = {
+          x: node.x(),
+          y: node.y(),
+          width: Math.max(5, node.width() * scaleX),
+          height: Math.max(5, node.height() * scaleY),
+          rotation: node.rotation(),
+          // Preserve opacity and other properties
+          opacity: element.opacity !== undefined ? element.opacity : 1,
+        };
+        const updatedElements = prevElements.map((el) =>
+          el.id === id ? { ...el, ...newAttrs } : el
+        );
+        saveHistory(updatedElements);
+        return updatedElements;
+      }
+    });
   };
 
   const getSelectedElement = () => elements.find((el) => el.id === selectedId);
 
-  const updateSelectedElement = (prop, value) => {
+  const updateSelectedElement = (prop, value, skipHistory = false) => {
     if (!selectedId) return;
-    const newElements = elements.map((el) => {
-      if (el.id === selectedId) {
-        return { ...el, [prop]: value };
+    setElements((prevElements) => {
+      const newElements = prevElements.map((el) => {
+        if (el.id === selectedId) {
+          return { ...el, [prop]: value };
+        }
+        return el;
+      });
+      if (!skipHistory) {
+        saveHistory(newElements);
       }
-      return el;
+      return newElements;
     });
-    setElements(newElements);
-    saveHistory(newElements);
   };
 
   // Zoom handlers
@@ -1861,12 +2024,15 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
   return (
     <div className="h-full flex flex-col bg-gray-800 text-white">
       {/* Toolbar */}
-      <div className="bg-gray-900 p-2 flex items-center gap-2 border-b border-gray-700 relative z-50 flex-shrink-0 overflow-x-auto" style={{ pointerEvents: 'auto', minHeight: '48px' }}>
+      <div
+        className="bg-gray-900 p-2 flex items-center gap-2 border-b border-gray-700 relative z-50 flex-shrink-0 overflow-x-auto"
+        style={{ pointerEvents: "auto", minHeight: "48px" }}
+      >
         <button
           onClick={handleAddText}
           className="p-2 hover:bg-gray-700 rounded cursor-pointer"
           title="Add Text"
-          style={{ pointerEvents: 'auto' }}
+          style={{ pointerEvents: "auto" }}
         >
           <Type />
         </button>
@@ -2032,14 +2198,20 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                     ? "bg-green-600 hover:bg-green-700 text-white"
                     : "bg-gray-700 hover:bg-gray-600 text-gray-300"
                 }`}
-                title={showActualData ? "Switch to placeholder mode" : "Switch to actual data mode"}
+                title={
+                  showActualData
+                    ? "Switch to placeholder mode"
+                    : "Switch to actual data mode"
+                }
               >
                 {showActualData ? "Actual Data" : "Placeholder"}
               </button>
               {showActualData && csvData.length > 1 && (
                 <div className="flex items-center gap-1">
                   <button
-                    onClick={() => setPreviewRecordIndex(Math.max(0, previewRecordIndex - 1))}
+                    onClick={() =>
+                      setPreviewRecordIndex(Math.max(0, previewRecordIndex - 1))
+                    }
                     disabled={previewRecordIndex === 0}
                     className="px-2 py-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed rounded text-white text-xs"
                     title="Previous record"
@@ -2050,7 +2222,11 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                     {previewRecordIndex + 1}/{csvData.length}
                   </span>
                   <button
-                    onClick={() => setPreviewRecordIndex(Math.min(csvData.length - 1, previewRecordIndex + 1))}
+                    onClick={() =>
+                      setPreviewRecordIndex(
+                        Math.min(csvData.length - 1, previewRecordIndex + 1)
+                      )
+                    }
                     disabled={previewRecordIndex === csvData.length - 1}
                     className="px-2 py-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed rounded text-white text-xs"
                     title="Next record"
@@ -2075,7 +2251,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
           disabled={!selectedId}
           className="p-2 hover:bg-red-700 rounded disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
           title="Delete"
-          style={{ pointerEvents: 'auto' }}
+          style={{ pointerEvents: "auto" }}
         >
           <Trash2 />
         </button>
@@ -2085,7 +2261,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
           disabled={historyStep === 0}
           className="p-2 hover:bg-gray-700 rounded disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
           title="Undo"
-          style={{ pointerEvents: 'auto' }}
+          style={{ pointerEvents: "auto" }}
         >
           <Undo />
         </button>
@@ -2094,7 +2270,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
           disabled={historyStep === history.length - 1}
           className="p-2 hover:bg-gray-700 rounded disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
           title="Redo"
-          style={{ pointerEvents: 'auto' }}
+          style={{ pointerEvents: "auto" }}
         >
           <Redo />
         </button>
@@ -2104,7 +2280,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
           onClick={handleZoomOut}
           className="p-2 hover:bg-gray-700 rounded cursor-pointer"
           title="Zoom Out (Ctrl/Cmd + -)"
-          style={{ pointerEvents: 'auto' }}
+          style={{ pointerEvents: "auto" }}
         >
           <ZoomOut size={18} />
         </button>
@@ -2132,7 +2308,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
           onClick={handleZoomIn}
           className="p-2 hover:bg-gray-700 rounded cursor-pointer"
           title="Zoom In (Ctrl/Cmd + +)"
-          style={{ pointerEvents: 'auto' }}
+          style={{ pointerEvents: "auto" }}
         >
           <ZoomIn size={18} />
         </button>
@@ -2141,7 +2317,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
           onClick={handlePreview}
           className="p-2 bg-purple-600 hover:bg-purple-700 rounded flex items-center gap-2 mr-2 cursor-pointer"
           title="Preview"
-          style={{ pointerEvents: 'auto' }}
+          style={{ pointerEvents: "auto" }}
         >
           <Eye /> Preview
         </button>
@@ -2158,9 +2334,16 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
             }}
             disabled={isUploading || creditCheckLoading}
             className="p-2 bg-green-600 hover:bg-green-700 rounded flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-all"
-            title={isUploading ? "Uploading..." : creditCheckLoading ? "Checking credits..." : "Upload to Blockchain"}
-            style={{ pointerEvents: 'auto', position: 'relative', zIndex: 101 }}
+            title={
+              isUploading
+                ? "Uploading..."
+                : creditCheckLoading
+                ? "Checking credits..."
+                : "Upload to Blockchain"
+            }
+            style={{ pointerEvents: "auto", position: "relative", zIndex: 101 }}
             type="button"
+            ref={uploadMenuButtonRef}
           >
             {isUploading ? (
               <>
@@ -2180,102 +2363,134 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
               <div
                 className="fixed inset-0"
                 onClick={() => setShowUploadMenu(false)}
-                style={{ pointerEvents: 'auto', zIndex: 40 }}
+                style={{ pointerEvents: "auto", zIndex: 99 }}
               />
 
-              {/* Dropdown Menu */}
-              <div className="absolute right-0 mt-2 w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-2xl z-50 overflow-hidden" style={{ pointerEvents: 'auto' }}>
-                {csvData.length > 0 ? (
-                  <>
-                    <div className="px-4 py-2 bg-gray-700 border-b border-gray-600">
-                      <p className="text-xs text-gray-300 font-semibold">
-                        Upload Options ({csvData.length} records)
-                      </p>
-                    </div>
-                    <button
-                      onClick={async (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        e.nativeEvent?.stopImmediatePropagation?.();
-                        try {
-                          setShowUploadMenu(false);
-                          // Small delay to ensure menu closes before credit check
-                          await new Promise(resolve => setTimeout(resolve, 50));
-                          await checkCreditsAndExecute(
-                            "uploadToBlockChain",
-                            csvData.length,
-                            handleUploadBatchToBlockchain
-                          );
-                        } catch (error) {
-                          console.error("Error in upload batch click:", error);
-                          const errorMessage = error?.message || error?.toString() || "Unknown error";
-                          showToast.error(`Failed to initiate upload: ${errorMessage}`);
-                        }
-                      }}
-                      className="w-full px-4 py-3 text-left hover:bg-gray-700 transition-colors flex items-start gap-3 border-b border-gray-700 cursor-pointer"
-                      type="button"
-                      style={{ pointerEvents: 'auto' }}
-                    >
-                      <CloudUpload
-                        size={18}
-                        className="text-green-400 mt-0.5 flex-shrink-0"
-                      />
-                      <div>
-                        <p className="text-white font-medium text-sm">
-                          Upload as Batch (
-                          {CREDIT_COSTS.uploadToBlockChain * csvData.length}{" "}
-                          credits)
-                        </p>
-                        <p className="text-gray-400 text-xs mt-0.5">
-                          Upload {csvData.length} PDFs as a single batch with
-                          Merkle tree
-                        </p>
-                      </div>
-                    </button>
-                  </>
-                ) : (
-                  <button
-                    onClick={async (e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      e.nativeEvent?.stopImmediatePropagation?.();
-                      try {
-                        setShowUploadMenu(false);
-                        // Small delay to ensure menu closes before credit check
-                        await new Promise(resolve => setTimeout(resolve, 50));
-                        await checkCreditsAndExecute(
-                          "uploadToBlockChain",
-                          1,
-                          () => {
-                            handleUploadToBlockchain();
-                          }
-                        );
-                      } catch (error) {
-                        console.error("Error in upload click:", error);
-                        const errorMessage = error?.message || error?.toString() || "Unknown error";
-                        showToast.error(`Failed to initiate upload: ${errorMessage}`);
-                      }
+              {/* Dropdown Menu - Use portal to escape all container constraints */}
+              {(() => {
+                const button = uploadMenuButtonRef.current;
+                if (!button) return null;
+                const rect = button.getBoundingClientRect();
+                const dropdownContent = (
+                  <div
+                    className="fixed w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-2xl z-[100] overflow-hidden"
+                    style={{
+                      pointerEvents: "auto",
+                      top: `${rect.bottom + 8}px`,
+                      right: `${window.innerWidth - rect.right}px`,
                     }}
-                    className="w-full px-4 py-3 text-left hover:bg-gray-700 transition-colors flex items-start gap-3 cursor-pointer"
-                    type="button"
-                    style={{ pointerEvents: 'auto' }}
                   >
-                    <CloudUpload
-                      size={18}
-                      className="text-green-400 mt-0.5 flex-shrink-0"
-                    />
-                    <div>
-                      <p className="text-white font-medium text-sm">
-                        Upload to Blockchain ({CREDIT_COSTS.uploadToBlockChain}{" "}
-                        credits)
-                      </p>
-                      <p className="text-gray-400 text-xs mt-0.5">
-                        Upload PDF directly to IPFS and blockchain
-                      </p>
-                    </div>
-                  </button>
-                )}
-              </div>
+                    {csvData.length > 0 ? (
+                      <>
+                        <div className="px-4 py-2 bg-gray-700 border-b border-gray-600">
+                          <p className="text-xs text-gray-300 font-semibold">
+                            Upload Options ({csvData.length} records)
+                          </p>
+                        </div>
+                        <button
+                          onClick={async (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            e.nativeEvent?.stopImmediatePropagation?.();
+                            try {
+                              setShowUploadMenu(false);
+                              // Small delay to ensure menu closes before credit check
+                              await new Promise((resolve) =>
+                                setTimeout(resolve, 50)
+                              );
+                              await checkCreditsAndExecute(
+                                "uploadToBlockChain",
+                                csvData.length,
+                                handleUploadBatchToBlockchain
+                              );
+                            } catch (error) {
+                              console.error(
+                                "Error in upload batch click:",
+                                error
+                              );
+                              const errorMessage =
+                                error?.message ||
+                                error?.toString() ||
+                                "Unknown error";
+                              showToast.error(
+                                `Failed to initiate upload: ${errorMessage}`
+                              );
+                            }
+                          }}
+                          className="w-full px-4 py-3 text-left hover:bg-gray-700 transition-colors flex items-start gap-3 border-b border-gray-700 cursor-pointer"
+                          type="button"
+                          style={{ pointerEvents: "auto" }}
+                        >
+                          <CloudUpload
+                            size={18}
+                            className="text-green-400 mt-0.5 flex-shrink-0"
+                          />
+                          <div>
+                            <p className="text-white font-medium text-sm">
+                              Upload as Batch (
+                              {CREDIT_COSTS.uploadToBlockChain * csvData.length}{" "}
+                              credits)
+                            </p>
+                            <p className="text-gray-400 text-xs mt-0.5">
+                              Upload {csvData.length} PDFs as a single batch
+                              with Merkle tree
+                            </p>
+                          </div>
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        onClick={async (e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          e.nativeEvent?.stopImmediatePropagation?.();
+                          try {
+                            setShowUploadMenu(false);
+                            // Small delay to ensure menu closes before credit check
+                            await new Promise((resolve) =>
+                              setTimeout(resolve, 50)
+                            );
+                            await checkCreditsAndExecute(
+                              "uploadToBlockChain",
+                              1,
+                              () => {
+                                handleUploadToBlockchain();
+                              }
+                            );
+                          } catch (error) {
+                            console.error("Error in upload click:", error);
+                            const errorMessage =
+                              error?.message ||
+                              error?.toString() ||
+                              "Unknown error";
+                            showToast.error(
+                              `Failed to initiate upload: ${errorMessage}`
+                            );
+                          }
+                        }}
+                        className="w-full px-4 py-3 text-left hover:bg-gray-700 transition-colors flex items-start gap-3 cursor-pointer"
+                        type="button"
+                        style={{ pointerEvents: "auto" }}
+                      >
+                        <CloudUpload
+                          size={18}
+                          className="text-green-400 mt-0.5 flex-shrink-0"
+                        />
+                        <div>
+                          <p className="text-white font-medium text-sm">
+                            Upload to Blockchain (
+                            {CREDIT_COSTS.uploadToBlockChain} credits)
+                          </p>
+                          <p className="text-gray-400 text-xs mt-0.5">
+                            Upload PDF directly to IPFS and blockchain
+                          </p>
+                        </div>
+                      </button>
+                    )}
+                  </div>
+                );
+                return createPortal(dropdownContent, document.body);
+              })()}
             </>
           )}
         </div>
@@ -2286,7 +2501,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
             onClick={() => setShowExportMenu(!showExportMenu)}
             className="p-2 bg-blue-600 hover:bg-blue-700 rounded flex items-center gap-2 cursor-pointer"
             title="Export PDF Options"
-            style={{ pointerEvents: 'auto' }}
+            style={{ pointerEvents: "auto" }}
           >
             <Download /> Export PDF
           </button>
@@ -2297,11 +2512,14 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
               <div
                 className="fixed inset-0"
                 onClick={() => setShowExportMenu(false)}
-                style={{ pointerEvents: 'auto', zIndex: 40 }}
+                style={{ pointerEvents: "auto", zIndex: 40 }}
               />
 
               {/* Dropdown Menu */}
-              <div className="absolute right-0 mt-2 w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-2xl z-50 overflow-hidden" style={{ pointerEvents: 'auto' }}>
+              <div
+                className="absolute right-0 mt-2 w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-2xl z-50 overflow-hidden"
+                style={{ pointerEvents: "auto" }}
+              >
                 {csvData.length > 0 ? (
                   <>
                     <div className="px-4 py-2 bg-gray-700 border-b border-gray-600">
@@ -2321,14 +2539,22 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                             handleExportAllPDFs
                           );
                         } catch (error) {
-                          console.error("Error in export all PDFs click:", error);
-                          const errorMessage = error?.message || error?.toString() || "Unknown error";
-                          showToast.error(`Failed to initiate export: ${errorMessage}`);
+                          console.error(
+                            "Error in export all PDFs click:",
+                            error
+                          );
+                          const errorMessage =
+                            error?.message ||
+                            error?.toString() ||
+                            "Unknown error";
+                          showToast.error(
+                            `Failed to initiate export: ${errorMessage}`
+                          );
                         }
                       }}
                       className="w-full px-4 py-3 text-left hover:bg-gray-700 transition-colors flex items-start gap-3 border-b border-gray-700 cursor-pointer"
                       type="button"
-                      style={{ pointerEvents: 'auto' }}
+                      style={{ pointerEvents: "auto" }}
                     >
                       <Download
                         size={18}
@@ -2356,14 +2582,22 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                             handleExportAllAsSinglePDF
                           );
                         } catch (error) {
-                          console.error("Error in export single PDF click:", error);
-                          const errorMessage = error?.message || error?.toString() || "Unknown error";
-                          showToast.error(`Failed to initiate export: ${errorMessage}`);
+                          console.error(
+                            "Error in export single PDF click:",
+                            error
+                          );
+                          const errorMessage =
+                            error?.message ||
+                            error?.toString() ||
+                            "Unknown error";
+                          showToast.error(
+                            `Failed to initiate export: ${errorMessage}`
+                          );
                         }
                       }}
                       className="w-full px-4 py-3 text-left hover:bg-gray-700 transition-colors flex items-start gap-3 cursor-pointer"
                       type="button"
-                      style={{ pointerEvents: 'auto' }}
+                      style={{ pointerEvents: "auto" }}
                     >
                       <Download
                         size={18}
@@ -2392,13 +2626,18 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                         });
                       } catch (error) {
                         console.error("Error in export PDF click:", error);
-                        const errorMessage = error?.message || error?.toString() || "Unknown error";
-                        showToast.error(`Failed to initiate export: ${errorMessage}`);
+                        const errorMessage =
+                          error?.message ||
+                          error?.toString() ||
+                          "Unknown error";
+                        showToast.error(
+                          `Failed to initiate export: ${errorMessage}`
+                        );
                       }
                     }}
                     className="w-full px-4 py-3 text-left hover:bg-gray-700 transition-colors flex items-start gap-3 cursor-pointer"
                     type="button"
-                    style={{ pointerEvents: 'auto' }}
+                    style={{ pointerEvents: "auto" }}
                   >
                     <Download
                       size={18}
@@ -2550,7 +2789,12 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                       }
                     },
                     onDragEnd: (e) => handleDragEnd(e, el.id),
-                    onTransformEnd: (e) => handleTransformEnd(e, el.id),
+                    onTransformEnd: (e) => {
+                      // Skip transform end during programmatic transforms
+                      if (!isProgrammaticTransform.current) {
+                        handleTransformEnd(e, el.id);
+                      }
+                    },
                   };
 
                   if (el.type === "rect") {
@@ -2594,28 +2838,32 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                   if (el.type === "text") {
                     // Apply text transform
                     let displayText = el.text || "Text";
-                    
+
                     // Handle dynamic elements: show placeholder or actual data based on mode
                     if (el.isDynamic && el.dataField) {
                       if (showActualData && csvData.length > 0) {
                         // Actual Data Mode: Replace placeholder with actual CSV value
-                        const currentRecord = csvData[previewRecordIndex] || csvData[0];
+                        const currentRecord =
+                          csvData[previewRecordIndex] || csvData[0];
                         const actualValue = currentRecord[el.dataField];
                         if (actualValue !== undefined && actualValue !== null) {
                           // Replace {{fieldName}} pattern with actual value
                           displayText = displayText.replace(
-                            new RegExp(`\\{\\{${el.dataField}\\}\\}`, 'g'),
+                            new RegExp(`\\{\\{${el.dataField}\\}\\}`, "g"),
                             String(actualValue)
                           );
                           // If the text is just the placeholder pattern, replace the whole thing
                           const trimmedText = displayText.trim();
-                          if (trimmedText === `{{${el.dataField}}}` || trimmedText === el.dataField) {
+                          if (
+                            trimmedText === `{{${el.dataField}}}` ||
+                            trimmedText === el.dataField
+                          ) {
                             displayText = String(actualValue);
                           }
                         } else {
                           // If value is missing, show placeholder with indicator
                           displayText = displayText.replace(
-                            new RegExp(`\\{\\{${el.dataField}\\}\\}`, 'g'),
+                            new RegExp(`\\{\\{${el.dataField}\\}\\}`, "g"),
                             `[${el.dataField} - missing]`
                           );
                         }
@@ -2627,7 +2875,11 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                           const firstRecord = csvData[0];
                           const actualValue = firstRecord[el.dataField];
                           // If current text matches an actual value, show placeholder instead
-                          if (actualValue !== undefined && actualValue !== null && displayText === String(actualValue)) {
+                          if (
+                            actualValue !== undefined &&
+                            actualValue !== null &&
+                            displayText === String(actualValue)
+                          ) {
                             displayText = `{{${el.dataField}}}`;
                           } else {
                             // Replace {{fieldName}} pattern if it exists, or ensure it's present
@@ -2639,7 +2891,13 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                             } else {
                               // Mixed text - replace any actual value occurrences with placeholder
                               displayText = displayText.replace(
-                                new RegExp(String(actualValue).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'),
+                                new RegExp(
+                                  String(actualValue).replace(
+                                    /[.*+?^${}()|[\]\\]/g,
+                                    "\\$&"
+                                  ),
+                                  "g"
+                                ),
                                 `{{${el.dataField}}}`
                               );
                             }
@@ -2654,7 +2912,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                         }
                       }
                     }
-                    
+
                     if (el.textTransform === "uppercase") {
                       displayText = displayText.toUpperCase();
                     } else if (el.textTransform === "lowercase") {
@@ -2713,10 +2971,10 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                             .container()
                             .getBoundingClientRect();
 
-                          // Calculate the exact screen position
+                          // Calculate the exact screen position accounting for canvas scale
                           const areaPosition = {
-                            x: stageBox.left + textPosition.x,
-                            y: stageBox.top + textPosition.y,
+                            x: stageBox.left + textPosition.x * scale,
+                            y: stageBox.top + textPosition.y * scale,
                           };
 
                           const textarea = document.createElement("textarea");
@@ -2728,15 +2986,18 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                           textarea.style.top = areaPosition.y + "px";
                           textarea.style.left = areaPosition.x + "px";
 
-                          // Set minimum width based on text node
+                          // Set minimum width based on text node, accounting for scale
                           const minWidth = Math.max(
                             textNode.width() || 200,
                             100
                           );
-                          textarea.style.width = minWidth + "px";
-                          textarea.style.minHeight = textNode.fontSize() + "px";
+                          textarea.style.width = minWidth * scale + "px";
+                          textarea.style.minHeight =
+                            textNode.fontSize() * scale + "px";
 
-                          textarea.style.fontSize = textNode.fontSize() + "px";
+                          // Apply scale to font size to match visual appearance
+                          textarea.style.fontSize =
+                            textNode.fontSize() * scale + "px";
                           textarea.style.fontFamily =
                             textNode.fontFamily() || "Arial";
                           textarea.style.fontWeight =
@@ -2759,10 +3020,12 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                           textarea.style.transformOrigin = "left top";
                           textarea.style.zIndex = "10000";
 
-                          // Handle rotation
+                          // Handle rotation and scale together
                           const rotation = textNode.rotation();
                           if (rotation) {
-                            textarea.style.transform = `rotate(${rotation}deg)`;
+                            textarea.style.transform = `scale(${scale}) rotate(${rotation}deg)`;
+                          } else {
+                            textarea.style.transform = `scale(${scale})`;
                           }
 
                           // Auto-resize height
@@ -2833,7 +3096,10 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                           // Delay adding click listener to prevent immediate trigger
                           outsideClickTimeoutId = setTimeout(() => {
                             if (isTextareaRemoved) return;
-                            window.addEventListener("click", handleOutsideClick);
+                            window.addEventListener(
+                              "click",
+                              handleOutsideClick
+                            );
                           }, 100);
                         }}
                       />
@@ -2887,14 +3153,29 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                         return null; // Don't render until image is loaded
                       }
 
+                      const imageWidth = el.width || 100;
+                      const imageHeight = el.height || 100;
+                      const scaleX = el.scaleX !== undefined ? el.scaleX : 1;
+                      const scaleY = el.scaleY !== undefined ? el.scaleY : 1;
+
+                      // Calculate position adjustment for flipping
+                      // When scaleX is negative, image flips around left edge, so we need to shift right by width
+                      // When scaleY is negative, image flips around top edge, so we need to shift down by height
+                      const adjustedX = el.x + (scaleX < 0 ? imageWidth : 0);
+                      const adjustedY = el.y + (scaleY < 0 ? imageHeight : 0);
+
                       return (
                         <Image
                           {...commonProps}
                           image={imageObj}
-                          width={el.width || 100}
-                          height={el.height || 100}
+                          x={adjustedX}
+                          y={adjustedY}
+                          width={imageWidth}
+                          height={imageHeight}
                           rotation={el.rotation || 0}
                           opacity={el.opacity !== undefined ? el.opacity : 1}
+                          scaleX={scaleX}
+                          scaleY={scaleY}
                         />
                       );
                     };
@@ -2970,7 +3251,13 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                   />
                 )}
 
-                <Transformer ref={transformerRef} />
+                <Transformer
+                  ref={transformerRef}
+                  rotateEnabled={true}
+                  borderEnabled={true}
+                  anchorSize={8}
+                  anchorStrokeWidth={2}
+                />
               </Layer>
             </Stage>
           </div>
@@ -3086,14 +3373,15 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                   )}
                 </div>
 
-                {/* Opacity for shapes and circles */}
+                {/* Opacity for shapes, circles, and images */}
                 {(getSelectedElement().type === "rect" ||
-                  getSelectedElement().type === "circle") && (
+                  getSelectedElement().type === "circle" ||
+                  getSelectedElement().type === "image") && (
                   <div>
                     <label className="text-sm text-gray-400 block mb-1">
                       Opacity:{" "}
                       {Math.round(
-                        (getSelectedElement().opacity !== undefined
+                        (getSelectedElement()?.opacity !== undefined
                           ? getSelectedElement().opacity
                           : 1) * 100
                       )}
@@ -3105,16 +3393,34 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                       max="1"
                       step="0.01"
                       value={
-                        getSelectedElement().opacity !== undefined
+                        getSelectedElement()?.opacity !== undefined
                           ? getSelectedElement().opacity
                           : 1
                       }
-                      onChange={(e) =>
-                        updateSelectedElement(
-                          "opacity",
-                          parseFloat(e.target.value)
-                        )
-                      }
+                      onChange={(e) => {
+                        const newValue = parseFloat(e.target.value);
+                        setElements((prevElements) => {
+                          return prevElements.map((el) =>
+                            el.id === selectedId
+                              ? { ...el, opacity: newValue }
+                              : el
+                          );
+                        });
+                      }}
+                      onMouseUp={() => {
+                        // State is already updated by onChange, just save current state to history
+                        setElements((prevElements) => {
+                          saveHistory(prevElements);
+                          return prevElements; // Return unchanged state, just trigger saveHistory
+                        });
+                      }}
+                      onTouchEnd={() => {
+                        // State is already updated by onChange, just save current state to history
+                        setElements((prevElements) => {
+                          saveHistory(prevElements);
+                          return prevElements; // Return unchanged state, just trigger saveHistory
+                        });
+                      }}
                       className="w-full"
                     />
                   </div>
@@ -3818,7 +4124,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                         </label>
                         <input
                           type="range"
-                          min="0.1"
+                          min="-3"
                           max="3"
                           step="0.1"
                           value={getSelectedElement().scaleX || 1}
@@ -3838,7 +4144,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                         </label>
                         <input
                           type="range"
-                          min="0.1"
+                          min="-3"
                           max="3"
                           step="0.1"
                           value={getSelectedElement().scaleY || 1}
