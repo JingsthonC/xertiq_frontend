@@ -1,4 +1,5 @@
 import React from "react";
+import { createPortal } from "react-dom";
 import { X, Coins, AlertTriangle, CheckCircle, ArrowRight } from "lucide-react";
 import { CREDIT_COSTS } from "../services/api";
 
@@ -30,25 +31,25 @@ const CreditConfirmationModal = ({
     }
   };
 
-  return (
-    <div 
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center" 
-      style={{ 
-        pointerEvents: 'auto', 
+  const modalContent = (
+    <div
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+      style={{
+        pointerEvents: "auto",
         zIndex: 99999,
-        position: 'fixed',
+        position: "fixed",
         top: 0,
         left: 0,
         right: 0,
         bottom: 0,
-        isolation: 'isolate' // Create new stacking context
+        isolation: "isolate", // Create new stacking context
       }}
     >
-      <div 
-        className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4"
+      <div
+        className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 max-h-[90vh] flex flex-col"
         style={{
-          position: 'relative',
-          zIndex: 100000
+          position: "relative",
+          zIndex: 100000,
         }}
       >
         {/* Header */}
@@ -66,7 +67,7 @@ const CreditConfirmationModal = ({
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-4">
+        <div className="p-6 space-y-4 overflow-y-auto flex-1">
           {/* Operation Details */}
           <div className="flex items-start gap-3 p-4 bg-blue-50 rounded-lg">
             <div className="mt-1">
@@ -209,6 +210,9 @@ const CreditConfirmationModal = ({
       </div>
     </div>
   );
+
+  // Render modal using portal to escape container overflow constraints
+  return createPortal(modalContent, document.body);
 };
 
 export default CreditConfirmationModal;
