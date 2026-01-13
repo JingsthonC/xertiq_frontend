@@ -1,7 +1,14 @@
-import { useState, useEffect } from 'react';
-import { ArrowLeft, ExternalLink, Copy, CheckCircle, Clock, XCircle } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import useWalletStore from '../store/wallet';
+import { useState, useEffect } from "react";
+import {
+  ArrowLeft,
+  ExternalLink,
+  Copy,
+  CheckCircle,
+  Clock,
+  XCircle,
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import useWalletStore from "../store/wallet";
 
 const Transaction = () => {
   const navigate = useNavigate();
@@ -15,7 +22,7 @@ const Transaction = () => {
           await fetchTransactions();
         }
       } catch (error) {
-        console.error('Failed to load transactions:', error);
+        console.error("Failed to load transactions:", error);
       } finally {
         setLoading(false);
       }
@@ -26,11 +33,11 @@ const Transaction = () => {
 
   const getStatusIcon = (status) => {
     switch (status) {
-      case 'confirmed':
+      case "confirmed":
         return <CheckCircle className="text-green-400" size={16} />;
-      case 'pending':
+      case "pending":
         return <Clock className="text-yellow-400" size={16} />;
-      case 'failed':
+      case "failed":
         return <XCircle className="text-red-400" size={16} />;
       default:
         return <Clock className="text-gray-400" size={16} />;
@@ -43,17 +50,17 @@ const Transaction = () => {
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
   const truncateHash = (hash) => {
-    if (!hash) return 'N/A';
+    if (!hash) return "N/A";
     return `${hash.substring(0, 6)}...${hash.substring(hash.length - 6)}`;
   };
 
@@ -74,7 +81,7 @@ const Transaction = () => {
       <div className="sticky top-0 bg-gray-900/95 backdrop-blur-lg border-b border-white/10 p-4">
         <div className="flex items-center space-x-3">
           <button
-            onClick={() => navigate('/dashboard')}
+            onClick={() => navigate("/dashboard")}
             className="p-2 hover:bg-white/10 rounded-lg transition-colors"
           >
             <ArrowLeft size={20} className="text-white" />
@@ -90,8 +97,12 @@ const Transaction = () => {
             <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
               <ExternalLink size={24} className="text-gray-500" />
             </div>
-            <h3 className="text-lg font-medium text-white mb-2">No Transactions Yet</h3>
-            <p className="text-gray-400">Your blockchain transactions will appear here.</p>
+            <h3 className="text-lg font-medium text-white mb-2">
+              No Transactions Yet
+            </h3>
+            <p className="text-gray-400">
+              Your blockchain transactions will appear here.
+            </p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -104,21 +115,27 @@ const Transaction = () => {
                   <div className="flex items-center space-x-2">
                     {getStatusIcon(transaction.status)}
                     <span className="font-medium text-white capitalize">
-                      {transaction.type || 'Document Verification'}
+                      {transaction.type || "Document Verification"}
                     </span>
                   </div>
-                  <span className={`text-xs px-2 py-1 rounded-full ${
-                    transaction.status === 'confirmed' ? 'bg-green-500/20 text-green-400' :
-                    transaction.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' :
-                    'bg-red-500/20 text-red-400'
-                  }`}>
-                    {transaction.status || 'pending'}
+                  <span
+                    className={`text-xs px-2 py-1 rounded-full ${
+                      transaction.status === "confirmed"
+                        ? "bg-green-500/20 text-green-400"
+                        : transaction.status === "pending"
+                        ? "bg-yellow-500/20 text-yellow-400"
+                        : "bg-red-500/20 text-red-400"
+                    }`}
+                  >
+                    {transaction.status || "pending"}
                   </span>
                 </div>
 
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-400">Transaction Hash</span>
+                    <span className="text-sm text-gray-400">
+                      Transaction Hash
+                    </span>
                     <div className="flex items-center space-x-1">
                       <span className="text-sm font-mono text-gray-300">
                         {truncateHash(transaction.hash)}
@@ -163,8 +180,13 @@ const Transaction = () => {
                 {transaction.hash && (
                   <div className="mt-3 pt-3 border-t border-white/10">
                     <button
-                      onClick={() => window.open(`https://explorer.solana.com/tx/${transaction.hash}?cluster=devnet`, '_blank')}
-                      className="flex items-center space-x-2 text-blue-400 hover:text-blue-300 text-sm transition-colors"
+                      onClick={() =>
+                        window.open(
+                          `https://explorer.solana.com/tx/${transaction.hash}?cluster=devnet`,
+                          "_blank"
+                        )
+                      }
+                      className="flex items-center space-x-2 text-brand-secondary hover:text-brand-primary text-sm transition-colors"
                     >
                       <ExternalLink size={14} />
                       <span>View on Solana Explorer</span>

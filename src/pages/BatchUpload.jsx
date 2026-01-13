@@ -261,29 +261,29 @@ const BatchUpload = () => {
 
   if (isExt) {
     return (
-      <div className="h-full bg-gradient-to-br from-[#0a0e27] via-[#1a1347] to-[#0f0f23] text-white overflow-hidden flex flex-col">
+      <div className="h-full bg-lightest text-dark overflow-hidden flex flex-col">
         <NavigationHeader title="Batch Upload" />
 
         <div className="flex-1 overflow-y-auto p-3 space-y-4">
           {/* Compact Upload Result */}
           {uploadResult && (
-            <div className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-400/40 rounded-xl p-4">
+            <div className="bg-success-bg border border-success-border rounded-xl p-4">
               <div className="flex items-center space-x-2 mb-3">
                 <CheckCircle size={16} className="text-green-400" />
-                <h3 className="text-sm font-bold text-white">
+                <h3 className="text-sm font-bold text-dark">
                   Upload Successful!
                 </h3>
               </div>
               <div className="space-y-2">
                 <div className="bg-white/5 rounded-lg p-2">
                   <p className="text-xs text-gray-400">Batch ID</p>
-                  <p className="text-white font-mono text-xs truncate">
+                  <p className="text-dark font-mono text-xs truncate">
                     {uploadResult.batchId}
                   </p>
                 </div>
                 <div className="bg-white/5 rounded-lg p-2">
                   <p className="text-xs text-gray-400">Documents</p>
-                  <p className="text-white font-bold">
+                  <p className="text-dark font-bold">
                     {uploadResult.documentCount}
                   </p>
                 </div>
@@ -305,21 +305,24 @@ const BatchUpload = () => {
           <div className="space-y-3">
             {/* PDF Upload */}
             <div>
-              <h3 className="text-sm font-semibold text-white mb-2 flex items-center space-x-2">
-                <FileText size={16} className="text-blue-400" />
+              <h3 className="text-sm font-semibold text-dark mb-2 flex items-center space-x-2">
+                <FileText size={16} className="text-brand-secondary" />
                 <span>PDF Certificates</span>
               </h3>
               <div
                 {...getPdfRootProps()}
                 className={`border-2 border-dashed rounded-xl p-4 text-center transition-all duration-300 cursor-pointer ${
                   isPdfDragActive
-                    ? "border-blue-400 bg-blue-500/10"
+                    ? "border-brand-secondary bg-brand-primary/10"
                     : "border-gray-600 hover:border-gray-500 bg-white/5"
                 }`}
               >
                 <input {...getPdfInputProps()} />
-                <FileText size={24} className="mx-auto mb-2 text-blue-400" />
-                <p className="text-xs text-white mb-1">
+                <FileText
+                  size={24}
+                  className="mx-auto mb-2 text-brand-secondary"
+                />
+                <p className="text-xs text-dark mb-1">
                   {isPdfDragActive ? "Drop PDFs here" : "Upload PDFs"}
                 </p>
                 <p className="text-xs text-gray-400">Drag & drop or click</p>
@@ -340,10 +343,10 @@ const BatchUpload = () => {
                         <div className="flex items-center space-x-2 flex-1 min-w-0">
                           <FileText
                             size={12}
-                            className="text-blue-400 flex-shrink-0"
+                            className="text-brand-secondary flex-shrink-0"
                           />
                           <div className="min-w-0 flex-1">
-                            <p className="text-white text-xs font-medium truncate">
+                            <p className="text-dark text-xs font-medium truncate">
                               {fileData.name}
                             </p>
                             <p className="text-xs text-gray-400">
@@ -366,7 +369,7 @@ const BatchUpload = () => {
 
             {/* CSV Upload */}
             <div>
-              <h3 className="text-sm font-semibold text-white mb-2 flex items-center space-x-2">
+              <h3 className="text-sm font-semibold text-dark mb-2 flex items-center space-x-2">
                 <FileSpreadsheet size={16} className="text-green-400" />
                 <span>CSV Metadata</span>
               </h3>
@@ -380,7 +383,7 @@ const BatchUpload = () => {
               >
                 <input {...getCsvInputProps()} />
                 <Database size={24} className="mx-auto mb-2 text-green-400" />
-                <p className="text-xs text-white mb-1">
+                <p className="text-xs text-dark mb-1">
                   {isCsvDragActive ? "Drop CSV here" : "Upload CSV"}
                 </p>
                 <p className="text-xs text-gray-400">Metadata file</p>
@@ -396,7 +399,7 @@ const BatchUpload = () => {
                         className="text-green-400 flex-shrink-0"
                       />
                       <div className="min-w-0 flex-1">
-                        <p className="text-white text-xs font-medium truncate">
+                        <p className="text-dark text-xs font-medium truncate">
                           {csvFile.name}
                         </p>
                         <p className="text-xs text-gray-400">
@@ -421,19 +424,19 @@ const BatchUpload = () => {
             <div className="bg-white/5 backdrop-blur border border-white/10 rounded-xl p-3">
               <div className="flex items-center space-x-2 mb-3">
                 <Search size={14} className="text-purple-400" />
-                <h3 className="text-sm font-bold text-white">File Check</h3>
+                <h3 className="text-sm font-bold text-dark">File Check</h3>
               </div>
 
               <div className="grid grid-cols-2 gap-2 mb-3">
-                <div className="bg-blue-500/10 border border-blue-400/40 rounded-lg p-2">
-                  <p className="text-xs text-blue-300">PDFs</p>
-                  <p className="text-sm font-bold text-white">
+                <div className="bg-brand-primary/10 border border-brand-secondary/40 rounded-lg p-2">
+                  <p className="text-xs text-brand-secondary">PDFs</p>
+                  <p className="text-sm font-bold text-dark">
                     {comparison.totalPdfs}
                   </p>
                 </div>
                 <div className="bg-emerald-500/10 border border-emerald-400/40 rounded-lg p-2">
                   <p className="text-xs text-emerald-300">Matched</p>
-                  <p className="text-sm font-bold text-white">
+                  <p className="text-sm font-bold text-dark">
                     {comparison.matched.length}
                   </p>
                 </div>
@@ -485,7 +488,7 @@ const BatchUpload = () => {
 
           {/* Compact Upload Button */}
           {(pdfFiles.length > 0 || csvFile) && (
-            <div className="sticky bottom-0 bg-gradient-to-t from-[#0a0e27] pt-2">
+            <div className="sticky bottom-0 bg-lightest pt-2">
               <button
                 onClick={handleBatchUpload}
                 disabled={
@@ -494,7 +497,7 @@ const BatchUpload = () => {
                   !csvFile ||
                   (comparison && !comparison.isValid)
                 }
-                className="w-full bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-3 rounded-xl flex items-center justify-center space-x-2 transition-colors font-semibold"
+                className="w-full bg-dark hover:bg-darker disabled:opacity-50 disabled:cursor-not-allowed text-lightest px-4 py-3 rounded-xl flex items-center justify-center space-x-2 transition-colors font-semibold"
               >
                 {isUploading ? (
                   <>
@@ -516,14 +519,14 @@ const BatchUpload = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0a0e27] via-[#1a1347] to-[#0f0f23]">
+    <div className="min-h-screen bg-lightest">
       <Header />
       <NavigationHeader title="Batch Upload" />
 
       <div className="p-8">
         <div className="max-w-6xl mx-auto">
           <div className="mb-8">
-            <h2 className="text-3xl font-bold text-white mb-2">
+            <h2 className="text-3xl font-bold text-dark mb-2">
               Batch Certificate Processing
             </h2>
             <p className="text-gray-300 mb-4">
@@ -532,8 +535,8 @@ const BatchUpload = () => {
             </p>
 
             {/* CSV Format Information */}
-            <div className="bg-blue-500/10 border border-blue-400/40 rounded-xl p-4">
-              <h4 className="text-blue-300 font-semibold mb-2">
+            <div className="bg-brand-primary/10 border border-brand-secondary/40 rounded-xl p-4">
+              <h4 className="text-brand-secondary font-semibold mb-2">
                 CSV Format Requirements:
               </h4>
               <p className="text-sm text-gray-300 mb-2">
@@ -566,10 +569,10 @@ const BatchUpload = () => {
 
           {/* Upload Result */}
           {uploadResult && (
-            <div className="mb-8 bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-400/40 rounded-2xl p-6">
+            <div className="mb-8 bg-success-bg border border-success-border rounded-2xl p-6">
               <div className="flex items-center space-x-3 mb-4">
                 <CheckCircle size={24} className="text-green-400" />
-                <h3 className="text-xl font-bold text-white">
+                <h3 className="text-xl font-bold text-dark">
                   Batch Upload Successful!
                 </h3>
               </div>
@@ -577,25 +580,25 @@ const BatchUpload = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div className="bg-white/5 rounded-xl p-4">
                   <p className="text-sm text-gray-400">Batch ID</p>
-                  <p className="text-white font-mono text-sm">
+                  <p className="text-dark font-mono text-sm">
                     {uploadResult.batchId}
                   </p>
                 </div>
                 <div className="bg-white/5 rounded-xl p-4">
                   <p className="text-sm text-gray-400">Documents Processed</p>
-                  <p className="text-white font-bold text-xl">
+                  <p className="text-dark font-bold text-xl">
                     {uploadResult.documentCount}
                   </p>
                 </div>
                 <div className="bg-white/5 rounded-xl p-4">
                   <p className="text-sm text-gray-400">Merkle Root</p>
-                  <p className="text-white font-mono text-xs break-all">
+                  <p className="text-dark font-mono text-xs break-all">
                     {uploadResult.merkleRoot}
                   </p>
                 </div>
                 <div className="bg-white/5 rounded-xl p-4">
                   <p className="text-sm text-gray-400">Blockchain Network</p>
-                  <p className="text-white">
+                  <p className="text-dark">
                     {uploadResult.verification?.blockchain_network}
                   </p>
                 </div>
@@ -606,7 +609,7 @@ const BatchUpload = () => {
                   href={uploadResult.explorerUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center space-x-2 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-400/40 rounded-lg px-4 py-2 text-blue-300 transition-colors"
+                  className="inline-flex items-center space-x-2 bg-brand-primary/20 hover:bg-brand-primary/30 border border-brand-secondary/40 rounded-lg px-4 py-2 text-brand-secondary transition-colors"
                 >
                   <ExternalLink size={16} />
                   <span>View on Solana Explorer</span>
@@ -615,7 +618,7 @@ const BatchUpload = () => {
 
               {/* Documents List */}
               <div className="mt-6">
-                <h4 className="text-lg font-semibold text-white mb-3">
+                <h4 className="text-lg font-semibold text-dark mb-3">
                   Processed Documents
                 </h4>
                 <div className="grid gap-3 max-h-60 overflow-y-auto">
@@ -625,7 +628,7 @@ const BatchUpload = () => {
                       className="bg-white/5 rounded-lg p-3 flex items-center justify-between"
                     >
                       <div>
-                        <p className="text-white font-medium">{doc.filename}</p>
+                        <p className="text-dark font-medium">{doc.filename}</p>
                         <p className="text-sm text-gray-400">
                           {doc.student_name}
                         </p>
@@ -636,7 +639,7 @@ const BatchUpload = () => {
                             href={`${window.location.origin}/verify?doc=${doc.id}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-blue-400 hover:text-blue-300 text-sm"
+                            className="text-brand-secondary hover:text-brand-primary text-sm"
                           >
                             Verify
                           </a>
@@ -664,21 +667,24 @@ const BatchUpload = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
             {/* PDF Files Upload */}
             <div>
-              <h3 className="text-xl font-semibold text-white mb-4 flex items-center space-x-2">
-                <FileText size={24} className="text-blue-400" />
+              <h3 className="text-xl font-semibold text-dark mb-4 flex items-center space-x-2">
+                <FileText size={24} className="text-brand-secondary" />
                 <span>Certificate Files (PDF)</span>
               </h3>
               <div
                 {...getPdfRootProps()}
                 className={`border-2 border-dashed rounded-2xl p-8 text-center transition-all duration-300 cursor-pointer ${
                   isPdfDragActive
-                    ? "border-blue-400 bg-blue-500/10"
+                    ? "border-brand-secondary bg-brand-primary/10"
                     : "border-gray-600 hover:border-gray-500 bg-white/5"
                 }`}
               >
                 <input {...getPdfInputProps()} />
-                <FileText size={40} className="mx-auto mb-4 text-blue-400" />
-                <h4 className="text-lg font-semibold text-white mb-2">
+                <FileText
+                  size={40}
+                  className="mx-auto mb-4 text-brand-secondary"
+                />
+                <h4 className="text-lg font-semibold text-dark mb-2">
                   {isPdfDragActive
                     ? "Drop PDF files here"
                     : "Upload PDF Certificates"}
@@ -688,7 +694,7 @@ const BatchUpload = () => {
                 </p>
                 <button
                   type="button"
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+                  className="bg-dark hover:bg-darker text-lightest px-4 py-2 rounded-lg transition-colors"
                 >
                   Choose PDF Files
                 </button>
@@ -708,7 +714,7 @@ const BatchUpload = () => {
                       <div className="flex items-center space-x-3">
                         <FileText size={20} className="text-blue-400" />
                         <div>
-                          <p className="text-white text-sm font-medium">
+                          <p className="text-dark text-sm font-medium">
                             {fileData.name}
                           </p>
                           <p className="text-xs text-gray-400">
@@ -730,7 +736,7 @@ const BatchUpload = () => {
 
             {/* CSV Metadata Upload */}
             <div>
-              <h3 className="text-xl font-semibold text-white mb-4 flex items-center space-x-2">
+              <h3 className="text-xl font-semibold text-dark mb-4 flex items-center space-x-2">
                 <FileSpreadsheet size={24} className="text-green-400" />
                 <span>Metadata File (CSV)</span>
               </h3>
@@ -744,7 +750,7 @@ const BatchUpload = () => {
               >
                 <input {...getCsvInputProps()} />
                 <Database size={40} className="mx-auto mb-4 text-green-400" />
-                <h4 className="text-lg font-semibold text-white mb-2">
+                <h4 className="text-lg font-semibold text-dark mb-2">
                   {isCsvDragActive
                     ? "Drop CSV file here"
                     : "Upload CSV Metadata"}
@@ -754,7 +760,7 @@ const BatchUpload = () => {
                 </p>
                 <button
                   type="button"
-                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors"
+                  className="bg-success hover:opacity-90 text-lightest px-4 py-2 rounded-lg transition-colors"
                 >
                   Choose CSV File
                 </button>
@@ -768,7 +774,7 @@ const BatchUpload = () => {
                     <div className="flex items-center space-x-3">
                       <FileSpreadsheet size={20} className="text-green-400" />
                       <div>
-                        <p className="text-white text-sm font-medium">
+                        <p className="text-dark text-sm font-medium">
                           {csvFile.name}
                         </p>
                         <p className="text-xs text-gray-400">
@@ -794,28 +800,30 @@ const BatchUpload = () => {
               <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
                 <div className="flex items-center space-x-3 mb-6">
                   <Search size={24} className="text-purple-400" />
-                  <h3 className="text-xl font-bold text-white">
+                  <h3 className="text-xl font-bold text-dark">
                     File Comparison Analysis
                   </h3>
                 </div>
 
                 {/* Comparison Summary */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                  <div className="bg-blue-500/10 border border-blue-400/40 rounded-xl p-4">
-                    <p className="text-sm text-blue-300">Total PDF Files</p>
-                    <p className="text-2xl font-bold text-white">
+                  <div className="bg-brand-primary/10 border border-brand-secondary/40 rounded-xl p-4">
+                    <p className="text-sm text-brand-secondary">
+                      Total PDF Files
+                    </p>
+                    <p className="text-2xl font-bold text-dark">
                       {comparison.totalPdfs}
                     </p>
                   </div>
                   <div className="bg-green-500/10 border border-green-400/40 rounded-xl p-4">
                     <p className="text-sm text-green-300">CSV Entries</p>
-                    <p className="text-2xl font-bold text-white">
+                    <p className="text-2xl font-bold text-dark">
                       {comparison.totalCsvRows}
                     </p>
                   </div>
                   <div className="bg-emerald-500/10 border border-emerald-400/40 rounded-xl p-4">
                     <p className="text-sm text-emerald-300">Matched Files</p>
-                    <p className="text-2xl font-bold text-white">
+                    <p className="text-2xl font-bold text-dark">
                       {comparison.matched.length}
                     </p>
                   </div>
@@ -894,7 +902,7 @@ const BatchUpload = () => {
                             <div className="flex items-center space-x-3">
                               <FileText size={16} className="text-green-400" />
                               <div>
-                                <p className="text-white text-sm font-medium">
+                                <p className="text-dark text-sm font-medium">
                                   {match.filename}
                                 </p>
                                 <p className="text-green-200 text-xs">
@@ -929,7 +937,7 @@ const BatchUpload = () => {
                   !csvFile ||
                   (comparison && !comparison.isValid)
                 }
-                className="bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-8 py-3 rounded-xl flex items-center space-x-3 mx-auto transition-colors text-lg font-semibold"
+                className="bg-dark hover:bg-darker disabled:opacity-50 disabled:cursor-not-allowed text-lightest px-8 py-3 rounded-xl flex items-center space-x-3 mx-auto transition-colors text-lg font-semibold"
               >
                 {isUploading ? (
                   <>

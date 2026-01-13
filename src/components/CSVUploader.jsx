@@ -127,12 +127,12 @@ const CSVUploader = ({ onDataLoaded, onError }) => {
           onDrop={handleDrop}
           className={`border-2 border-dashed rounded-xl p-8 text-center transition-all ${
             dragActive
-              ? "border-blue-500 bg-blue-50/10"
+              ? "border-brand-secondary bg-brand-primary/10"
               : "border-white/20 hover:border-white/40"
           }`}
         >
           <div className="flex flex-col items-center space-y-4">
-            <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+            <div className="w-16 h-16 bg-gradient-to-r from-brand-primary to-brand-primaryDark rounded-full flex items-center justify-center">
               <Upload size={32} className="text-white" />
             </div>
             <div>
@@ -150,7 +150,7 @@ const CSVUploader = ({ onDataLoaded, onError }) => {
                 onChange={handleFileChange}
                 className="hidden"
               />
-              <span className="inline-block px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:opacity-90 transition-opacity">
+              <span className="inline-block px-6 py-2 bg-gradient-to-r from-brand-primary to-brand-primaryDark text-white rounded-lg hover:opacity-90 transition-opacity">
                 Choose File
               </span>
             </label>
@@ -194,7 +194,7 @@ const CSVUploader = ({ onDataLoaded, onError }) => {
                 {headers.map((header, index) => (
                   <span
                     key={index}
-                    className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-lg text-sm"
+                    className="px-3 py-1 bg-brand-primary/20 text-brand-secondary rounded-lg text-sm"
                   >
                     {header}
                   </span>
@@ -262,7 +262,7 @@ const CSVUploader = ({ onDataLoaded, onError }) => {
       {/* Loading State */}
       {isLoading && (
         <div className="text-center py-4">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-brand-primary"></div>
           <p className="text-sm text-gray-400 mt-2">Parsing CSV file...</p>
         </div>
       )}

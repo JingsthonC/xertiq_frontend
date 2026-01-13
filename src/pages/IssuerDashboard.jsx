@@ -52,14 +52,12 @@ const IssuerDashboard = () => {
       description: "Design & generate certificate PDFs",
       icon: FileText,
       action: () => navigate("/certificate-generator"),
-      gradient: "from-orange-500 to-red-400",
     },
     {
       title: "Smart Template Editor",
       description: "AI-powered template editor with smart positioning",
       icon: Wand2,
       action: () => navigate("/smart-template-editor"),
-      gradient: "from-purple-500 to-indigo-500",
       badge: "NEW",
     },
     {
@@ -67,14 +65,12 @@ const IssuerDashboard = () => {
       description: "Process multiple certificates",
       icon: Upload,
       action: () => navigate("/batch-upload"),
-      gradient: "from-blue-500 to-cyan-400",
     },
     {
       title: "Issue Certificate",
       description: "Create new certificates",
       icon: Plus,
       action: () => navigate("/batch-upload"),
-      gradient: "from-purple-500 to-pink-500",
     },
   ];
 
@@ -140,12 +136,12 @@ const IssuerDashboard = () => {
   const handleViewPDF = (doc) => {
     // Prefer displayCid (with QR code) over canonicalCid
     // Handle both formats: nested ipfs object or direct fields
-    const pdfCid = 
-      doc.ipfs?.displayCid || 
-      doc.ipfs?.canonicalCid || 
-      doc.displayCid || 
+    const pdfCid =
+      doc.ipfs?.displayCid ||
+      doc.ipfs?.canonicalCid ||
+      doc.displayCid ||
       doc.canonicalCid;
-    
+
     console.log("View PDF - Document data:", {
       doc,
       pdfCid,
@@ -154,7 +150,7 @@ const IssuerDashboard = () => {
       canonicalCid: doc.canonicalCid,
       allKeys: Object.keys(doc),
     });
-    
+
     if (pdfCid) {
       setPreviewDoc({
         title: doc.title || doc.studentName || "Document",
@@ -162,13 +158,14 @@ const IssuerDashboard = () => {
         docId: doc.docId || doc.id,
       });
     } else {
-      showToast.warning("PDF not available for this document. The document may not have been uploaded to IPFS yet.");
+      showToast.warning(
+        "PDF not available for this document. The document may not have been uploaded to IPFS yet."
+      );
     }
   };
 
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-brand-background">
       {isExt ? <ExtensionHeader /> : <Header />}
       {!isExt && <NavigationHeader />}
 
@@ -176,35 +173,41 @@ const IssuerDashboard = () => {
         {/* Stats Section */}
         {stats && (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+            <div className="bg-white backdrop-blur-xl border border-brand-border rounded-2xl p-6 shadow-lg">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-400 text-sm mb-1">Total Batches</p>
-                  <p className="text-3xl font-bold text-white">
+                  <p className="text-brand-secondary text-sm mb-1">
+                    Total Batches
+                  </p>
+                  <p className="text-3xl font-bold text-brand-text">
                     {stats.totalBatches || 0}
                   </p>
                 </div>
-                <Building2 className="text-purple-400" size={32} />
+                <Building2 className="text-brand-primaryDark" size={32} />
               </div>
             </div>
 
-            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+            <div className="bg-white backdrop-blur-xl border border-brand-border rounded-2xl p-6 shadow-lg">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-400 text-sm mb-1">Total Documents</p>
-                  <p className="text-3xl font-bold text-white">
+                  <p className="text-brand-secondary text-sm mb-1">
+                    Total Documents
+                  </p>
+                  <p className="text-3xl font-bold text-brand-text">
                     {stats.totalDocuments || 0}
                   </p>
                 </div>
-                <FileText className="text-blue-400" size={32} />
+                <FileText className="text-brand-secondary" size={32} />
               </div>
             </div>
 
-            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+            <div className="bg-white backdrop-blur-xl border border-brand-border rounded-2xl p-6 shadow-lg">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-400 text-sm mb-1">Total Holders</p>
-                  <p className="text-3xl font-bold text-white">
+                  <p className="text-brand-secondary text-sm mb-1">
+                    Total Holders
+                  </p>
+                  <p className="text-3xl font-bold text-brand-text">
                     {stats.totalHolders || 0}
                   </p>
                 </div>
@@ -212,11 +215,13 @@ const IssuerDashboard = () => {
               </div>
             </div>
 
-            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+            <div className="bg-white backdrop-blur-xl border border-brand-border rounded-2xl p-6 shadow-lg">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-400 text-sm mb-1">Certificates</p>
-                  <p className="text-3xl font-bold text-white">
+                  <p className="text-brand-secondary text-sm mb-1">
+                    Certificates
+                  </p>
+                  <p className="text-3xl font-bold text-brand-text">
                     {stats.issuedCertificates || 0}
                   </p>
                 </div>
@@ -227,23 +232,23 @@ const IssuerDashboard = () => {
         )}
 
         {/* Quick Actions Section */}
-        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 mb-8">
-          <h2 className="text-2xl font-bold text-white mb-6">Quick Actions</h2>
+        <div className="bg-white backdrop-blur-xl border border-brand-border rounded-2xl p-6 mb-8 shadow-lg">
+          <h2 className="text-2xl font-bold text-brand-text mb-6">
+            Quick Actions
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {quickActions.map((action, index) => (
               <button
                 key={index}
                 onClick={action.action}
-                className="bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl p-6 transition-all duration-200 group text-left"
+                className="bg-brand-background hover:bg-white border border-brand-border rounded-xl p-6 transition-all duration-200 group text-left shadow-md hover:shadow-lg"
               >
                 <div className="flex items-center space-x-4">
-                  <div
-                    className={`w-16 h-16 bg-gradient-to-r ${action.gradient} rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform`}
-                  >
+                  <div className="w-16 h-16 bg-dark hover:bg-darker rounded-xl flex items-center justify-center group-hover:scale-105 transition-all">
                     <action.icon size={24} className="text-white" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-white group-hover:text-blue-100 flex items-center gap-2">
+                    <h3 className="text-lg font-semibold text-dark group-hover:text-darker flex items-center gap-2">
                       {action.title}
                       {action.badge && (
                         <span className="text-xs bg-yellow-400 text-gray-900 px-2 py-1 rounded-full font-bold">
@@ -251,9 +256,7 @@ const IssuerDashboard = () => {
                         </span>
                       )}
                     </h3>
-                    <p className="text-gray-400 group-hover:text-gray-300 text-sm">
-                      {action.description}
-                    </p>
+                    <p className="text-medium text-sm">{action.description}</p>
                   </div>
                 </div>
               </button>
@@ -262,7 +265,7 @@ const IssuerDashboard = () => {
         </div>
 
         {/* Tabs */}
-        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 mb-6">
+        <div className="bg-white backdrop-blur-xl border border-brand-border rounded-2xl p-6 mb-6 shadow-lg">
           <div className="flex items-center gap-4 mb-6">
             <button
               onClick={() => {
@@ -271,7 +274,7 @@ const IssuerDashboard = () => {
               }}
               className={`px-6 py-3 rounded-xl font-semibold transition-all ${
                 activeTab === "issued"
-                  ? "bg-purple-500 text-white"
+                  ? "bg-brand-primaryDark text-white"
                   : "bg-white/5 text-gray-400 hover:bg-white/10"
               }`}
             >
@@ -284,7 +287,7 @@ const IssuerDashboard = () => {
               }}
               className={`px-6 py-3 rounded-xl font-semibold transition-all ${
                 activeTab === "held"
-                  ? "bg-purple-500 text-white"
+                  ? "bg-brand-primaryDark text-white"
                   : "bg-white/5 text-gray-400 hover:bg-white/10"
               }`}
             >
@@ -294,7 +297,10 @@ const IssuerDashboard = () => {
 
           {/* Search */}
           <div className="relative w-full max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+            <Search
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-brand-secondary"
+              size={20}
+            />
             <input
               type="text"
               placeholder={
@@ -304,31 +310,39 @@ const IssuerDashboard = () => {
               }
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-10 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+              className="w-full bg-brand-background border-2 border-brand-border rounded-xl px-10 py-2 text-brand-text placeholder-brand-secondary focus:outline-none focus:ring-2 focus:ring-brand-primary/50 focus:border-brand-primary"
             />
           </div>
         </div>
 
         {/* Content */}
         {activeTab === "issued" ? (
-          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
-            <h2 className="text-2xl font-bold text-white mb-6">
+          <div className="bg-white backdrop-blur-xl border border-brand-border rounded-2xl p-6 shadow-lg">
+            <h2 className="text-2xl font-bold text-brand-text mb-6">
               Issued Documents
             </h2>
-            <p className="text-gray-400 text-sm mb-6">
+            <p className="text-brand-secondary text-sm mb-6">
               Documents you have issued to others (single or multiple)
             </p>
 
             {loading ? (
               <div className="text-center py-12">
-                <Clock className="animate-spin text-purple-400 mx-auto mb-4" size={32} />
+                <Clock
+                  className="animate-spin text-purple-400 mx-auto mb-4"
+                  size={32}
+                />
                 <p className="text-gray-400">Loading documents...</p>
               </div>
             ) : filteredIssuedDocuments.length === 0 ? (
               <div className="text-center py-12">
-                <FileText className="text-gray-500 mx-auto mb-4" size={48} />
-                <p className="text-gray-400 text-lg">No issued documents found</p>
-                <p className="text-gray-500 text-sm mt-2">
+                <FileText
+                  className="text-brand-secondary mx-auto mb-4"
+                  size={48}
+                />
+                <p className="text-brand-text text-lg">
+                  No issued documents found
+                </p>
+                <p className="text-brand-secondary text-sm mt-2">
                   Documents you issue will appear here
                 </p>
               </div>
@@ -338,24 +352,26 @@ const IssuerDashboard = () => {
                   {filteredIssuedDocuments.map((doc) => (
                     <div
                       key={doc.id || doc.docId}
-                      className="bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition-all"
+                      className="bg-white border border-brand-border rounded-xl p-4 hover:bg-brand-background transition-all shadow-md"
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <h3 className="text-lg font-semibold text-white mb-2">
+                          <h3 className="text-lg font-semibold text-brand-text mb-2">
                             {doc.title}
                           </h3>
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                             <div>
-                              <p className="text-gray-400">Holder</p>
-                              <p className="text-white">{doc.studentName || "N/A"}</p>
-                              <p className="text-gray-500 text-xs">
+                              <p className="text-brand-secondary">Holder</p>
+                              <p className="text-brand-text">
+                                {doc.studentName || "N/A"}
+                              </p>
+                              <p className="text-brand-secondary text-xs">
                                 {doc.identityEmail}
                               </p>
                             </div>
                             <div>
-                              <p className="text-gray-400">Issued</p>
-                              <p className="text-white">
+                              <p className="text-brand-secondary">Issued</p>
+                              <p className="text-brand-text">
                                 {doc.issuedAt
                                   ? new Date(doc.issuedAt).toLocaleDateString()
                                   : "N/A"}
@@ -368,7 +384,7 @@ const IssuerDashboard = () => {
                                   href={doc.blockchain.explorerUrl}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="text-purple-400 hover:text-purple-300 flex items-center gap-1"
+                                  className="text-brand-primaryDark hover:text-brand-primary flex items-center gap-1"
                                 >
                                   View
                                   <ExternalLink size={14} />
@@ -382,7 +398,7 @@ const IssuerDashboard = () => {
                                   href={doc.verification.verifyUrl}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="text-blue-400 hover:text-blue-300 flex items-center gap-1"
+                                  className="text-brand-secondary hover:text-brand-primary flex items-center gap-1"
                                 >
                                   Verify
                                   <ExternalLink size={14} />
@@ -394,7 +410,7 @@ const IssuerDashboard = () => {
                         <div className="mt-4 flex gap-2">
                           <button
                             onClick={() => handleViewPDF(doc)}
-                            className="flex items-center gap-2 px-4 py-2 bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/30 rounded-xl text-purple-400 transition-all"
+                            className="flex items-center gap-2 px-4 py-2 bg-brand-primaryDark/20 hover:bg-brand-primaryDark/30 border border-brand-primaryDark/30 rounded-xl text-brand-secondary transition-all"
                           >
                             <Eye size={16} />
                             View PDF
@@ -434,14 +450,19 @@ const IssuerDashboard = () => {
           </div>
         ) : (
           <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
-            <h2 className="text-2xl font-bold text-white mb-6">Held Documents</h2>
+            <h2 className="text-2xl font-bold text-white mb-6">
+              Held Documents
+            </h2>
             <p className="text-gray-400 text-sm mb-6">
               Your personal authenticated documents (like a holder would see)
             </p>
 
             {loading ? (
               <div className="text-center py-12">
-                <Clock className="animate-spin text-purple-400 mx-auto mb-4" size={32} />
+                <Clock
+                  className="animate-spin text-purple-400 mx-auto mb-4"
+                  size={32}
+                />
                 <p className="text-gray-400">Loading documents...</p>
               </div>
             ) : filteredHeldDocuments.length === 0 ? (
@@ -487,13 +508,17 @@ const IssuerDashboard = () => {
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                               <div>
                                 <p className="text-gray-400">Issuer</p>
-                                <p className="text-white">{doc.issuer || "N/A"}</p>
+                                <p className="text-white">
+                                  {doc.issuer || "N/A"}
+                                </p>
                               </div>
                               <div>
                                 <p className="text-gray-400">Issued</p>
                                 <p className="text-white">
                                   {doc.issuedAt
-                                    ? new Date(doc.issuedAt).toLocaleDateString()
+                                    ? new Date(
+                                        doc.issuedAt
+                                      ).toLocaleDateString()
                                     : "N/A"}
                                 </p>
                               </div>
@@ -585,4 +610,3 @@ const IssuerDashboard = () => {
 };
 
 export default IssuerDashboard;
-

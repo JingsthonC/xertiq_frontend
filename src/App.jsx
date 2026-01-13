@@ -187,6 +187,7 @@ import HolderDashboard from "./pages/HolderDashboard";
 import IssuerDashboard from "./pages/IssuerDashboard";
 import SuperAdminDashboard from "./pages/SuperAdminDashboard";
 import LoadingSpinner from "./components/LoadingSpinner";
+import EmbeddableVerify from "./components/EmbeddableVerify";
 
 // Detect if running as Chrome extension
 const isExtension = () => {
@@ -210,13 +211,14 @@ const getContainerClass = () => {
 const ProtectedRoute = ({ children, allowedRoles = null }) => {
   const location = useLocation();
   const { isAuthenticated, userRole, user } = useWalletStore();
-  const normalizedRole = userRole?.toUpperCase() || user?.role?.toUpperCase() || "USER";
+  const normalizedRole =
+    userRole?.toUpperCase() || user?.role?.toUpperCase() || "USER";
   const isSuperAdmin = normalizedRole === "SUPER_ADMIN";
-  
+
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
-  
+
   // SUPER_ADMIN can ONLY access /super-admin routes
   // If they try to access any other route, redirect them
   if (isSuperAdmin) {
@@ -227,7 +229,7 @@ const ProtectedRoute = ({ children, allowedRoles = null }) => {
     // Redirect all other routes to super-admin
     return <Navigate to="/super-admin/platform-overview" replace />;
   }
-  
+
   // If route has specific role requirements and user doesn't match, redirect
   if (allowedRoles && !allowedRoles.includes(normalizedRole)) {
     // Redirect to appropriate dashboard based on role
@@ -236,19 +238,22 @@ const ProtectedRoute = ({ children, allowedRoles = null }) => {
     }
     return <Navigate to="/dashboard" replace />;
   }
-  
+
   return children;
 };
 
 // Public route wrapper for authenticated users
 const PublicRoute = ({ children }) => {
   const { isAuthenticated, userRole, user } = useWalletStore();
-  const normalizedRole = userRole?.toUpperCase() || user?.role?.toUpperCase() || "USER";
+  const normalizedRole =
+    userRole?.toUpperCase() || user?.role?.toUpperCase() || "USER";
   const isSuperAdmin = normalizedRole === "SUPER_ADMIN";
-  
+
   if (isAuthenticated) {
     // Redirect SUPER_ADMIN to super admin dashboard, others to regular dashboard
-    return <Navigate to={isSuperAdmin ? "/super-admin" : "/dashboard"} replace />;
+    return (
+      <Navigate to={isSuperAdmin ? "/super-admin" : "/dashboard"} replace />
+    );
   }
   return children;
 };
@@ -256,11 +261,14 @@ const PublicRoute = ({ children }) => {
 // Root redirect component
 const RootRedirect = () => {
   const { isAuthenticated, userRole, user } = useWalletStore();
-  const normalizedRole = userRole?.toUpperCase() || user?.role?.toUpperCase() || "USER";
+  const normalizedRole =
+    userRole?.toUpperCase() || user?.role?.toUpperCase() || "USER";
   const isSuperAdmin = normalizedRole === "SUPER_ADMIN";
-  
+
   if (isAuthenticated) {
-    return <Navigate to={isSuperAdmin ? "/super-admin" : "/dashboard"} replace />;
+    return (
+      <Navigate to={isSuperAdmin ? "/super-admin" : "/dashboard"} replace />
+    );
   }
   return <Navigate to="/login" replace />;
 };
@@ -328,9 +336,15 @@ function App() {
       element: <Verify />, // Public route - no authentication required
     },
     {
+      path: "/embed/verify",
+      element: <EmbeddableVerify />, // Embeddable verification widget
+    },
+    {
       path: "/dashboard",
       element: (
-        <ProtectedRoute allowedRoles={["USER", "HOLDER", "ISSUER", "ADMIN", "VALIDATOR"]}>
+        <ProtectedRoute
+          allowedRoles={["USER", "HOLDER", "ISSUER", "ADMIN", "VALIDATOR"]}
+        >
           <Dashboard />
         </ProtectedRoute>
       ),
@@ -362,7 +376,9 @@ function App() {
     {
       path: "/purchase-credits",
       element: (
-        <ProtectedRoute allowedRoles={["USER", "HOLDER", "ISSUER", "ADMIN", "VALIDATOR"]}>
+        <ProtectedRoute
+          allowedRoles={["USER", "HOLDER", "ISSUER", "ADMIN", "VALIDATOR"]}
+        >
           <PurchaseCredits />
         </ProtectedRoute>
       ),
@@ -427,10 +443,10 @@ function App() {
 
   if (isInitializing) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-600 to-purple-700 flex items-center justify-center">
+      <div className="min-h-screen bg-lightest flex items-center justify-center">
         <div className="text-center">
           <LoadingSpinner size="lg" />
-          <p className="text-white mt-4 text-lg">
+          <p className="text-dark mt-4 text-lg">
             Initializing XertiQ Wallet...
           </p>
         </div>

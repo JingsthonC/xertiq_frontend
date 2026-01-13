@@ -41,7 +41,9 @@ const ExtensionHeader = () => {
             <div className="flex items-center space-x-1">
               <div
                 className={`w-1.5 h-1.5 rounded-full ${
-                  userRole?.toLowerCase() === "issuer" ? "bg-purple-400" : "bg-blue-400"
+                  userRole?.toLowerCase() === "issuer"
+                    ? "bg-purple-400"
+                    : "bg-blue-400"
                 }`}
               ></div>
               <p className="text-xs text-gray-300 capitalize">{userRole}</p>
@@ -99,11 +101,11 @@ const ExtensionHeader = () => {
                   <div className="mb-2 p-3 bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-400/20 rounded-xl">
                     <div className="flex items-center space-x-2">
                       <div className="w-8 h-8 bg-gradient-to-r from-blue-500/30 to-purple-500/30 rounded-lg flex items-center justify-center">
-                        <User size={14} className="text-blue-300" />
+                        <User size={14} className="text-brand-secondary" />
                       </div>
                       <div>
                         <p className="text-sm font-medium text-white">User</p>
-                        <p className="text-xs text-blue-300">
+                        <p className="text-xs text-brand-secondary">
                           {user?.email || "admin@xertiq.com"}
                         </p>
                       </div>
@@ -124,7 +126,10 @@ const ExtensionHeader = () => {
                       </div>
                       <div className="flex-1 text-left">
                         <p className="font-medium">
-                          Switch to {userRole?.toLowerCase() === "issuer" ? "Holder" : "Issuer"}
+                          Switch to{" "}
+                          {userRole?.toLowerCase() === "issuer"
+                            ? "Holder"
+                            : "Issuer"}
                         </p>
                         <p className="text-xs text-gray-500">
                           {userRole?.toLowerCase() === "issuer"
@@ -145,7 +150,10 @@ const ExtensionHeader = () => {
                       className="w-full flex items-center space-x-3 px-3 py-3 text-sm text-gray-300 hover:bg-white/10 hover:text-white rounded-xl transition-all duration-200 group"
                     >
                       <div className="w-8 h-8 bg-gradient-to-r from-purple-500/20 to-indigo-500/20 border border-purple-400/30 rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform">
-                        <FolderOpen size={14} className="text-purple-400" />
+                        <FolderOpen
+                          size={14}
+                          className="text-brand-primaryDark"
+                        />
                       </div>
                       <div className="flex-1 text-left">
                         <p className="font-medium">My Issued Documents</p>
@@ -187,7 +195,7 @@ const ExtensionHeader = () => {
                     className="w-full flex items-center space-x-3 px-3 py-3 text-sm text-gray-300 hover:bg-white/10 hover:text-white rounded-xl transition-all duration-200 group"
                   >
                     <div className="w-8 h-8 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border border-blue-400/30 rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform">
-                      <Settings size={14} className="text-blue-400" />
+                      <Settings size={14} className="text-brand-secondary" />
                     </div>
                     <div className="flex-1 text-left">
                       <p className="font-medium">Settings</p>

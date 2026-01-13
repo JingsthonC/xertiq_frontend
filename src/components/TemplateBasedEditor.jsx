@@ -247,7 +247,7 @@ const TemplateBasedEditor = ({
       <div className="space-y-6">
         <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
           <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-            <Wand2 className="text-purple-400" size={24} />
+            <Wand2 className="text-brand-primaryDark" size={24} />
             Smart Template Editor
           </h3>
           <p className="text-gray-400 mb-6">
@@ -260,7 +260,7 @@ const TemplateBasedEditor = ({
             {/* Template Upload */}
             <div>
               <h4 className="text-white font-medium mb-3 flex items-center gap-2">
-                <FileText className="text-blue-400" size={18} />
+                <FileText className="text-brand-secondary" size={18} />
                 Template File
               </h4>
               <div
@@ -296,7 +296,10 @@ const TemplateBasedEditor = ({
                   </div>
                 ) : (
                   <>
-                    <Upload className="mx-auto mb-3 text-blue-400" size={32} />
+                    <Upload
+                      className="mx-auto mb-3 text-brand-secondary"
+                      size={32}
+                    />
                     <p className="text-white mb-2">Upload Template</p>
                     <p className="text-sm text-gray-400">
                       PDF, Word, or Image files
@@ -363,7 +366,7 @@ const TemplateBasedEditor = ({
                 {dataSource.headers.map((header, index) => (
                   <span
                     key={index}
-                    className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-lg text-sm"
+                    className="px-3 py-1 bg-brand-primary/20 text-brand-secondary rounded-lg text-sm"
                   >
                     {header}
                   </span>
@@ -390,7 +393,7 @@ const TemplateBasedEditor = ({
             <div className="mt-6 flex justify-end">
               <button
                 onClick={handleProceedToEditor}
-                className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-semibold hover:opacity-90 transition-opacity flex items-center gap-2"
+                className="px-6 py-3 bg-gradient-to-r from-brand-primaryDark to-brand-primary text-white rounded-xl font-semibold hover:opacity-90 transition-opacity flex items-center gap-2"
               >
                 <Wand2 size={18} />
                 Open Editor with Smart Positioning
@@ -400,7 +403,8 @@ const TemplateBasedEditor = ({
 
           {/* Loading State */}
           {isLoading && (
-            <div className="mt-4 flex items-center justify-center gap-2 text-blue-400">
+            <div className="mt-4 flex items-center justify-center gap-2 text-brand-secondary">
+              >
               <Loader className="animate-spin" size={20} />
               <span>Processing files...</span>
             </div>
@@ -457,7 +461,7 @@ const TemplateBasedEditor = ({
                 <div className="flex gap-2">
                   <button
                     onClick={addTextElement}
-                    className="px-3 py-1 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg text-sm flex items-center gap-1"
+                    className="px-3 py-1 bg-brand-primary/20 hover:bg-brand-primary/30 text-brand-secondary rounded-lg text-sm flex items-center gap-1"
                   >
                     <Type size={14} />
                     Add Text
@@ -790,8 +794,3 @@ const TemplateBasedEditor = ({
 };
 
 export default TemplateBasedEditor;
-
-
-
-
-

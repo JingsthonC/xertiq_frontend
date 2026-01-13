@@ -1,5 +1,15 @@
 import { useState } from "react";
-import { UserPlus, Eye, EyeOff, Loader, Shield, Check, X, Building2, User } from "lucide-react";
+import {
+  UserPlus,
+  Eye,
+  EyeOff,
+  Loader,
+  Shield,
+  Check,
+  X,
+  Building2,
+  User,
+} from "lucide-react";
 import apiService from "../services/api";
 import { useNavigate } from "react-router-dom";
 
@@ -12,6 +22,8 @@ const Register = () => {
     password: "",
     confirmPassword: "",
     role: "USER", // Default to USER (Holder)
+    organizationName: "",
+    organizationLogo: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -56,6 +68,8 @@ const Register = () => {
         firstName: formData.firstName,
         lastName: formData.lastName,
         role: formData.role,
+        organizationName: formData.organizationName || null,
+        organizationLogo: formData.organizationLogo || null,
       });
 
       console.log("Registration successful:", response);
@@ -72,6 +86,8 @@ const Register = () => {
           password: "",
           confirmPassword: "",
           role: "USER",
+          organizationName: "",
+          organizationLogo: "",
         });
         setSuccess(false);
         navigate("/login");
@@ -92,7 +108,7 @@ const Register = () => {
   const ValidationItem = ({ isValid, text }) => (
     <div
       className={`flex items-center space-x-2 text-xs transition-colors duration-200 ${
-        isValid ? "text-green-400" : "text-gray-400"
+        isValid ? "text-success" : "text-medium"
       }`}
     >
       {isValid ? <Check size={12} /> : <X size={12} />}
@@ -101,53 +117,66 @@ const Register = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Animated background elements */}
-      <div className="absolute inset-0 w-full h-full">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
-      </div>
-
-      <div className="w-full max-w-md relative z-10">
-        {/* Logo and header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex w-20 h-20 bg-gradient-to-r from-purple-500 via-blue-500 to-purple-600 rounded-3xl items-center justify-center mb-6 shadow-lg shadow-purple-500/20 transform transition-all duration-300 hover:scale-110">
-            <UserPlus size={40} className="text-white" />
+    <div className="min-h-screen bg-lightest flex items-center justify-center p-3 sm:p-4 md:p-6 lg:p-8">
+      <div className="w-full max-w-7xl mx-auto grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+        {/* Left side - Branding */}
+        <div className="hidden lg:block">
+          <div className="space-y-6">
+            <div className="inline-flex w-20 h-20 bg-dark rounded-2xl items-center justify-center shadow-lg">
+              <UserPlus size={40} className="text-lightest" />
+            </div>
+            <div>
+              <h1 className="text-5xl font-bold text-dark mb-4">Join XertiQ</h1>
+              <p className="text-lg text-medium leading-relaxed">
+                Create your secure digital credential wallet. Issue and verify
+                blockchain-secured documents with ease.
+              </p>
+            </div>
           </div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-white via-purple-100 to-blue-100 bg-clip-text text-transparent mb-2">
-            Join XertiQ
-          </h1>
-          <p className="text-gray-300 text-lg">Create your secure wallet</p>
         </div>
 
-        {/* Registration card */}
-        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl shadow-black/20">
-          <div className="space-y-6">
-            {error && (
-              <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 animate-fade-in">
-                <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-                  <p className="text-red-300 text-sm font-medium">{error}</p>
-                </div>
-              </div>
-            )}
+        {/* Right side - Registration Form */}
+        <div className="w-full">
+          {/* Mobile header */}
+          <div className="text-center mb-6 lg:hidden">
+            <div className="inline-flex w-16 h-16 sm:w-20 sm:h-20 bg-dark rounded-2xl items-center justify-center mb-4 shadow-lg">
+              <UserPlus size={32} className="text-lightest sm:w-10 sm:h-10" />
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-dark mb-2">
+              Join XertiQ
+            </h1>
+            <p className="text-sm sm:text-base text-medium">
+              Create your secure wallet
+            </p>
+          </div>
 
-            {success && (
-              <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-4 animate-fade-in">
-                <div className="flex items-center space-x-2">
-                  <Check size={16} className="text-green-400" />
-                  <p className="text-green-300 text-sm font-medium">
-                    Registration successful! Redirecting...
-                  </p>
+          {/* Registration card */}
+          <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-xl border border-light">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
+              {error && (
+                <div className="bg-error-bg border border-error-border rounded-xl p-3 sm:p-4">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-error rounded-full"></div>
+                    <p className="text-error text-sm font-medium">{error}</p>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            <div className="space-y-2">
-              <label className="block text-sm font-semibold text-gray-200 mb-3">
-                First Name
-              </label>
-              <div className="relative group">
+              {success && (
+                <div className="bg-success-bg border border-success-border rounded-xl p-3 sm:p-4">
+                  <div className="flex items-center space-x-2">
+                    <Check size={16} className="text-success" />
+                    <p className="text-success text-sm font-medium">
+                      Registration successful! Redirecting...
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-1 sm:space-y-2">
+                <label className="block text-sm font-medium text-[#000000]">
+                  First Name
+                </label>
                 <input
                   type="text"
                   required
@@ -155,19 +184,16 @@ const Register = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, firstName: e.target.value })
                   }
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-300 group-hover:border-white/20"
+                  className="w-full bg-lightest border-2 border-light rounded-xl px-4 py-3 text-[#000000] placeholder-medium focus:outline-none focus:border-dark transition-all duration-200"
                   placeholder="Enter your first name"
                   disabled={isLoading}
                 />
-                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500/10 to-blue-500/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <label className="block text-sm font-semibold text-gray-200 mb-3">
-                Last Name
-              </label>
-              <div className="relative group">
+              <div className="space-y-1 sm:space-y-2">
+                <label className="block text-sm font-medium text-[#000000]">
+                  Last Name
+                </label>
                 <input
                   type="text"
                   required
@@ -175,19 +201,16 @@ const Register = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, lastName: e.target.value })
                   }
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-300 group-hover:border-white/20"
+                  className="w-full bg-lightest border-2 border-light rounded-xl px-4 py-3 text-[#000000] placeholder-medium focus:outline-none focus:border-dark transition-all duration-200"
                   placeholder="Enter your last name"
                   disabled={isLoading}
                 />
-                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500/10 to-blue-500/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <label className="block text-sm font-semibold text-gray-200 mb-3">
-                Email Address
-              </label>
-              <div className="relative group">
+              <div className="space-y-1 sm:space-y-2">
+                <label className="block text-sm font-medium text-[#000000]">
+                  Email Address
+                </label>
                 <input
                   type="email"
                   required
@@ -195,237 +218,263 @@ const Register = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, email: e.target.value })
                   }
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-300 group-hover:border-white/20"
+                  className="w-full bg-lightest border-2 border-light rounded-xl px-4 py-3 text-[#000000] placeholder-medium focus:outline-none focus:border-dark transition-all duration-200"
                   placeholder="Enter your email address"
                   disabled={isLoading}
                 />
-                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500/10 to-blue-500/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <label className="block text-sm font-semibold text-gray-200 mb-3">
-                Account Type
-              </label>
-              <div className="grid grid-cols-2 gap-4">
-                <button
-                  type="button"
-                  onClick={() => setFormData({ ...formData, role: "USER" })}
-                  className={`relative p-4 rounded-xl border-2 transition-all duration-300 ${
-                    formData.role === "USER"
-                      ? "border-purple-500 bg-purple-500/20"
-                      : "border-white/10 bg-white/5 hover:border-white/20"
-                  }`}
-                  disabled={isLoading}
-                >
-                  <div className="flex flex-col items-center space-y-2">
-                    <User
-                      size={24}
-                      className={
-                        formData.role === "USER"
-                          ? "text-purple-400"
-                          : "text-gray-400"
-                      }
-                    />
-                    <span
-                      className={`text-sm font-medium ${
-                        formData.role === "USER"
-                          ? "text-purple-300"
-                          : "text-gray-300"
-                      }`}
-                    >
-                      Holder
-                    </span>
-                    <span className="text-xs text-gray-400 text-center">
-                      Receive documents
-                    </span>
-                  </div>
-                  {formData.role === "USER" && (
-                    <div className="absolute top-2 right-2">
-                      <Check size={16} className="text-purple-400" />
+              <div className="space-y-1 sm:space-y-2">
+                <label className="block text-sm font-medium text-[#000000] mb-3">
+                  Account Type
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, role: "USER" })}
+                    className={`relative p-4 rounded-xl border-2 transition-all duration-200 ${
+                      formData.role === "USER"
+                        ? "border-dark bg-dark/10"
+                        : "border-light bg-white hover:border-medium"
+                    }`}
+                    disabled={isLoading}
+                  >
+                    <div className="flex flex-col items-center space-y-2">
+                      <User
+                        size={24}
+                        className={
+                          formData.role === "USER" ? "text-dark" : "text-medium"
+                        }
+                      />
+                      <span
+                        className={`text-sm font-medium ${
+                          formData.role === "USER" ? "text-dark" : "text-medium"
+                        }`}
+                      >
+                        Holder
+                      </span>
+                      <span className="text-xs text-medium text-center">
+                        Receive documents
+                      </span>
                     </div>
-                  )}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setFormData({ ...formData, role: "ISSUER" })}
-                  className={`relative p-4 rounded-xl border-2 transition-all duration-300 ${
-                    formData.role === "ISSUER"
-                      ? "border-blue-500 bg-blue-500/20"
-                      : "border-white/10 bg-white/5 hover:border-white/20"
-                  }`}
-                  disabled={isLoading}
-                >
-                  <div className="flex flex-col items-center space-y-2">
-                    <Building2
-                      size={24}
-                      className={
-                        formData.role === "ISSUER"
-                          ? "text-blue-400"
-                          : "text-gray-400"
-                      }
-                    />
-                    <span
-                      className={`text-sm font-medium ${
-                        formData.role === "ISSUER"
-                          ? "text-blue-300"
-                          : "text-gray-300"
-                      }`}
-                    >
-                      Issuer
-                    </span>
-                    <span className="text-xs text-gray-400 text-center">
-                      Issue documents
-                    </span>
-                  </div>
-                  {formData.role === "ISSUER" && (
-                    <div className="absolute top-2 right-2">
-                      <Check size={16} className="text-blue-400" />
-                    </div>
-                  )}
-                </button>
-              </div>
-              <p className="text-xs text-gray-400 mt-2">
-                {formData.role === "USER"
-                  ? "Holders can view documents issued to them"
-                  : "Issuers can create and manage document batches"}
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <label className="block text-sm font-semibold text-gray-200 mb-3">
-                Password
-              </label>
-              <div className="relative group">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  required
-                  value={formData.password}
-                  onChange={(e) =>
-                    setFormData({ ...formData, password: e.target.value })
-                  }
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 pr-12 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-300 group-hover:border-white/20"
-                  placeholder="Create a strong password"
-                  disabled={isLoading}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors duration-200 p-1"
-                >
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                </button>
-                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500/10 to-blue-500/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
-              </div>
-
-              {formData.password && (
-                <div className="mt-3 p-3 bg-white/5 rounded-lg border border-white/10">
-                  <p className="text-xs text-gray-300 mb-2 font-medium">
-                    Password requirements:
-                  </p>
-                  <div className="grid grid-cols-1 gap-1">
-                    <ValidationItem
-                      isValid={passwordValidations.length}
-                      text="At least 8 characters"
-                    />
-                    <ValidationItem
-                      isValid={passwordValidations.uppercase}
-                      text="One uppercase letter"
-                    />
-                    <ValidationItem
-                      isValid={passwordValidations.lowercase}
-                      text="One lowercase letter"
-                    />
-                    <ValidationItem
-                      isValid={passwordValidations.number}
-                      text="One number"
-                    />
-                    <ValidationItem
-                      isValid={passwordValidations.special}
-                      text="One special character"
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <label className="block text-sm font-semibold text-gray-200 mb-3">
-                Confirm Password
-              </label>
-              <div className="relative group">
-                <input
-                  type="password"
-                  required
-                  value={formData.confirmPassword}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      confirmPassword: e.target.value,
-                    })
-                  }
-                  className={`w-full bg-white/5 border rounded-xl px-4 py-4 text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-all duration-300 group-hover:border-white/20 ${
-                    formData.confirmPassword
-                      ? passwordsMatch
-                        ? "border-green-500/50 focus:ring-green-500/50 focus:border-green-500/50"
-                        : "border-red-500/50 focus:ring-red-500/50 focus:border-red-500/50"
-                      : "border-white/10 focus:ring-purple-500/50 focus:border-purple-500/50"
-                  }`}
-                  placeholder="Confirm your password"
-                  disabled={isLoading}
-                />
-                {formData.confirmPassword && (
-                  <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
-                    {passwordsMatch ? (
-                      <Check size={20} className="text-green-400" />
-                    ) : (
-                      <X size={20} className="text-red-400" />
+                    {formData.role === "USER" && (
+                      <div className="absolute top-2 right-2">
+                        <Check size={16} className="text-dark" />
+                      </div>
                     )}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, role: "ISSUER" })}
+                    className={`relative p-4 rounded-xl border-2 transition-all duration-200 ${
+                      formData.role === "ISSUER"
+                        ? "border-dark bg-dark/10"
+                        : "border-light bg-white hover:border-medium"
+                    }`}
+                    disabled={isLoading}
+                  >
+                    <div className="flex flex-col items-center space-y-2">
+                      <Building2
+                        size={24}
+                        className={
+                          formData.role === "ISSUER"
+                            ? "text-dark"
+                            : "text-medium"
+                        }
+                      />
+                      <span
+                        className={`text-sm font-medium ${
+                          formData.role === "ISSUER"
+                            ? "text-dark"
+                            : "text-medium"
+                        }`}
+                      >
+                        Issuer
+                      </span>
+                      <span className="text-xs text-medium text-center">
+                        Issue documents
+                      </span>
+                    </div>
+                    {formData.role === "ISSUER" && (
+                      <div className="absolute top-2 right-2">
+                        <Check size={16} className="text-dark" />
+                      </div>
+                    )}
+                  </button>
+                </div>
+                <p className="text-xs text-medium mt-2">
+                  {formData.role === "USER"
+                    ? "Holders can view documents issued to them"
+                    : "Issuers can create and manage document batches"}
+                </p>
+              </div>
+
+              {/* Organization fields - show only for ISSUER role */}
+              <div
+                className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                  formData.role === "ISSUER"
+                    ? "max-h-48 opacity-100"
+                    : "max-h-0 opacity-0"
+                }`}
+              >
+                <div className="space-y-1 sm:space-y-2 bg-medium/10 border border-light rounded-xl p-4">
+                  <label className="block text-sm font-medium text-[#000000] mb-1">
+                    Organization Name{" "}
+                    <span className="text-xs text-medium">
+                      (Required for Issuers)
+                    </span>
+                  </label>
+                  <div className="relative">
+                    <Building2
+                      className="absolute left-4 top-1/2 transform -translate-y-1/2 text-medium"
+                      size={18}
+                    />
+                    <input
+                      type="text"
+                      required={formData.role === "ISSUER"}
+                      value={formData.organizationName}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          organizationName: e.target.value,
+                        })
+                      }
+                      className="w-full bg-white border-2 border-light rounded-xl pl-12 pr-4 py-3 text-[#000000] placeholder-medium focus:outline-none focus:border-dark transition-all duration-200"
+                      placeholder="e.g., Harvard University, Tech Corp"
+                      disabled={isLoading}
+                    />
+                  </div>
+                  <p className="text-xs text-medium mt-1">
+                    Your organization name will appear on all certificates you
+                    issue
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-1 sm:space-y-2">
+                <label className="block text-sm font-medium text-[#000000]">
+                  Password
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    required
+                    value={formData.password}
+                    onChange={(e) =>
+                      setFormData({ ...formData, password: e.target.value })
+                    }
+                    className="w-full bg-lightest border-2 border-light rounded-xl px-4 py-3 pr-12 text-[#000000] placeholder-medium focus:outline-none focus:border-dark transition-all duration-200"
+                    placeholder="Create a strong password"
+                    disabled={isLoading}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-medium hover:text-dark transition-colors"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+
+                {formData.password && (
+                  <div className="mt-3 p-3 bg-medium/10 rounded-xl border border-light">
+                    <p className="text-xs text-[#000000] mb-2 font-medium">
+                      Password requirements:
+                    </p>
+                    <div className="grid grid-cols-1 gap-1">
+                      <ValidationItem
+                        isValid={passwordValidations.length}
+                        text="At least 8 characters"
+                      />
+                      <ValidationItem
+                        isValid={passwordValidations.uppercase}
+                        text="One uppercase letter"
+                      />
+                      <ValidationItem
+                        isValid={passwordValidations.lowercase}
+                        text="One lowercase letter"
+                      />
+                      <ValidationItem
+                        isValid={passwordValidations.number}
+                        text="One number"
+                      />
+                      <ValidationItem
+                        isValid={passwordValidations.special}
+                        text="One special character"
+                      />
+                    </div>
                   </div>
                 )}
-                <div
-                  className={`absolute inset-0 rounded-xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none ${
-                    formData.confirmPassword
-                      ? passwordsMatch
-                        ? "bg-gradient-to-r from-green-500/10 to-green-500/10"
-                        : "bg-gradient-to-r from-red-500/10 to-red-500/10"
-                      : "bg-gradient-to-r from-purple-500/10 to-blue-500/10"
-                  }`}
-                ></div>
               </div>
-            </div>
 
-            <button
-              type="button"
-              onClick={handleSubmit}
-              disabled={
-                isLoading ||
-                !passwordsMatch ||
-                !Object.values(passwordValidations).every((v) => v)
-              }
-              className="w-full bg-gradient-to-r from-purple-500 via-blue-500 to-purple-600 hover:from-purple-600 hover:via-blue-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 flex items-center justify-center space-x-3 shadow-lg shadow-purple-500/25 transform hover:scale-[1.02] active:scale-[0.98]"
-            >
-              {isLoading ? (
-                <>
-                  <Loader size={22} className="animate-spin" />
-                  <span className="text-lg">Creating Wallet...</span>
-                </>
-              ) : (
-                <>
-                  <Shield size={22} />
-                  <span className="text-lg">Create Secure Wallet</span>
-                </>
-              )}
-            </button>
+              <div className="space-y-1 sm:space-y-2">
+                <label className="block text-sm font-medium text-[#000000]">
+                  Confirm Password
+                </label>
+                <div className="relative">
+                  <input
+                    type="password"
+                    required
+                    value={formData.confirmPassword}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        confirmPassword: e.target.value,
+                      })
+                    }
+                    className={`w-full bg-lightest border-2 rounded-xl px-4 py-3 pr-12 text-[#000000] placeholder-medium focus:outline-none transition-all duration-200 ${
+                      formData.confirmPassword
+                        ? passwordsMatch
+                          ? "border-success-border focus:border-success"
+                          : "border-error-border focus:border-error"
+                        : "border-light focus:border-dark"
+                    }`}
+                    placeholder="Confirm your password"
+                    disabled={isLoading}
+                  />
+                  {formData.confirmPassword && (
+                    <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                      {passwordsMatch ? (
+                        <Check size={18} className="text-success" />
+                      ) : (
+                        <X size={18} className="text-error" />
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={
+                  isLoading ||
+                  !passwordsMatch ||
+                  !Object.values(passwordValidations).every((v) => v)
+                }
+                className="w-full bg-dark hover:bg-darker disabled:opacity-50 disabled:cursor-not-allowed text-lightest font-semibold py-3 px-6 rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg transform hover:scale-[1.01] active:scale-[0.99]"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader size={18} className="animate-spin" />
+                    <span>Creating Wallet...</span>
+                  </>
+                ) : (
+                  <>
+                    <Shield size={18} />
+                    <span>Create Secure Wallet</span>
+                  </>
+                )}
+              </button>
+            </form>
           </div>
 
-          <div className="relative my-8">
+          <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-white/10"></div>
+              <div className="w-full border-t border-light"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-slate-900 text-gray-400 font-medium">
+              <span className="px-4 bg-white text-medium font-medium">
                 Already have a wallet?
               </span>
             </div>
@@ -434,19 +483,20 @@ const Register = () => {
           <div className="text-center">
             <button
               type="button"
-              className="inline-flex items-center space-x-2 text-purple-400 hover:text-purple-300 font-semibold transition-colors duration-200 group"
+              onClick={() => navigate("/login")}
+              className="inline-flex items-center space-x-2 text-dark hover:text-darker font-semibold transition-colors duration-200 group"
             >
               <span>Sign in to your wallet</span>
               <UserPlus
-                size={18}
+                size={16}
                 className="transform group-hover:translate-x-1 transition-transform duration-200"
               />
             </button>
           </div>
         </div>
 
-        <div className="text-center mt-6">
-          <div className="inline-flex items-center space-x-2 text-xs text-gray-400 bg-white/5 px-4 py-2 rounded-full border border-white/10">
+        <div className="text-center mt-6 lg:mt-0">
+          <div className="inline-flex items-center space-x-2 text-xs text-medium bg-white px-4 py-2 rounded-full border border-light shadow-sm">
             <Shield size={14} />
             <span>End-to-end encrypted • Your keys, your crypto</span>
           </div>
@@ -457,22 +507,3 @@ const Register = () => {
 };
 
 export default Register;
-
-// Add animation styles
-const style = document.createElement("style");
-style.textContent = `
-  @keyframes fade-in {
-    from {
-      opacity: 0;
-      transform: translateY(-10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  .animate-fade-in {
-    animation: fade-in 0.3s ease-out;
-  }
-`;
-document.head.appendChild(style);

@@ -1,8 +1,28 @@
 /* src/index.css */
 @import "tailwindcss";
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+
+@theme {
+  /* ColorHunt Fresh Mint & Blue Palette */
+  /* https://colorhunt.co/palette/f8fcfbc9fdd779d1c36892d5 */
+  --color-lightest: #f8fcfb;
+  --color-light: #c9fdd7;
+  --color-medium: #79d1c3;
+  --color-dark: #6892d5;
+  --color-darker: #5278b8;
+
+  /* State Colors */
+  --color-success: #16a34a;
+  --color-error: #dc2626;
+  --color-success-bg: #f0fdf4;
+  --color-success-border: #bbf7d0;
+  --color-error-bg: #fef2f2;
+  --color-error-border: #fecaca;
+}
+
+body {
+  background: #f8fcfb;
+  color: #6892d5;
+}
 
 /* Smooth fade-in animation for tab transitions */
 @keyframes fadeIn {
@@ -29,7 +49,7 @@ input[type="range"].flex-1 {
   appearance: none !important;
   width: 100%;
   height: 6px !important;
-  background: rgba(255, 255, 255, 0.1) !important;
+  background: rgba(201, 181, 156, 0.35) !important;
   border-radius: 3px !important;
   outline: none !important;
   transition: background 0.2s ease;
@@ -40,7 +60,7 @@ input[type="range"].flex-1 {
 input[type="range"]:hover,
 input[type="range"].w-full:hover,
 input[type="range"].flex-1:hover {
-  background: rgba(255, 255, 255, 0.15) !important;
+  background: rgba(201, 181, 156, 0.5) !important;
 }
 
 /* Webkit (Chrome, Safari, Edge) - Thumb */
@@ -51,11 +71,11 @@ input[type="range"].flex-1::-webkit-slider-thumb {
   appearance: none !important;
   width: 14px !important;
   height: 14px !important;
-  background: #fbbf24 !important;
+  background: #c9b59c !important;
   border-radius: 50% !important;
   cursor: pointer !important;
   transition: all 0.2s ease !important;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+  box-shadow: 0 2px 4px rgba(201, 181, 156, 0.35) !important;
   margin-top: -4px !important;
   border: none !important;
 }
@@ -65,8 +85,8 @@ input[type="range"].w-full:hover::-webkit-slider-thumb,
 input[type="range"].flex-1:hover::-webkit-slider-thumb {
   width: 18px !important;
   height: 18px !important;
-  background: #f59e0b !important;
-  box-shadow: 0 3px 6px rgba(251, 191, 36, 0.4) !important;
+  background: #b8a48a !important;
+  box-shadow: 0 3px 6px rgba(184, 164, 138, 0.45) !important;
   margin-top: -6px !important;
 }
 
@@ -78,8 +98,8 @@ input[type="range"].flex-1:active::-webkit-slider-thumb,
 input[type="range"].flex-1:focus::-webkit-slider-thumb {
   width: 20px !important;
   height: 20px !important;
-  background: #d97706 !important;
-  box-shadow: 0 4px 8px rgba(251, 191, 36, 0.6) !important;
+  background: #b8a48a !important;
+  box-shadow: 0 4px 8px rgba(184, 164, 138, 0.4) !important;
   margin-top: -7px !important;
 }
 
@@ -89,12 +109,12 @@ input[type="range"].w-full::-moz-range-thumb,
 input[type="range"].flex-1::-moz-range-thumb {
   width: 14px !important;
   height: 14px !important;
-  background: #fbbf24 !important;
+  background: #c9b59c !important;
   border-radius: 50% !important;
   cursor: pointer !important;
   border: none !important;
   transition: all 0.2s ease !important;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+  box-shadow: 0 2px 4px rgba(201, 181, 156, 0.35) !important;
 }
 
 input[type="range"]:hover::-moz-range-thumb,
@@ -102,8 +122,8 @@ input[type="range"].w-full:hover::-moz-range-thumb,
 input[type="range"].flex-1:hover::-moz-range-thumb {
   width: 18px !important;
   height: 18px !important;
-  background: #f59e0b !important;
-  box-shadow: 0 3px 6px rgba(251, 191, 36, 0.4) !important;
+  background: #b8a48a !important;
+  box-shadow: 0 3px 6px rgba(184, 164, 138, 0.45) !important;
 }
 
 input[type="range"]:active::-moz-range-thumb,
@@ -114,8 +134,8 @@ input[type="range"].flex-1:active::-moz-range-thumb,
 input[type="range"].flex-1:focus::-moz-range-thumb {
   width: 20px !important;
   height: 20px !important;
-  background: #d97706 !important;
-  box-shadow: 0 4px 8px rgba(251, 191, 36, 0.6) !important;
+  background: #b8a48a !important;
+  box-shadow: 0 4px 8px rgba(184, 164, 138, 0.4) !important;
 }
 
 /* Track styling - Webkit */
@@ -124,7 +144,7 @@ input[type="range"].w-full::-webkit-slider-runnable-track,
 input[type="range"].flex-1::-webkit-slider-runnable-track {
   width: 100% !important;
   height: 6px !important;
-  background: rgba(255, 255, 255, 0.1) !important;
+  background: rgba(201, 181, 156, 0.35) !important;
   border-radius: 3px !important;
   cursor: pointer;
 }
@@ -132,7 +152,7 @@ input[type="range"].flex-1::-webkit-slider-runnable-track {
 input[type="range"]:hover::-webkit-slider-runnable-track,
 input[type="range"].w-full:hover::-webkit-slider-runnable-track,
 input[type="range"].flex-1:hover::-webkit-slider-runnable-track {
-  background: rgba(255, 255, 255, 0.15) !important;
+  background: rgba(201, 181, 156, 0.5) !important;
 }
 
 /* Track styling - Firefox */
@@ -141,7 +161,7 @@ input[type="range"].w-full::-moz-range-track,
 input[type="range"].flex-1::-moz-range-track {
   width: 100% !important;
   height: 6px !important;
-  background: rgba(255, 255, 255, 0.1) !important;
+  background: rgba(201, 181, 156, 0.35) !important;
   border-radius: 3px !important;
   cursor: pointer;
 }
@@ -149,5 +169,5 @@ input[type="range"].flex-1::-moz-range-track {
 input[type="range"]:hover::-moz-range-track,
 input[type="range"].w-full:hover::-moz-range-track,
 input[type="range"].flex-1:hover::-moz-range-track {
-  background: rgba(255, 255, 255, 0.15) !important;
+  background: rgba(201, 181, 156, 0.5) !important;
 }

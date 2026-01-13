@@ -78,131 +78,126 @@ const DesignerComparison = () => {
     }
   };
 
-  const handleTemplateChange = useCallback(
-    async (updatedTemplate) => {
-      // Update the shared template state
-      setTemplate(updatedTemplate);
+  const handleTemplateChange = useCallback(async (updatedTemplate) => {
+    // Update the shared template state
+    setTemplate(updatedTemplate);
 
-      // Update loadedTemplate to keep them in sync
-      setLoadedTemplate(updatedTemplate);
+    // Update loadedTemplate to keep them in sync
+    setLoadedTemplate(updatedTemplate);
 
-      // Check if we should use canvas-based generation for pixel-perfect accuracy
-      const useCanvas =
-        updatedTemplate.useCanvasGeneration && updatedTemplate.fabricCanvas;
+    // Check if we should use canvas-based generation for pixel-perfect accuracy
+    const useCanvas =
+      updatedTemplate.useCanvasGeneration && updatedTemplate.fabricCanvas;
 
-      // Handle batch PDF generation
-      if (updatedTemplate.batchGenerate && updatedTemplate.csvData) {
-        const csvRecords = updatedTemplate.csvData;
-        const batchInfo = updatedTemplate.batchInfo || null;
+    // Handle batch PDF generation
+    if (updatedTemplate.batchGenerate && updatedTemplate.csvData) {
+      const csvRecords = updatedTemplate.csvData;
+      const batchInfo = updatedTemplate.batchInfo || null;
 
-        try {
-          let pdfs;
+      try {
+        let pdfs;
 
-          if (useCanvas) {
-            // Use canvas-based generation for pixel-perfect accuracy
-            console.log(
-              "🎨 Using canvas-based generation for pixel-perfect PDFs"
-            );
-            console.log("📦 Batch Info:", batchInfo);
-            pdfs = await canvasPdfGenerator.generateBatch(
-              updatedTemplate.fabricCanvas,
-              updatedTemplate,
-              csvRecords,
-              batchInfo // Pass batch info for course/batch name
-            );
-          } else {
-            // Fallback to element-based generation
-            pdfs = csvRecords.map((record, index) => {
-              // Merge batch info with record data
-              const mergedData = { ...record };
-              if (batchInfo) {
-                if (batchInfo.courseName) {
-                  mergedData.course = batchInfo.courseName;
-                  mergedData.courseName = batchInfo.courseName;
-                }
-                if (batchInfo.batchName) {
-                  mergedData.batch = batchInfo.batchName;
-                  mergedData.batchName = batchInfo.batchName;
-                }
+        if (useCanvas) {
+          // Use canvas-based generation for pixel-perfect accuracy
+          console.log(
+            "🎨 Using canvas-based generation for pixel-perfect PDFs"
+          );
+          console.log("📦 Batch Info:", batchInfo);
+          pdfs = await canvasPdfGenerator.generateBatch(
+            updatedTemplate.fabricCanvas,
+            updatedTemplate,
+            csvRecords,
+            batchInfo // Pass batch info for course/batch name
+          );
+        } else {
+          // Fallback to element-based generation
+          pdfs = csvRecords.map((record, index) => {
+            // Merge batch info with record data
+            const mergedData = { ...record };
+            if (batchInfo) {
+              if (batchInfo.courseName) {
+                mergedData.course = batchInfo.courseName;
+                mergedData.courseName = batchInfo.courseName;
               }
+              if (batchInfo.batchName) {
+                mergedData.batch = batchInfo.batchName;
+                mergedData.batchName = batchInfo.batchName;
+              }
+            }
 
-              const pdf = pdfGenerator.generateSingleCertificate(
-                updatedTemplate,
-                mergedData
-              );
-              return {
-                pdf,
-                filename: `certificate_${
-                  record.name || record.fullname || index + 1
-                }.pdf`,
-                recipient: record,
-              };
-            });
-          }
-
-          // Store for preview instead of downloading immediately
-          setBatchPreviews(pdfs);
-          setShowPreviewModal(true);
-        } catch (error) {
-          console.error("Error generating batch PDFs:", error);
-          showToast.error("Error generating PDFs. Check console for details.");
+            const pdf = pdfGenerator.generateSingleCertificate(
+              updatedTemplate,
+              mergedData
+            );
+            return {
+              pdf,
+              filename: `certificate_${
+                record.name || record.fullname || index + 1
+              }.pdf`,
+              recipient: record,
+            };
+          });
         }
 
-        // Clear the flags
-        delete updatedTemplate.batchGenerate;
-        delete updatedTemplate.csvData;
-        delete updatedTemplate.batchInfo;
+        // Store for preview instead of downloading immediately
+        setBatchPreviews(pdfs);
+        setShowPreviewModal(true);
+      } catch (error) {
+        console.error("Error generating batch PDFs:", error);
+        showToast.error("Error generating PDFs. Check console for details.");
       }
 
-      // Handle single PDF generation
-      if (updatedTemplate.generateSingle && updatedTemplate.currentRecipient) {
-        const recipient = updatedTemplate.currentRecipient;
+      // Clear the flags
+      delete updatedTemplate.batchGenerate;
+      delete updatedTemplate.csvData;
+      delete updatedTemplate.batchInfo;
+    }
 
-        try {
-          let pdf;
+    // Handle single PDF generation
+    if (updatedTemplate.generateSingle && updatedTemplate.currentRecipient) {
+      const recipient = updatedTemplate.currentRecipient;
 
-          if (useCanvas) {
-            // Use canvas-based generation for pixel-perfect accuracy
-            console.log(
-              "🎨 Using canvas-based generation for pixel-perfect PDF"
-            );
-            pdf = await canvasPdfGenerator.generateFromCanvas(
-              updatedTemplate.fabricCanvas,
-              updatedTemplate,
-              recipient
-            );
-          } else {
-            // Fallback to element-based generation
-            pdf = pdfGenerator.generateSingleCertificate(
-              updatedTemplate,
-              recipient
-            );
-          }
+      try {
+        let pdf;
 
-          const filename = `certificate_${
-            recipient.name || recipient.fullname || "recipient"
-          }.pdf`;
-
-          // Create preview URL
-          const pdfBlob = pdf.output("blob");
-          const pdfUrl = URL.createObjectURL(pdfBlob);
-
-          // Store for preview instead of downloading immediately
-          setPreviewData({ pdf, filename, recipient });
-          setPreviewPdfUrl(pdfUrl);
-          setShowPreviewModal(true);
-        } catch (error) {
-          console.error("Error generating PDF:", error);
-          showToast.error("Error generating PDF. Check console for details.");
+        if (useCanvas) {
+          // Use canvas-based generation for pixel-perfect accuracy
+          console.log("🎨 Using canvas-based generation for pixel-perfect PDF");
+          pdf = await canvasPdfGenerator.generateFromCanvas(
+            updatedTemplate.fabricCanvas,
+            updatedTemplate,
+            recipient
+          );
+        } else {
+          // Fallback to element-based generation
+          pdf = pdfGenerator.generateSingleCertificate(
+            updatedTemplate,
+            recipient
+          );
         }
 
-        // Clear the flags
-        delete updatedTemplate.generateSingle;
-        delete updatedTemplate.currentRecipient;
+        const filename = `certificate_${
+          recipient.name || recipient.fullname || "recipient"
+        }.pdf`;
+
+        // Create preview URL
+        const pdfBlob = pdf.output("blob");
+        const pdfUrl = URL.createObjectURL(pdfBlob);
+
+        // Store for preview instead of downloading immediately
+        setPreviewData({ pdf, filename, recipient });
+        setPreviewPdfUrl(pdfUrl);
+        setShowPreviewModal(true);
+      } catch (error) {
+        console.error("Error generating PDF:", error);
+        showToast.error("Error generating PDF. Check console for details.");
       }
-    },
-    []
-  );
+
+      // Clear the flags
+      delete updatedTemplate.generateSingle;
+      delete updatedTemplate.currentRecipient;
+    }
+  }, []);
 
   const downloadSinglePDF = () => {
     if (previewData) {
@@ -215,7 +210,9 @@ const DesignerComparison = () => {
       batchPreviews.forEach(({ pdf, filename }) => {
         pdfGenerator.downloadPDF(pdf, filename);
       });
-      showToast.success(`Successfully downloaded ${batchPreviews.length} certificate(s)!`);
+      showToast.success(
+        `Successfully downloaded ${batchPreviews.length} certificate(s)!`
+      );
     }
   };
 
@@ -254,7 +251,7 @@ const DesignerComparison = () => {
   const loadSavedTemplates = async () => {
     const templates = templateStorage.getAllTemplates();
     setSavedTemplates(templates);
-    
+
     // Generate thumbnails for all templates
     // Use dimensions that will fill the preview container properly
     const thumbnails = {};
@@ -262,7 +259,11 @@ const DesignerComparison = () => {
       try {
         // Generate larger thumbnail for better quality, it will be scaled down by CSS
         // Container is aspect-[3/2], so generate at 600x400 for crisp display
-        const thumbnail = await thumbnailGenerator.generateFromTemplate(tmpl, 600, 400);
+        const thumbnail = await thumbnailGenerator.generateFromTemplate(
+          tmpl,
+          600,
+          400
+        );
         thumbnails[tmpl.name] = thumbnail;
       } catch (error) {
         console.error(`Failed to generate thumbnail for ${tmpl.name}:`, error);
@@ -275,16 +276,23 @@ const DesignerComparison = () => {
     setTemplate(templateToLoad);
     setTemplateName(templateToLoad.name);
     setLoadedTemplate(templateToLoad); // Pass to Konva
-    
+
     // Regenerate thumbnail for this template to ensure it's up to date
     try {
-      const thumbnail = await thumbnailGenerator.generateFromTemplate(templateToLoad, 600, 400);
-      setTemplateThumbnails(prev => ({
+      const thumbnail = await thumbnailGenerator.generateFromTemplate(
+        templateToLoad,
+        600,
+        400
+      );
+      setTemplateThumbnails((prev) => ({
         ...prev,
-        [templateToLoad.name]: thumbnail
+        [templateToLoad.name]: thumbnail,
       }));
     } catch (error) {
-      console.error(`Failed to regenerate thumbnail for ${templateToLoad.name}:`, error);
+      console.error(
+        `Failed to regenerate thumbnail for ${templateToLoad.name}:`,
+        error
+      );
     }
   };
 
@@ -318,15 +326,14 @@ const DesignerComparison = () => {
     loadSavedTemplates();
   }, []);
 
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 p-4">
+    <div className="min-h-screen bg-lightest p-4">
       <div className="max-w-[1920px] mx-auto">
         {/* Compact Header */}
-        <div className="bg-gradient-to-r from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-4 mb-4 shadow-xl">
+        <div className="bg-white backdrop-blur-xl border border-light rounded-2xl p-4 mb-4 shadow-xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="p-2 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl shadow-lg">
+              <div className="p-2 bg-dark rounded-xl shadow-lg">
                 <Sparkles className="text-white" size={20} />
               </div>
               <div>
@@ -341,9 +348,11 @@ const DesignerComparison = () => {
 
             <div className="flex items-center gap-3">
               {/* Designer Name - Only Konva */}
-              <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-pink-500/20 to-rose-500/20 border border-pink-500/30 rounded-xl">
+              <div className="flex items-center gap-2 px-4 py-2 bg-light/50 border border-medium rounded-xl">
                 <Palette size={16} className="text-pink-400" />
-                <span className="text-sm font-semibold text-white">Konva Designer</span>
+                <span className="text-sm font-semibold text-white">
+                  Konva Designer
+                </span>
               </div>
 
               {/* Save button - visible for all designers */}
@@ -359,20 +368,19 @@ const DesignerComparison = () => {
               {/* Template Sidebar Toggle button */}
               <button
                 onClick={() => setShowSidebar(!showSidebar)}
-                className="px-4 py-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 rounded-lg transition-all shadow-lg hover:shadow-purple-500/20 flex items-center gap-2 text-sm"
+                className="px-4 py-2 bg-brand-primaryDark/20 hover:bg-brand-primaryDark/30 text-brand-secondary rounded-lg transition-all shadow-lg hover:shadow-brand-primaryDark/20 flex items-center gap-2 text-sm"
                 title={showSidebar ? "Hide Templates" : "Show Templates"}
               >
                 <FolderOpen size={16} />
                 <span>Templates ({savedTemplates.length})</span>
               </button>
-
             </div>
           </div>
         </div>
 
         {/* Save Template Dialog */}
         {showSaveDialog && (
-          <div className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/20 rounded-2xl p-4 mb-4 shadow-xl">
+          <div className="bg-success-bg border border-success-border rounded-2xl p-4 mb-4 shadow-xl">
             <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
               <Save size={20} className="text-green-400" />
               Save Template
@@ -414,12 +422,16 @@ const DesignerComparison = () => {
         )}
 
         {/* Templates Sidebar - Between Header and Editor */}
-        <div className={`bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-4 mb-4 shadow-xl transition-all duration-300 ease-in-out overflow-hidden ${
-          showSidebar ? 'max-h-[400px] opacity-100' : 'max-h-0 opacity-0 p-0 border-0 mb-0'
-        }`}>
+        <div
+          className={`bg-white backdrop-blur-xl border border-light rounded-2xl p-4 mb-4 shadow-xl transition-all duration-300 ease-in-out overflow-hidden ${
+            showSidebar
+              ? "max-h-[400px] opacity-100"
+              : "max-h-0 opacity-0 p-0 border-0 mb-0"
+          }`}
+        >
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-              <FolderOpen size={20} className="text-purple-400" />
+              <FolderOpen size={20} className="text-brand-primaryDark" />
               Templates ({savedTemplates.length})
             </h3>
             <button
@@ -437,7 +449,7 @@ const DesignerComparison = () => {
                 savedTemplates.map((tmpl) => (
                   <div
                     key={tmpl.name}
-                    className="bg-white/5 border border-white/10 rounded-xl overflow-hidden hover:bg-white/10 hover:border-purple-500/30 transition-all cursor-pointer group"
+                    className="bg-white/5 border border-white/10 rounded-xl overflow-hidden hover:bg-white/10 hover:border-brand-primaryDark/30 transition-all cursor-pointer group"
                     onClick={() => handleLoadTemplate(tmpl)}
                   >
                     {/* Template Preview - Emphasize the design */}
@@ -454,16 +466,19 @@ const DesignerComparison = () => {
                         </div>
                       )}
                       {/* Overlay on hover */}
-                      <div className="absolute inset-0 bg-purple-500/0 group-hover:bg-purple-500/10 transition-colors flex items-center justify-center">
+                      <div className="absolute inset-0 bg-brand-primaryDark/0 group-hover:bg-brand-primaryDark/10 transition-colors flex items-center justify-center">
                         <span className="text-white text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
                           Click to Load
                         </span>
                       </div>
                     </div>
-                    
+
                     {/* Template Name - Below preview, readable */}
                     <div className="p-3">
-                      <p className="text-white font-medium text-sm truncate" title={tmpl.name}>
+                      <p
+                        className="text-white font-medium text-sm truncate"
+                        title={tmpl.name}
+                      >
                         {tmpl.name}
                       </p>
                       <div className="flex items-center justify-between mt-1">
@@ -486,8 +501,13 @@ const DesignerComparison = () => {
                 ))
               ) : (
                 <div className="col-span-full text-center py-8">
-                  <FolderOpen size={48} className="text-gray-600 mx-auto mb-3" />
-                  <p className="text-gray-400 mb-2 text-sm">No saved templates yet</p>
+                  <FolderOpen
+                    size={48}
+                    className="text-gray-600 mx-auto mb-3"
+                  />
+                  <p className="text-gray-400 mb-2 text-sm">
+                    No saved templates yet
+                  </p>
                   <p className="text-xs text-gray-500">
                     Design and save your first template
                   </p>
@@ -498,10 +518,12 @@ const DesignerComparison = () => {
         </div>
 
         {/* Main Content Area - Editor */}
-        <div className={`relative overflow-hidden transition-all duration-300 ${
-          showSidebar ? 'h-[calc(100vh-540px)]' : 'h-[calc(100vh-120px)]'
-        }`}>
-          <div className="bg-gradient-to-br from-gray-800/40 to-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-2 shadow-2xl h-full">
+        <div
+          className={`relative overflow-hidden transition-all duration-300 ${
+            showSidebar ? "h-[calc(100vh-540px)]" : "h-[calc(100vh-120px)]"
+          }`}
+        >
+          <div className="bg-white backdrop-blur-xl border border-light rounded-2xl p-2 shadow-2xl h-full">
             <div className="h-full">
               <KonvaPdfDesigner
                 template={loadedTemplate || template}
@@ -514,7 +536,7 @@ const DesignerComparison = () => {
         {/* PDF Preview Modal */}
         {showPreviewModal && (
           <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-white/20 rounded-2xl shadow-2xl w-full h-full max-w-[95vw] max-h-[95vh] flex flex-col">
+            <div className="bg-white border border-light rounded-2xl shadow-2xl w-full h-full max-w-[95vw] max-h-[95vh] flex flex-col">
               {/* Modal Header */}
               <div className="flex items-center justify-between p-4 border-b border-white/10">
                 <div>
@@ -551,8 +573,8 @@ const DesignerComparison = () => {
                 ) : batchPreviews.length > 0 ? (
                   // Batch Preview - Show list
                   <div className="h-full overflow-y-auto space-y-3">
-                    <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 mb-4">
-                      <p className="text-blue-300 text-sm">
+                    <div className="bg-brand-primary/10 border border-brand-secondary/30 rounded-xl p-4 mb-4">
+                      <p className="text-brand-secondary text-sm">
                         <strong>{batchPreviews.length} certificates</strong>{" "}
                         generated and ready to download
                       </p>
@@ -564,8 +586,11 @@ const DesignerComparison = () => {
                           className="bg-white/5 border border-white/10 rounded-lg p-4 hover:bg-white/10 transition-colors"
                         >
                           <div className="flex items-center gap-3">
-                            <div className="p-2 bg-blue-500/20 rounded-lg">
-                              <FileText size={20} className="text-blue-400" />
+                            <div className="p-2 bg-brand-primary/20 rounded-lg">
+                              <FileText
+                                size={20}
+                                className="text-brand-secondary"
+                              />
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="text-white font-medium truncate">
@@ -612,7 +637,7 @@ const DesignerComparison = () => {
                   {previewData && (
                     <button
                       onClick={downloadSinglePDF}
-                      className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-green-500 to-emerald-500 hover:opacity-90 text-white rounded-lg transition-all shadow-lg text-sm"
+                      className="flex items-center gap-2 px-6 py-2.5 bg-success hover:opacity-90 text-white rounded-lg transition-all shadow-lg text-sm"
                     >
                       <Download size={16} />
                       Download Certificate
@@ -621,7 +646,7 @@ const DesignerComparison = () => {
                   {batchPreviews.length > 0 && (
                     <button
                       onClick={downloadAllPDFs}
-                      className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-blue-500 to-purple-500 hover:opacity-90 text-white rounded-lg transition-all shadow-lg text-sm"
+                      className="flex items-center gap-2 px-6 py-2.5 bg-dark hover:bg-darker text-white rounded-lg transition-all shadow-lg text-sm"
                     >
                       <Download size={16} />
                       Download All ({batchPreviews.length})

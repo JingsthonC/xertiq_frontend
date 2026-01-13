@@ -164,11 +164,18 @@ const CertificateGenerator = () => {
     }
 
     // Validate file type
-    const allowedTypes = ['application/pdf', 'image/png', 'image/jpeg', 'image/jpg', 
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 
-      'application/msword'];
+    const allowedTypes = [
+      "application/pdf",
+      "image/png",
+      "image/jpeg",
+      "image/jpg",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/msword",
+    ];
     if (!allowedTypes.includes(file.type)) {
-      showToast.error("Invalid file type. Please upload PDF, PNG, JPG, or Word (.docx) files only.");
+      showToast.error(
+        "Invalid file type. Please upload PDF, PNG, JPG, or Word (.docx) files only."
+      );
       return;
     }
 
@@ -182,14 +189,17 @@ const CertificateGenerator = () => {
     try {
       // Get current template data
       const currentTemplate = template;
-      
+
       // Update template with file
       await apiService.updateTemplate(templateId, currentTemplate, file);
       showToast.success("Template updated successfully with file!");
       loadMyTemplates();
     } catch (error) {
       console.error("Error updating template:", error);
-      showToast.error("Failed to update template: " + (error.response?.data?.message || error.message));
+      showToast.error(
+        "Failed to update template: " +
+          (error.response?.data?.message || error.message)
+      );
     } finally {
       setIsSaving(false);
     }
@@ -213,7 +223,9 @@ const CertificateGenerator = () => {
   const handleToggleVisibility = async (templateId, currentVisibility) => {
     try {
       await apiService.toggleTemplateVisibility(templateId, !currentVisibility);
-      showToast.success(`Template is now ${!currentVisibility ? "public" : "private"}`);
+      showToast.success(
+        `Template is now ${!currentVisibility ? "public" : "private"}`
+      );
       loadMyTemplates();
     } catch (error) {
       console.error("Error toggling visibility:", error);
@@ -310,10 +322,14 @@ const CertificateGenerator = () => {
         pdfGenerator.downloadPDF(pdf, `certificates_batch_${Date.now()}.pdf`);
       }
 
-      showToast.success(`Successfully generated ${csvData.length} certificate(s)!`);
+      showToast.success(
+        `Successfully generated ${csvData.length} certificate(s)!`
+      );
     } catch (error) {
       console.error("Error generating PDFs:", error);
-      showToast.error("Failed to generate PDFs. Please check your template and data.");
+      showToast.error(
+        "Failed to generate PDFs. Please check your template and data."
+      );
     } finally {
       setIsGenerating(false);
     }
@@ -343,7 +359,7 @@ const CertificateGenerator = () => {
                 <button
                   onClick={handleGeneratePreview}
                   disabled={csvData.length === 0}
-                  className="flex items-center space-x-2 px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center space-x-2 px-4 py-2 bg-light/50 hover:bg-light text-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Eye size={16} />
                   <span className="text-sm">Generate Preview</span>
@@ -378,8 +394,8 @@ const CertificateGenerator = () => {
 
               {csvData.length > 0 ? (
                 <div className="space-y-3">
-                  <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
-                    <p className="text-sm text-blue-400">
+                  <div className="bg-light/30 border border-medium/30 rounded-lg p-3">
+                    <p className="text-sm text-medium">
                       Ready to generate {csvData.length} certificate(s)
                     </p>
                   </div>
@@ -388,7 +404,7 @@ const CertificateGenerator = () => {
                     <button
                       onClick={() => handleGeneratePDFs(false)}
                       disabled={isGenerating}
-                      className="flex items-center justify-center space-x-2 px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-500 hover:opacity-90 text-white rounded-lg transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex items-center justify-center space-x-2 px-4 py-3 bg-success hover:opacity-90 text-white rounded-lg transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Download size={18} />
                       <span className="text-sm font-medium">
@@ -399,7 +415,7 @@ const CertificateGenerator = () => {
                     <button
                       onClick={() => handleGeneratePDFs(true)}
                       disabled={isGenerating}
-                      className="flex items-center justify-center space-x-2 px-4 py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white rounded-lg transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex items-center justify-center space-x-2 px-4 py-3 bg-dark hover:bg-darker text-white rounded-lg transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <FileDown size={18} />
                       <span className="text-sm font-medium">
@@ -419,7 +435,7 @@ const CertificateGenerator = () => {
                   <p className="text-gray-400 mb-2">No data uploaded</p>
                   <button
                     onClick={() => setActiveTab("data")}
-                    className="text-sm text-blue-400 hover:text-blue-300"
+                    className="text-sm text-medium hover:text-dark"
                   >
                     Upload CSV data →
                   </button>
@@ -436,7 +452,7 @@ const CertificateGenerator = () => {
 
   if (isExt) {
     return (
-      <div className="h-full bg-gradient-to-br from-[#0a0e27] via-[#1a1347] to-[#0f0f23] text-white overflow-hidden flex flex-col">
+      <div className="h-full bg-lightest text-dark overflow-hidden flex flex-col">
         <ExtensionHeader />
         <NavigationHeader title="PDF Generator" showBack={true} />
 
@@ -453,8 +469,8 @@ const CertificateGenerator = () => {
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                   activeTab === tab.id
-                    ? "bg-blue-500 text-white"
-                    : "text-gray-400 hover:text-white"
+                    ? "bg-dark text-white"
+                    : "text-gray-400 hover:text-dark"
                 }`}
               >
                 {tab.label}
@@ -473,7 +489,7 @@ const CertificateGenerator = () => {
             </button>
             <button
               onClick={() => setShowTemplateLibrary(!showTemplateLibrary)}
-              className="flex-1 flex items-center justify-center space-x-2 px-3 py-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 rounded-lg transition-colors text-sm"
+              className="flex-1 flex items-center justify-center space-x-2 px-3 py-2 bg-light/50 hover:bg-light text-medium rounded-lg transition-colors text-sm"
             >
               <FolderOpen size={14} />
               <span>Library</span>
@@ -495,7 +511,7 @@ const CertificateGenerator = () => {
                     >
                       <button
                         onClick={() => handleLoadTemplate(tmpl.name)}
-                        className="text-sm text-white hover:text-blue-400 truncate flex-1 text-left"
+                        className="text-sm text-dark hover:text-darker truncate flex-1 text-left"
                       >
                         {tmpl.name}
                       </button>
@@ -517,7 +533,7 @@ const CertificateGenerator = () => {
           )}
 
           {/* Content */}
-          <div style={{ height: 'calc(100vh - 300px)', minHeight: '600px' }}>
+          <div style={{ height: "calc(100vh - 300px)", minHeight: "600px" }}>
             {renderContent()}
           </div>
         </div>
@@ -526,7 +542,7 @@ const CertificateGenerator = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0a0e27] via-[#1a1347] to-[#0f0f23]">
+    <div className="min-h-screen bg-lightest">
       <Header />
       <NavigationHeader title="Certificate PDF Generator" showBack={true} />
 
@@ -534,10 +550,10 @@ const CertificateGenerator = () => {
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-4xl font-bold text-white mb-2">
+            <h1 className="text-4xl font-bold text-dark mb-2">
               Certificate PDF Generator
             </h1>
-            <p className="text-gray-300">
+            <p className="text-medium">
               Design certificate templates, upload CSV data, and generate PDFs
             </p>
           </div>
@@ -555,7 +571,7 @@ const CertificateGenerator = () => {
 
               <button
                 onClick={() => setShowTemplateLibrary(!showTemplateLibrary)}
-                className="flex items-center space-x-2 px-6 py-3 bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 rounded-xl transition-colors"
+                className="flex items-center space-x-2 px-6 py-3 bg-brand-primaryDark/20 hover:bg-brand-primaryDark/30 text-brand-secondary rounded-xl transition-colors"
               >
                 <FolderOpen size={18} />
                 <span>Template Library</span>
@@ -563,7 +579,7 @@ const CertificateGenerator = () => {
 
               <button
                 onClick={handleExportTemplate}
-                className="flex items-center space-x-2 px-6 py-3 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-xl transition-colors"
+                className="flex items-center space-x-2 px-6 py-3 bg-brand-primary/20 hover:bg-brand-primary/30 text-brand-secondary rounded-xl transition-colors"
               >
                 <Download size={18} />
                 <span>Export</span>
@@ -622,7 +638,7 @@ const CertificateGenerator = () => {
                     onClick={() => setTemplateVisibility("private")}
                     className={`px-4 py-2 rounded-lg text-sm transition-colors ${
                       templateVisibility === "private"
-                        ? "bg-blue-500 text-white"
+                        ? "bg-brand-primary text-white"
                         : "bg-white/5 text-gray-400 hover:bg-white/10"
                     }`}
                   >
@@ -677,7 +693,7 @@ const CertificateGenerator = () => {
                       </div>
                       <button
                         onClick={() => handleLoadTemplate(tmpl.name)}
-                        className="w-full px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg transition-colors text-sm"
+                        className="w-full px-4 py-2 bg-brand-primary/20 hover:bg-brand-primary/30 text-brand-secondary rounded-lg transition-colors text-sm"
                       >
                         Load Template
                       </button>
@@ -728,7 +744,9 @@ const CertificateGenerator = () => {
                         By: {tmpl.createdBy?.name || "Anonymous"}
                       </p>
                       <button
-                        onClick={() => handleLoadTemplateFromPlatform(tmpl.id || tmpl._id)}
+                        onClick={() =>
+                          handleLoadTemplateFromPlatform(tmpl.id || tmpl._id)
+                        }
                         className="w-full px-4 py-2 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 hover:from-yellow-500/30 hover:to-orange-500/30 text-yellow-400 rounded-lg transition-colors text-sm"
                       >
                         Use Template
@@ -792,7 +810,9 @@ const CertificateGenerator = () => {
                         </div>
                         <button
                           onClick={() =>
-                            handleDeleteTemplateFromPlatform(tmpl.id || tmpl._id)
+                            handleDeleteTemplateFromPlatform(
+                              tmpl.id || tmpl._id
+                            )
                           }
                           className="p-2 hover:bg-red-500/20 rounded-lg transition-colors"
                         >
@@ -804,7 +824,7 @@ const CertificateGenerator = () => {
                           onClick={() =>
                             handleLoadTemplateFromPlatform(tmpl.id || tmpl._id)
                           }
-                          className="w-full px-4 py-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 rounded-lg transition-colors text-sm"
+                          className="w-full px-4 py-2 bg-brand-primaryDark/20 hover:bg-brand-primaryDark/30 text-brand-secondary rounded-lg transition-colors text-sm"
                         >
                           Load Template
                         </button>
@@ -815,10 +835,13 @@ const CertificateGenerator = () => {
                             onChange={(e) => {
                               const file = e.target.files?.[0];
                               if (file) {
-                                handleUpdateTemplateWithFile(tmpl.id || tmpl._id, file);
+                                handleUpdateTemplateWithFile(
+                                  tmpl.id || tmpl._id,
+                                  file
+                                );
                               }
                               // Reset input
-                              e.target.value = '';
+                              e.target.value = "";
                             }}
                             className="hidden"
                             disabled={isSaving}
@@ -827,9 +850,12 @@ const CertificateGenerator = () => {
                         </label>
                         <button
                           onClick={() =>
-                            handleToggleVisibility(tmpl.id || tmpl._id, tmpl.isPublic)
+                            handleToggleVisibility(
+                              tmpl.id || tmpl._id,
+                              tmpl.isPublic
+                            )
                           }
-                          className="w-full px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg transition-colors text-sm"
+                          className="w-full px-4 py-2 bg-brand-primary/20 hover:bg-brand-primary/30 text-brand-secondary rounded-lg transition-colors text-sm"
                         >
                           Make {tmpl.isPublic ? "Private" : "Public"}
                         </button>
@@ -873,7 +899,10 @@ const CertificateGenerator = () => {
             </div>
 
             {/* Content Area */}
-            <div className="lg:col-span-3" style={{ height: 'calc(100vh - 200px)', minHeight: '600px' }}>
+            <div
+              className="lg:col-span-3"
+              style={{ height: "calc(100vh - 200px)", minHeight: "600px" }}
+            >
               {renderContent()}
             </div>
           </div>

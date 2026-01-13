@@ -335,7 +335,7 @@ const PaymentSuccess = () => {
         <div className="mt-10 flex flex-wrap gap-3">
           <button
             onClick={handleGoToDashboard}
-            className="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 font-semibold"
+            className="px-6 py-3 rounded-xl bg-gradient-to-r from-brand-primary to-brand-primaryDark font-semibold"
           >
             Go to dashboard
           </button>
