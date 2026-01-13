@@ -28,7 +28,7 @@ const PDFTemplateDesigner = ({
   const [dragStart, setDragStart] = useState(null);
   const [showGrid, setShowGrid] = useState(true);
   const [zoom, setZoom] = useState(0.8); // Increased from 0.5 for larger editing area
-  const [zoomInputValue, setZoomInputValue] = useState(''); // For editable zoom input
+  const [zoomInputValue, setZoomInputValue] = useState(""); // For editable zoom input
   const [isEditingZoom, setIsEditingZoom] = useState(false); // Track if zoom input is being edited
   const canvasRef = useRef(null);
 
@@ -275,14 +275,14 @@ const PDFTemplateDesigner = ({
       const percentage = Math.max(30, Math.min(150, numValue));
       setZoom(percentage / 100);
     }
-    setZoomInputValue('');
+    setZoomInputValue("");
   };
 
   const handleZoomInputKeyDown = (e) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       e.target.blur();
-    } else if (e.key === 'Escape') {
-      setZoomInputValue('');
+    } else if (e.key === "Escape") {
+      setZoomInputValue("");
       setIsEditingZoom(false);
       e.target.blur();
     }
@@ -296,7 +296,7 @@ const PDFTemplateDesigner = ({
   // Reset zoom input when not editing and zoom changes externally
   useEffect(() => {
     if (!isEditingZoom) {
-      setZoomInputValue('');
+      setZoomInputValue("");
     }
   }, [zoom, isEditingZoom]);
 
@@ -378,14 +378,14 @@ const PDFTemplateDesigner = ({
         <div className="flex flex-wrap gap-2 mt-3">
           <button
             onClick={addTextElement}
-            className="flex items-center space-x-2 px-3 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg transition-colors text-sm"
+            className="flex items-center space-x-2 px-3 py-2 bg-brand-primary/20 hover:bg-brand-primary/30 text-brand-secondary rounded-lg transition-colors text-sm"
             title="Add Text"
           >
             <Type size={14} />
             <span>Text</span>
           </button>
 
-          <label className="flex items-center space-x-2 px-3 py-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 rounded-lg transition-colors cursor-pointer text-sm">
+          <label className="flex items-center space-x-2 px-3 py-2 bg-brand-primaryDark/20 hover:bg-brand-primaryDark/30 text-brand-secondary rounded-lg transition-colors cursor-pointer text-sm">
             <ImageIcon size={14} />
             <span>Image</span>
             <input
@@ -505,7 +505,7 @@ const PDFTemplateDesigner = ({
                 onChange={(e) => {
                   if (e.target.checked) {
                     updateTemplateSettings({
-                      border: { width: 2, color: "#1e40af", margin: 15 },
+                      border: { width: 2, color: "#4A70A9", margin: 15 },
                     });
                   } else {
                     updateTemplateSettings({ border: null });
@@ -522,7 +522,7 @@ const PDFTemplateDesigner = ({
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
         {/* Canvas */}
         <div className="lg:col-span-3 bg-white/5 border border-white/10 rounded-xl p-4">
-          <div 
+          <div
             className="overflow-auto"
             onWheel={(e) => {
               // Zoom with Ctrl/Cmd + wheel
@@ -794,7 +794,7 @@ const PDFTemplateDesigner = ({
                                 dataField: field,
                               })
                             }
-                            className="px-2 py-1 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded text-xs"
+                            className="px-2 py-1 bg-brand-primary/20 hover:bg-brand-primary/30 text-brand-secondary rounded text-xs"
                           >
                             {field}
                           </button>

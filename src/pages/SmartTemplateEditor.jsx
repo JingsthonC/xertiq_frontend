@@ -77,10 +77,14 @@ const SmartTemplateEditor = () => {
         pdfGenerator.downloadPDF(pdf, `certificates_batch_${Date.now()}.pdf`);
       }
 
-      showToast.success(`Successfully generated ${dataSource.data.length} certificate(s)!`);
+      showToast.success(
+        `Successfully generated ${dataSource.data.length} certificate(s)!`
+      );
     } catch (error) {
       console.error("Error generating PDFs:", error);
-      showToast.error("Failed to generate PDFs. Please check your template and data.");
+      showToast.error(
+        "Failed to generate PDFs. Please check your template and data."
+      );
     } finally {
       setIsGenerating(false);
     }
@@ -146,7 +150,7 @@ const SmartTemplateEditor = () => {
                     <button
                       onClick={handleGeneratePreview}
                       disabled={isGenerating}
-                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 flex items-center gap-2"
+                      className="px-4 py-2 bg-brand-primary hover:bg-brand-primaryDark text-white rounded-lg transition-colors disabled:opacity-50 flex items-center gap-2"
                     >
                       <Eye size={16} />
                       Generate Preview
@@ -223,7 +227,3 @@ const SmartTemplateEditor = () => {
 };
 
 export default SmartTemplateEditor;
-
-
-
-

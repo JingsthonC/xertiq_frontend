@@ -337,7 +337,7 @@ const FabricDesignerV2 = ({ template, onTemplateChange }) => {
       width: canvasWidth - 50 * CANVAS_SCALE,
       height: canvasHeight - 50 * CANVAS_SCALE,
       fill: "transparent",
-      stroke: "#2563eb",
+      stroke: "#4A70A9",
       strokeWidth: 3 * CANVAS_SCALE,
     });
     canvas.add(border);
@@ -347,7 +347,7 @@ const FabricDesignerV2 = ({ template, onTemplateChange }) => {
       left: (canvasWidth - titleWidth) / 2,
       top: 45 * CANVAS_SCALE,
       fontSize: 40 * CANVAS_SCALE,
-      fill: "#1e40af",
+      fill: "#4A70A9",
       fontFamily: "Georgia",
       fontWeight: "bold",
       width: titleWidth,
@@ -403,7 +403,7 @@ const FabricDesignerV2 = ({ template, onTemplateChange }) => {
       left: (canvasWidth - textWidth) / 2,
       top: 183 * CANVAS_SCALE,
       fontSize: 22 * CANVAS_SCALE,
-      fill: "#1e40af",
+      fill: "#4A70A9",
       fontFamily: "Georgia",
       fontWeight: "bold",
       width: textWidth,
@@ -438,7 +438,7 @@ const FabricDesignerV2 = ({ template, onTemplateChange }) => {
       width: canvasWidth - 40 * CANVAS_SCALE,
       height: canvasHeight - 40 * CANVAS_SCALE,
       fill: "transparent",
-      stroke: "#1e40af",
+      stroke: "#4A70A9",
       strokeWidth: 3 * CANVAS_SCALE,
     });
     canvas.add(outerBorder);
@@ -461,7 +461,7 @@ const FabricDesignerV2 = ({ template, onTemplateChange }) => {
       top: 40 * CANVAS_SCALE,
       width: 120 * CANVAS_SCALE,
       height: 3 * CANVAS_SCALE,
-      fill: "#1e40af",
+      fill: "#4A70A9",
       stroke: "transparent",
     });
     canvas.add(topAccent);
@@ -471,7 +471,7 @@ const FabricDesignerV2 = ({ template, onTemplateChange }) => {
       left: (canvasWidth - usableWidth * 0.7) / 2,
       top: 50 * CANVAS_SCALE,
       fontSize: 42 * CANVAS_SCALE,
-      fill: "#1e40af",
+      fill: "#4A70A9",
       fontFamily: "Georgia",
       fontWeight: "bold",
       width: usableWidth * 0.7,
@@ -512,7 +512,7 @@ const FabricDesignerV2 = ({ template, onTemplateChange }) => {
       left: (canvasWidth - usableWidth * 0.7) / 2,
       top: 135 * CANVAS_SCALE,
       fontSize: 30 * CANVAS_SCALE,
-      fill: "#1e40af",
+      fill: "#4A70A9",
       fontFamily: "Georgia",
       fontWeight: "bold",
       width: usableWidth * 0.7,
@@ -1272,7 +1272,7 @@ const FabricDesignerV2 = ({ template, onTemplateChange }) => {
               <button
                 onClick={generateBatchPDFs}
                 disabled={!batchInfo.courseName.trim()}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white rounded-lg transition-all font-medium"
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-brand-primary to-brand-primaryDark hover:from-brand-primaryDark hover:to-brand-primary disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white rounded-lg transition-all font-medium"
               >
                 <Download size={20} />
                 Generate {csvData.length} PDFs

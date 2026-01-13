@@ -26,5 +26,5 @@ if (
 
   // Set initial badge
   window.chrome.action.setBadgeText({ text: "🔒" });
-  window.chrome.action.setBadgeBackgroundColor({ color: "#3B82F6" });
+  window.chrome.action.setBadgeBackgroundColor({ color: "#4A70A9" });
 }

@@ -621,8 +621,8 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
       y: 100,
       width: 100,
       height: 100,
-      fill: "#3b82f6",
-      stroke: "#1e40af",
+      fill: "#4A70A9",
+      stroke: "#3A5A89",
       strokeWidth: 2,
       opacity: 1,
     };
@@ -3011,7 +3011,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                           textarea.style.lineHeight = "1.2";
                           textarea.style.padding = "0px";
                           textarea.style.margin = "0px";
-                          textarea.style.border = "2px solid #3b82f6";
+                          textarea.style.border = "2px solid #4A70A9";
                           textarea.style.background =
                             "rgba(255, 255, 255, 0.95)";
                           textarea.style.outline = "none";
@@ -3244,8 +3244,8 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                     y={Math.min(selectionBox.y1, selectionBox.y2)}
                     width={Math.abs(selectionBox.x2 - selectionBox.x1)}
                     height={Math.abs(selectionBox.y2 - selectionBox.y1)}
-                    fill="rgba(59, 130, 246, 0.1)"
-                    stroke="#3b82f6"
+                    fill="rgba(74, 112, 169, 0.12)"
+                    stroke="#4A70A9"
                     strokeWidth={1}
                     dash={[5, 5]}
                   />

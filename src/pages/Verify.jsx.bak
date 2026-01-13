@@ -73,27 +73,27 @@ const Verify = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[lightest] p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen bg-[#EFECE3] p-4 sm:p-6 lg:p-8">
       <div className="max-w-4xl mx-auto">
         {/* Mobile-First Header */}
         <div className="text-center mb-6 sm:mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-[dark] rounded-2xl mb-4 shadow-lg">
+          <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-[#4A70A9] rounded-2xl mb-4 shadow-lg">
             <Shield size={32} className="text-white sm:w-10 sm:h-10" />
           </div>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[dark] mb-2">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#4A70A9] mb-2">
             Document Verification
           </h1>
-          <p className="text-[dark] text-sm sm:text-base">
+          <p className="text-[#4A70A9] text-sm sm:text-base">
             Verify blockchain-secured documents instantly
           </p>
         </div>
 
         {/* Mobile-First Search Form */}
         {Object.keys(verificationData || {}).length === 0 && (
-          <div className="bg-white border border-[medium]/40 rounded-2xl p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8 shadow-sm">
+          <div className="bg-white border border-[#8FABD4]/40 rounded-2xl p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8 shadow-sm">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-[dark] mb-2">
+                <label className="block text-sm font-medium text-[#4A70A9] mb-2">
                   Document ID or Hash
                 </label>
                 <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
@@ -101,13 +101,13 @@ const Verify = () => {
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="flex-1 bg-[lightest] border-2 border-[medium]/60 rounded-xl px-4 py-3 text-[#000000] placeholder-[medium] focus:ring-2 focus:ring-[dark]/40 focus:border-[dark]/60 outline-none text-sm sm:text-base"
+                    className="flex-1 bg-[#EFECE3] border-2 border-[#8FABD4]/60 rounded-xl px-4 py-3 text-[#000000] placeholder-[#8FABD4] focus:ring-2 focus:ring-[#4A70A9]/40 focus:border-[#4A70A9]/60 outline-none text-sm sm:text-base"
                     placeholder="Enter document ID or verification hash..."
                   />
                   <button
                     type="submit"
                     disabled={loading || !searchQuery.trim()}
-                    className="w-full sm:w-auto bg-[dark] hover:bg-[darker] disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-3 rounded-xl flex items-center justify-center space-x-2 transition-colors font-medium"
+                    className="w-full sm:w-auto bg-[#4A70A9] hover:bg-[#3A5A89] disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-3 rounded-xl flex items-center justify-center space-x-2 transition-colors font-medium"
                   >
                     {loading ? (
                       <>
@@ -196,7 +196,7 @@ const Verify = () => {
             {verificationData.valid && (
               <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
                 {/* Green Validation Header */}
-                <div className="bg-gradient-to-r from-[dark] to-[darker] p-4 sm:p-6 text-white">
+                <div className="bg-gradient-to-r from-[#4A70A9] to-[#3A5A89] p-4 sm:p-6 text-white">
                   <div className="flex items-center justify-center space-x-2">
                     <CheckCircle size={24} className="flex-shrink-0" />
                     <h2 className="text-xl sm:text-2xl font-bold">
@@ -215,7 +215,7 @@ const Verify = () => {
                         className="w-20 h-20 sm:w-24 sm:h-24 object-contain"
                       />
                     ) : (
-                      <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-[dark] to-[darker] rounded-full flex items-center justify-center">
+                      <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-[#4A70A9] to-[#3A5A89] rounded-full flex items-center justify-center">
                         <GraduationCap size={40} className="text-white" />
                       </div>
                     )}
@@ -334,7 +334,7 @@ const Verify = () => {
                 {verificationData.access && (
                   <div className="p-6 sm:p-8 bg-white border-t border-gray-200">
                     <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center space-x-2">
-                      <FileText size={20} className="text-[dark]" />
+                      <FileText size={20} className="text-[#4A70A9]" />
                       <span>Viewable File(s)</span>
                     </h3>
                     <div className="space-y-3">
@@ -344,14 +344,14 @@ const Verify = () => {
                             href={verificationData.access.displayDocument}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center justify-between bg-[lightest] hover:bg-white border border-[medium]/60 rounded-xl p-4 transition-colors group"
+                            className="flex items-center justify-between bg-[#EFECE3] hover:bg-white border border-[#8FABD4]/60 rounded-xl p-4 transition-colors group"
                           >
                             <div className="flex items-center space-x-3">
-                              <div className="w-10 h-10 bg-[dark] rounded-lg flex items-center justify-center flex-shrink-0">
+                              <div className="w-10 h-10 bg-[#4A70A9] rounded-lg flex items-center justify-center flex-shrink-0">
                                 <FileText size={20} className="text-white" />
                               </div>
                               <div>
-                                <p className="font-semibold text-gray-800 group-hover:text-[darker]">
+                                <p className="font-semibold text-gray-800 group-hover:text-[#3A5A89]">
                                   {verificationData.document?.title ||
                                     `${
                                       verificationData.holder?.name ||
@@ -369,7 +369,7 @@ const Verify = () => {
                             </div>
                             <ExternalLink
                               size={20}
-                              className="text-gray-400 group-hover:text-[dark]"
+                              className="text-gray-400 group-hover:text-[#4A70A9]"
                             />
                           </a>
                         )}
@@ -379,14 +379,14 @@ const Verify = () => {
                           href={verificationData.access.canonicalDocument}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center justify-between bg-[lightest] hover:bg-white border border-[medium]/60 rounded-xl p-4 transition-colors group"
+                          className="flex items-center justify-between bg-[#EFECE3] hover:bg-white border border-[#8FABD4]/60 rounded-xl p-4 transition-colors group"
                         >
                           <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 bg-[dark] rounded-lg flex items-center justify-center flex-shrink-0">
+                            <div className="w-10 h-10 bg-[#4A70A9] rounded-lg flex items-center justify-center flex-shrink-0">
                               <Download size={20} className="text-white" />
                             </div>
                             <div>
-                              <p className="font-semibold text-gray-800 group-hover:text-[darker]">
+                              <p className="font-semibold text-gray-800 group-hover:text-[#3A5A89]">
                                 Download Original Document
                               </p>
                               <p className="text-xs text-gray-500">
@@ -396,7 +396,7 @@ const Verify = () => {
                           </div>
                           <ExternalLink
                             size={20}
-                            className="text-gray-400 group-hover:text-[dark]"
+                            className="text-gray-400 group-hover:text-[#4A70A9]"
                           />
                         </a>
                       )}
@@ -408,17 +408,17 @@ const Verify = () => {
 
             {/* Merkle Hashes - Mobile Responsive */}
             {verificationData.merkleHashes && (
-              <div className="bg-white border border-[medium]/50 rounded-2xl p-4 sm:p-6 shadow-sm">
-                <h3 className="text-lg sm:text-xl font-bold text-[dark] mb-4 flex items-center space-x-2">
-                  <Hash size={20} className="text-[dark]" />
+              <div className="bg-white border border-[#8FABD4]/50 rounded-2xl p-4 sm:p-6 shadow-sm">
+                <h3 className="text-lg sm:text-xl font-bold text-[#4A70A9] mb-4 flex items-center space-x-2">
+                  <Hash size={20} className="text-[#4A70A9]" />
                   <span>Merkle Hashes</span>
                 </h3>
 
                 <div className="space-y-3 sm:space-y-4">
                   {verificationData.merkleHashes.personal && (
-                    <div className="bg-[lightest] rounded-xl p-3 sm:p-4 border border-[medium]/40">
+                    <div className="bg-[#EFECE3] rounded-xl p-3 sm:p-4 border border-[#8FABD4]/40">
                       <div className="flex items-center justify-between mb-1">
-                        <p className="text-xs sm:text-sm text-[dark]">
+                        <p className="text-xs sm:text-sm text-[#4A70A9]">
                           Personal Merkle Hash
                         </p>
                         <button
@@ -432,7 +432,7 @@ const Verify = () => {
                           {copied ? (
                             <Check size={14} className="text-green-600" />
                           ) : (
-                            <Copy size={14} className="text-[dark]" />
+                            <Copy size={14} className="text-[#4A70A9]" />
                           )}
                         </button>
                       </div>
@@ -443,9 +443,9 @@ const Verify = () => {
                   )}
 
                   {verificationData.merkleHashes.root && (
-                    <div className="bg-[lightest] rounded-xl p-3 sm:p-4 border border-[medium]/40">
+                    <div className="bg-[#EFECE3] rounded-xl p-3 sm:p-4 border border-[#8FABD4]/40">
                       <div className="flex items-center justify-between mb-1">
-                        <p className="text-xs sm:text-sm text-[dark]">
+                        <p className="text-xs sm:text-sm text-[#4A70A9]">
                           Root Merkle Hash
                         </p>
                         <button
@@ -457,7 +457,7 @@ const Verify = () => {
                           {copied ? (
                             <Check size={14} className="text-green-600" />
                           ) : (
-                            <Copy size={14} className="text-[dark]" />
+                            <Copy size={14} className="text-[#4A70A9]" />
                           )}
                         </button>
                       </div>
@@ -472,16 +472,16 @@ const Verify = () => {
 
             {/* Blockchain Information - Mobile Responsive */}
             {verificationData.verification && (
-              <div className="bg-white border border-[medium]/50 rounded-2xl p-4 sm:p-6 shadow-sm">
-                <h3 className="text-lg sm:text-xl font-bold text-[dark] mb-4 flex items-center space-x-2">
-                  <Hash size={20} className="text-[dark]" />
+              <div className="bg-white border border-[#8FABD4]/50 rounded-2xl p-4 sm:p-6 shadow-sm">
+                <h3 className="text-lg sm:text-xl font-bold text-[#4A70A9] mb-4 flex items-center space-x-2">
+                  <Hash size={20} className="text-[#4A70A9]" />
                   <span>Blockchain Information</span>
                 </h3>
 
                 <div className="space-y-3 sm:space-y-4">
                   {verificationData.verification.blockchain_network && (
-                    <div className="bg-[lightest] rounded-xl p-3 sm:p-4 border border-[medium]/40">
-                      <p className="text-xs sm:text-sm text-[dark] mb-1">
+                    <div className="bg-[#EFECE3] rounded-xl p-3 sm:p-4 border border-[#8FABD4]/40">
+                      <p className="text-xs sm:text-sm text-[#4A70A9] mb-1">
                         Network
                       </p>
                       <p className="text-[#000000] text-sm sm:text-base font-medium">
@@ -491,9 +491,9 @@ const Verify = () => {
                   )}
 
                   {verificationData.verification.transaction_signature && (
-                    <div className="bg-[lightest] rounded-xl p-3 sm:p-4 border border-[medium]/40">
+                    <div className="bg-[#EFECE3] rounded-xl p-3 sm:p-4 border border-[#8FABD4]/40">
                       <div className="flex items-center justify-between mb-1">
-                        <p className="text-xs sm:text-sm text-[dark]">
+                        <p className="text-xs sm:text-sm text-[#4A70A9]">
                           Transaction Signature
                         </p>
                         <button
@@ -508,7 +508,7 @@ const Verify = () => {
                           {copied ? (
                             <Check size={14} className="text-green-600" />
                           ) : (
-                            <Copy size={14} className="text-[dark]" />
+                            <Copy size={14} className="text-[#4A70A9]" />
                           )}
                         </button>
                       </div>
@@ -524,7 +524,7 @@ const Verify = () => {
                         href={verificationData.verification.explorer_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center space-x-2 bg-[dark]/10 hover:bg-[dark]/20 border border-[dark]/40 rounded-xl px-4 py-3 text-[darker] transition-colors text-sm sm:text-base font-medium w-full sm:w-auto justify-center sm:justify-start"
+                        className="inline-flex items-center space-x-2 bg-[#4A70A9]/10 hover:bg-[#4A70A9]/20 border border-[#4A70A9]/40 rounded-xl px-4 py-3 text-[#3A5A89] transition-colors text-sm sm:text-base font-medium w-full sm:w-auto justify-center sm:justify-start"
                       >
                         <ExternalLink size={16} />
                         <span>View on Blockchain Explorer</span>
@@ -537,9 +537,9 @@ const Verify = () => {
 
             {/* Verification Steps - Mobile Responsive */}
             {verificationData.verification?.steps && (
-              <div className="bg-white border border-[medium]/50 rounded-2xl p-4 sm:p-6 shadow-sm">
-                <h3 className="text-lg sm:text-xl font-bold text-[dark] mb-4 flex items-center space-x-2">
-                  <Shield size={20} className="text-[dark]" />
+              <div className="bg-white border border-[#8FABD4]/50 rounded-2xl p-4 sm:p-6 shadow-sm">
+                <h3 className="text-lg sm:text-xl font-bold text-[#4A70A9] mb-4 flex items-center space-x-2">
+                  <Shield size={20} className="text-[#4A70A9]" />
                   <span>Verification Process</span>
                 </h3>
 
@@ -547,7 +547,7 @@ const Verify = () => {
                   {verificationData.verification.steps.map((step, index) => (
                     <div
                       key={index}
-                      className="bg-[lightest] rounded-xl p-3 sm:p-4 border border-[medium]/40"
+                      className="bg-[#EFECE3] rounded-xl p-3 sm:p-4 border border-[#8FABD4]/40"
                     >
                       <div className="flex items-start space-x-3">
                         <div
@@ -594,7 +594,7 @@ const Verify = () => {
                             <div className="mt-2 space-y-2">
                               {step.details.merkleRoot && (
                                 <div className="text-xs">
-                                  <p className="text-[dark]">Merkle Root:</p>
+                                  <p className="text-[#4A70A9]">Merkle Root:</p>
                                   <p className="text-[#000000] font-mono break-all">
                                     {step.details.merkleRoot}
                                   </p>
@@ -605,7 +605,7 @@ const Verify = () => {
                                   href={step.details.explorerUrl}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="inline-flex items-center space-x-1 text-[dark] hover:text-[darker] text-xs"
+                                  className="inline-flex items-center space-x-1 text-[#4A70A9] hover:text-[#3A5A89] text-xs"
                                 >
                                   <ExternalLink size={12} />
                                   <span>View Details</span>
@@ -623,8 +623,8 @@ const Verify = () => {
 
             {/* Summary - Mobile Responsive */}
             {verificationData.verification?.summary && (
-              <div className="bg-white border border-[medium]/50 rounded-2xl p-4 sm:p-6 shadow-sm">
-                <h3 className="text-lg sm:text-xl font-bold text-[dark] mb-4">
+              <div className="bg-white border border-[#8FABD4]/50 rounded-2xl p-4 sm:p-6 shadow-sm">
+                <h3 className="text-lg sm:text-xl font-bold text-[#4A70A9] mb-4">
                   Verification Summary
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
@@ -636,9 +636,9 @@ const Verify = () => {
                   ].map(({ key, label }) => (
                     <div
                       key={key}
-                      className="flex items-center justify-between bg-[lightest] rounded-xl p-3 border border-[medium]/40"
+                      className="flex items-center justify-between bg-[#EFECE3] rounded-xl p-3 border border-[#8FABD4]/40"
                     >
-                      <span className="text-[dark] text-sm">{label}:</span>
+                      <span className="text-[#4A70A9] text-sm">{label}:</span>
                       <div className="flex items-center space-x-2">
                         {verificationData.verification.summary[key] ? (
                           <CheckCircle size={16} className="text-green-400" />
@@ -665,21 +665,21 @@ const Verify = () => {
 
             {/* Document Access - Mobile Responsive */}
             {verificationData.access && (
-              <div className="bg-white border border-[medium]/50 rounded-2xl p-4 sm:p-6 shadow-sm">
-                <h3 className="text-lg sm:text-xl font-bold text-[dark] mb-4">
+              <div className="bg-white border border-[#8FABD4]/50 rounded-2xl p-4 sm:p-6 shadow-sm">
+                <h3 className="text-lg sm:text-xl font-bold text-[#4A70A9] mb-4">
                   Document Access
                 </h3>
                 <div className="space-y-3">
                   {verificationData.access.canonicalDocument && (
-                    <div className="bg-[lightest] rounded-xl p-3 sm:p-4 border border-[medium]/40">
-                      <p className="text-xs sm:text-sm text-[dark] mb-2">
+                    <div className="bg-[#EFECE3] rounded-xl p-3 sm:p-4 border border-[#8FABD4]/40">
+                      <p className="text-xs sm:text-sm text-[#4A70A9] mb-2">
                         Canonical Document (IPFS)
                       </p>
                       <a
                         href={verificationData.access.canonicalDocument}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-[dark] hover:text-[darker] text-xs sm:text-sm break-all"
+                        className="text-[#4A70A9] hover:text-[#3A5A89] text-xs sm:text-sm break-all"
                       >
                         {verificationData.access.canonicalDocument}
                       </a>
@@ -687,15 +687,15 @@ const Verify = () => {
                   )}
                   {verificationData.access.displayDocument &&
                     verificationData.access.displayDocument !== "null" && (
-                      <div className="bg-[lightest] rounded-xl p-3 sm:p-4 border border-[medium]/40">
-                        <p className="text-xs sm:text-sm text-[dark] mb-2">
+                      <div className="bg-[#EFECE3] rounded-xl p-3 sm:p-4 border border-[#8FABD4]/40">
+                        <p className="text-xs sm:text-sm text-[#4A70A9] mb-2">
                           Display Document
                         </p>
                         <a
                           href={verificationData.access.displayDocument}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-[dark] hover:text-[darker] text-xs sm:text-sm break-all"
+                          className="text-[#4A70A9] hover:text-[#3A5A89] text-xs sm:text-sm break-all"
                         >
                           {verificationData.access.displayDocument}
                         </a>
@@ -709,21 +709,21 @@ const Verify = () => {
 
         {/* Footer */}
         <div className="text-center mt-8 sm:mt-12 py-4">
-          <div className="inline-flex items-center justify-center space-x-2 bg-white/80 backdrop-blur-sm rounded-full px-5 py-2.5 shadow-sm border border-[medium]/30 mb-2">
-            <Shield size={16} className="text-[dark]" />
-            <span className="text-sm font-medium text-[dark]">
+          <div className="inline-flex items-center justify-center space-x-2 bg-white/80 backdrop-blur-sm rounded-full px-5 py-2.5 shadow-sm border border-[#8FABD4]/30 mb-2">
+            <Shield size={16} className="text-[#4A70A9]" />
+            <span className="text-sm font-medium text-[#4A70A9]">
               Powered by:
             </span>
             <a
               href="https://xertiq.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm font-bold text-[darker] hover:text-[dark] transition-colors"
+              className="text-sm font-bold text-[#3A5A89] hover:text-[#4A70A9] transition-colors"
             >
               XertiQ
             </a>
           </div>
-          <p className="text-xs text-[medium]">
+          <p className="text-xs text-[#8FABD4]">
             Blockchain-Secured Document Verification
           </p>
         </div>

@@ -67,7 +67,7 @@ const PDFPreviewOverlay = ({
         <div className="bg-gradient-to-r from-gray-800 to-gray-900 border border-white/20 rounded-t-xl p-3 flex items-center justify-between shadow-lg">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
-              <Eye className="text-blue-400" size={18} />
+              <Eye className="text-[#4A70A9]" size={18} />
               <span className="text-white font-semibold text-sm">
                 PDF Preview
               </span>
@@ -91,7 +91,7 @@ const PDFPreviewOverlay = ({
                 }
                 className="w-20 h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer"
                 style={{
-                  background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${
+                  background: `linear-gradient(to right, #4A70A9 0%, #4A70A9 ${
                     currentOpacity * 100
                   }%, #4b5563 ${currentOpacity * 100}%, #4b5563 100%)`,
                 }}

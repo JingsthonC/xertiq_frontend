@@ -20,9 +20,10 @@ const NavigationHeader = ({ title, showBack = true }) => {
   const location = useLocation();
   const { userRole, user } = useWalletStore();
   const [showSideNav, setShowSideNav] = useState(false);
-  
+
   // Normalize role for comparison
-  const normalizedRole = userRole?.toUpperCase() || user?.role?.toUpperCase() || "USER";
+  const normalizedRole =
+    userRole?.toUpperCase() || user?.role?.toUpperCase() || "USER";
   const isSuperAdmin = normalizedRole === "SUPER_ADMIN";
 
   const getPageTitle = () => {
@@ -74,7 +75,8 @@ const NavigationHeader = ({ title, showBack = true }) => {
       visible: true,
     },
     {
-      name: normalizedRole === "ISSUER" ? "Issue Certificates" : "Verify Document",
+      name:
+        normalizedRole === "ISSUER" ? "Issue Certificates" : "Verify Document",
       path: normalizedRole === "ISSUER" ? "/batch-upload" : "/verify",
       icon: normalizedRole === "ISSUER" ? Upload : Shield,
       visible: !isSuperAdmin,
@@ -154,7 +156,7 @@ const NavigationHeader = ({ title, showBack = true }) => {
                 </div>
               ) : (
                 <div className="flex items-center space-x-2">
-                  <Home size={14} className="text-blue-400" />
+                  <Home size={14} className="text-brand-secondary" />
                   <h1 className="text-sm font-semibold text-white truncate">
                     {getPageTitle()}
                   </h1>
@@ -213,16 +215,16 @@ const NavigationHeader = ({ title, showBack = true }) => {
                       }}
                       className={`w-full flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 ${
                         location.pathname === item.path
-                          ? "bg-blue-500/20 border border-blue-400/30 text-blue-300"
+                          ? "bg-brand-primary/20 border border-brand-secondary/30 text-brand-secondary"
                           : item.highlight
-                          ? "bg-gradient-to-r from-green-500/20 to-blue-500/20 border border-green-400/30 text-green-300 hover:from-green-500/30 hover:to-blue-500/30"
+                          ? "bg-gradient-to-r from-green-500/20 to-brand-primary/20 border border-green-400/30 text-green-300 hover:from-green-500/30 hover:to-brand-primary/30"
                           : "text-gray-300 hover:bg-white/10 hover:text-white"
                       }`}
                     >
                       <div
                         className={`w-8 h-8 rounded-lg flex items-center justify-center ${
                           location.pathname === item.path
-                            ? "bg-blue-500/30"
+                            ? "bg-brand-primary/30"
                             : item.highlight
                             ? "bg-green-500/30"
                             : "bg-white/10"
@@ -246,7 +248,9 @@ const NavigationHeader = ({ title, showBack = true }) => {
                   <div className="flex items-center space-x-2 mb-2">
                     <div
                       className={`w-2 h-2 rounded-full ${
-                        normalizedRole === "ISSUER" ? "bg-purple-400" : "bg-blue-400"
+                        normalizedRole === "ISSUER"
+                          ? "bg-brand-primaryDark"
+                          : "bg-brand-primary"
                       }`}
                     />
                     <span className="text-sm font-semibold text-white capitalize">

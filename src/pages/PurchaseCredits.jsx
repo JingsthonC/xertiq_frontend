@@ -164,7 +164,7 @@ const PurchaseCredits = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1a1347] via-[#1e1554] to-[#0f0a2e]">
+    <div className="min-h-screen bg-lightest">
       <NavigationHeader title="Purchase Credits" showBack={true} />
 
       <div className="max-w-6xl mx-auto px-4 py-8">
@@ -178,8 +178,8 @@ const PurchaseCredits = () => {
               <ArrowLeft size={20} />
               <span>Back</span>
             </button>
-            <div className="bg-blue-500/20 p-4 rounded-full">
-              <Coins className="w-12 h-12 text-blue-400" />
+            <div className="bg-brand-primary/20 p-4 rounded-full">
+              <Coins className="w-12 h-12 text-brand-secondary" />
             </div>
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">
@@ -187,7 +187,7 @@ const PurchaseCredits = () => {
           </h1>
           <p className="text-gray-400">
             Current Balance:{" "}
-            <span className="text-blue-400 font-semibold">
+            <span className="text-brand-secondary font-semibold">
               {credits} credits
             </span>
           </p>
@@ -195,12 +195,12 @@ const PurchaseCredits = () => {
 
         {/* Status Message */}
         {statusMessage && (
-          <div className="mb-6 bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 flex items-center gap-3 text-blue-200">
+          <div className="mb-6 bg-brand-primary/10 border border-brand-secondary/30 rounded-lg p-4 flex items-center gap-3 text-brand-secondary">
             <CreditCard className="w-5 h-5" />
             <div>
               <p className="font-semibold">{statusMessage}</p>
               {redirectInfo && redirectCountdown > 0 && (
-                <p className="text-sm text-blue-100">
+                <p className="text-sm text-brand-secondary/80">
                   Redirecting in {redirectCountdown} second
                   {redirectCountdown === 1 ? "" : "s"}...
                 </p>
@@ -220,7 +220,7 @@ const PurchaseCredits = () => {
         {redirectInfo && (
           <div className="mb-6 bg-white/5 border border-white/10 rounded-xl p-4">
             <div className="flex items-center gap-3 text-white">
-              <TimerReset className="w-5 h-5 text-blue-400" />
+              <TimerReset className="w-5 h-5 text-brand-secondary" />
               <div>
                 <p className="font-semibold">
                   You're about to purchase {redirectInfo.credits} credits
@@ -241,14 +241,14 @@ const PurchaseCredits = () => {
               onClick={() => setSelectedPackage(pkg)}
               className={`relative bg-white/5 backdrop-blur-xl border-2 rounded-2xl p-6 cursor-pointer transition-all duration-200 hover:scale-105 ${
                 selectedPackage?.id === pkg.id
-                  ? "border-blue-500 bg-blue-500/10"
+                  ? "border-brand-primary bg-brand-primary/10"
                   : "border-white/10 hover:border-white/20"
               }`}
             >
               {/* Popular Badge */}
               {pkg.popular && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                  <span className="bg-dark text-white text-xs font-bold px-3 py-1 rounded-full">
                     MOST POPULAR
                   </span>
                 </div>
@@ -272,7 +272,7 @@ const PurchaseCredits = () => {
 
                 <div className="mb-4">
                   <div className="flex items-center justify-center gap-2 mb-2">
-                    <Coins className="w-6 h-6 text-blue-400" />
+                    <Coins className="w-6 h-6 text-brand-secondary" />
                     <span className="text-3xl font-bold text-white">
                       {pkg.credits}
                     </span>
@@ -293,7 +293,7 @@ const PurchaseCredits = () => {
                   </p>
                 </div>
 
-                <div className="text-3xl font-bold text-blue-400 mb-2">
+                <div className="text-3xl font-bold text-brand-secondary mb-2">
                   ₱{pkg.price}
                 </div>
                 <p className="text-gray-400 text-xs">
@@ -304,7 +304,7 @@ const PurchaseCredits = () => {
               {/* Selected Indicator */}
               {selectedPackage?.id === pkg.id && (
                 <div className="absolute top-4 right-4">
-                  <div className="bg-blue-500 rounded-full p-1">
+                  <div className="bg-brand-primary rounded-full p-1">
                     <Check className="w-4 h-4 text-white" />
                   </div>
                 </div>
@@ -323,7 +323,7 @@ const PurchaseCredits = () => {
               redirectCountdown > 0 ||
               Boolean(redirectInfo)
             }
-            className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-dark hover:bg-darker text-white font-semibold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? (
               <>
@@ -345,7 +345,7 @@ const PurchaseCredits = () => {
           {selectedPackage && !redirectInfo && (
             <p className="text-center text-gray-400 text-sm mt-4">
               After purchase, you'll have{" "}
-              <span className="text-blue-400 font-semibold">
+              <span className="text-brand-secondary font-semibold">
                 {credits + selectedPackage.credits} credits
               </span>
             </p>
@@ -359,8 +359,8 @@ const PurchaseCredits = () => {
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-300">
             <div className="flex items-start gap-3">
-              <div className="bg-blue-500/20 p-2 rounded-lg">
-                <Coins className="w-5 h-5 text-blue-400" />
+              <div className="bg-brand-primary/20 p-2 rounded-lg">
+                <Coins className="w-5 h-5 text-brand-secondary" />
               </div>
               <div>
                 <p className="font-semibold text-white mb-1">Generate PDF</p>
@@ -368,8 +368,8 @@ const PurchaseCredits = () => {
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <div className="bg-purple-500/20 p-2 rounded-lg">
-                <Coins className="w-5 h-5 text-purple-400" />
+              <div className="bg-brand-primaryDark/20 p-2 rounded-lg">
+                <Coins className="w-5 h-5 text-brand-secondary" />
               </div>
               <div>
                 <p className="font-semibold text-white mb-1">Upload to IPFS</p>

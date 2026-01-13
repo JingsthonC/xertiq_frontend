@@ -18,9 +18,10 @@ const Header = () => {
   const { user, userRole, setUserRole, logout, credits } = useWalletStore();
   const [showMenu, setShowMenu] = useState(false);
   const navigate = useNavigate();
-  
+
   // Normalize role for comparison
-  const normalizedRole = userRole?.toUpperCase() || user?.role?.toUpperCase() || "USER";
+  const normalizedRole =
+    userRole?.toUpperCase() || user?.role?.toUpperCase() || "USER";
   const isSuperAdmin = normalizedRole === "SUPER_ADMIN";
 
   return (
@@ -38,7 +39,9 @@ const Header = () => {
             <div className="flex items-center space-x-2">
               <div
                 className={`w-2 h-2 rounded-full ${
-                  userRole?.toLowerCase() === "issuer" ? "bg-purple-400" : "bg-blue-400"
+                  userRole?.toLowerCase() === "issuer"
+                    ? "bg-purple-400"
+                    : "bg-blue-400"
                 }`}
               ></div>
               <p className="text-xs text-gray-300 capitalize font-medium">
@@ -150,8 +153,8 @@ const Header = () => {
                       <div
                         className={`w-8 h-8 rounded-lg flex items-center justify-center ${
                           userRole?.toLowerCase() === "issuer"
-                            ? "bg-blue-500/20 text-blue-400"
-                            : "bg-purple-500/20 text-purple-400"
+                            ? "bg-brand-primary/20 text-brand-secondary"
+                            : "bg-brand-primaryDark/20 text-brand-secondary"
                         }`}
                       >
                         {userRole?.toLowerCase() === "issuer" ? (
@@ -162,7 +165,10 @@ const Header = () => {
                       </div>
                       <div>
                         <p className="font-medium group-hover:text-white transition-colors">
-                          Switch to {userRole?.toLowerCase() === "issuer" ? "Holder" : "Issuer"}
+                          Switch to{" "}
+                          {userRole?.toLowerCase() === "issuer"
+                            ? "Holder"
+                            : "Issuer"}
                         </p>
                         <p className="text-xs text-gray-500">
                           {userRole?.toLowerCase() === "issuer"
@@ -182,10 +188,10 @@ const Header = () => {
                       }}
                       className="w-full text-left px-3 py-3 text-sm text-gray-300 hover:bg-white/10 rounded-xl transition-all duration-200 flex items-center space-x-3 group"
                     >
-                      <div className="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center">
+                      <div className="w-8 h-8 bg-brand-primaryDark/20 rounded-lg flex items-center justify-center">
                         <FolderOpen
                           size={16}
-                          className="text-purple-400 group-hover:text-white transition-colors"
+                          className="text-brand-secondary group-hover:text-white transition-colors"
                         />
                       </div>
                       <div>
