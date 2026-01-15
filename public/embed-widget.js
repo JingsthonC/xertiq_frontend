@@ -413,12 +413,14 @@
 
   // API call to verify document
   const verifyDocument = async (query) => {
-    const response = await fetch(`${config.apiUrl}/verify?query=${encodeURIComponent(query)}`);
-    
+    const response = await fetch(
+      `${config.apiUrl}/verify?doc=${encodeURIComponent(query)}`
+    );
+
     if (!response.ok) {
       throw new Error("Failed to verify document");
     }
-    
+
     return response.json();
   };
 
@@ -426,7 +428,7 @@
   const render = () => {
     if (!containerElement) return;
 
-    let html = '';
+    let html = "";
 
     // Show search form
     if (!verificationData) {
@@ -450,15 +452,19 @@
                 class="xertiq-widget-input"
                 id="xertiq-search-input"
                 placeholder="Enter document ID or hash..."
-                ${loading ? 'disabled' : ''}
+                ${loading ? "disabled" : ""}
               />
               <button
                 type="submit"
                 class="xertiq-widget-button"
-                ${loading ? 'disabled' : ''}
+                ${loading ? "disabled" : ""}
               >
-                ${loading ? '<span class="xertiq-widget-spinner"></span>' : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>'}
-                <span>${loading ? 'Verifying...' : 'Verify'}</span>
+                ${
+                  loading
+                    ? '<span class="xertiq-widget-spinner"></span>'
+                    : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>'
+                }
+                <span>${loading ? "Verifying..." : "Verify"}</span>
               </button>
             </div>
           </form>
@@ -495,49 +501,88 @@
           
           <div class="xertiq-widget-details">
             <div class="xertiq-widget-holder-info">
-              ${data.university?.logo ? `<img src="${data.university.logo}" alt="${data.university.name}" class="xertiq-widget-holder-logo" />` : ''}
-              <h3 class="xertiq-widget-holder-name">${data.holder?.name || 'Certificate Holder'}</h3>
-              <p class="xertiq-widget-holder-title">${data.document?.title || 'Certificate'}</p>
+              ${
+                data.university?.logo
+                  ? `<img src="${data.university.logo}" alt="${data.university.name}" class="xertiq-widget-holder-logo" />`
+                  : ""
+              }
+              <h3 class="xertiq-widget-holder-name">${
+                data.holder?.name || "Certificate Holder"
+              }</h3>
+              <p class="xertiq-widget-holder-title">${
+                data.document?.title || "Certificate"
+              }</p>
             </div>
             
             <div class="xertiq-widget-grid">
-              ${data.holder?.dateIssued ? `
+              ${
+                data.holder?.dateIssued
+                  ? `
                 <div class="xertiq-widget-info-box">
                   <p class="xertiq-widget-info-label">Issued</p>
-                  <p class="xertiq-widget-info-value">${new Date(data.holder.dateIssued).toLocaleDateString()}</p>
+                  <p class="xertiq-widget-info-value">${new Date(
+                    data.holder.dateIssued
+                  ).toLocaleDateString()}</p>
                 </div>
-              ` : ''}
-              ${data.document?.issuer ? `
+              `
+                  : ""
+              }
+              ${
+                data.document?.issuer
+                  ? `
                 <div class="xertiq-widget-info-box">
                   <p class="xertiq-widget-info-label">Issuer</p>
                   <p class="xertiq-widget-info-value">${data.document.issuer}</p>
                 </div>
-              ` : ''}
+              `
+                  : ""
+              }
             </div>
             
-            ${data.verification?.summary ? `
+            ${
+              data.verification?.summary
+                ? `
               <div class="xertiq-widget-verification-checks">
-                ${['identityHashValid', 'merkleProofValid', 'blockchainValid', 'overallValid'].map(key => {
-                  const labels = {
-                    identityHashValid: 'Identity Hash',
-                    merkleProofValid: 'Merkle Proof',
-                    blockchainValid: 'Blockchain',
-                    overallValid: 'Overall Status'
-                  };
-                  const isValid = data.verification.summary[key];
-                  return `
+                ${[
+                  "identityHashValid",
+                  "merkleProofValid",
+                  "blockchainValid",
+                  "overallValid",
+                ]
+                  .map((key) => {
+                    const labels = {
+                      identityHashValid: "Identity Hash",
+                      merkleProofValid: "Merkle Proof",
+                      blockchainValid: "Blockchain",
+                      overallValid: "Overall Status",
+                    };
+                    const isValid = data.verification.summary[key];
+                    return `
                     <div class="xertiq-widget-check-item">
-                      <span class="xertiq-widget-check-label">${labels[key]}</span>
-                      <svg class="xertiq-widget-check-icon" viewBox="0 0 24 24" fill="none" stroke="${isValid ? '#48bb78' : '#f56565'}" stroke-width="2">
-                        ${isValid ? '<polyline points="20 6 9 17 4 12"></polyline>' : '<line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>'}
+                      <span class="xertiq-widget-check-label">${
+                        labels[key]
+                      }</span>
+                      <svg class="xertiq-widget-check-icon" viewBox="0 0 24 24" fill="none" stroke="${
+                        isValid ? "#48bb78" : "#f56565"
+                      }" stroke-width="2">
+                        ${
+                          isValid
+                            ? '<polyline points="20 6 9 17 4 12"></polyline>'
+                            : '<line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>'
+                        }
                       </svg>
                     </div>
                   `;
-                }).join('')}
+                  })
+                  .join("")}
               </div>
-            ` : ''}
+            `
+                : ""
+            }
             
-            ${data.access?.displayDocument ? `
+            ${
+              data.access?.displayDocument
+                ? `
               <a href="${data.access.displayDocument}" target="_blank" rel="noopener noreferrer" class="xertiq-widget-link">
                 <div class="xertiq-widget-link-content">
                   <div class="xertiq-widget-link-icon">
@@ -557,7 +602,9 @@
                   <line x1="10" y1="14" x2="21" y2="3"></line>
                 </svg>
               </a>
-            ` : ''}
+            `
+                : ""
+            }
             
             <button
               class="xertiq-widget-button"
@@ -587,40 +634,40 @@
     containerElement.innerHTML = html;
 
     // Attach event listeners
-    const form = document.getElementById('xertiq-verify-form');
+    const form = document.getElementById("xertiq-verify-form");
     if (form) {
-      form.addEventListener('submit', handleSubmit);
+      form.addEventListener("submit", handleSubmit);
     }
   };
 
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    const input = document.getElementById('xertiq-search-input');
+
+    const input = document.getElementById("xertiq-search-input");
     const query = input?.value.trim();
-    
+
     if (!query) {
-      error = 'Please enter a document ID or hash';
+      error = "Please enter a document ID or hash";
       render();
       return;
     }
-    
+
     loading = true;
-    error = '';
+    error = "";
     render();
-    
+
     try {
       const data = await verifyDocument(query);
-      
+
       if (data.valid) {
         verificationData = data;
       } else {
-        error = 'Document not found or invalid';
+        error = "Document not found or invalid";
       }
     } catch (err) {
-      console.error('Verification failed:', err);
-      error = 'Failed to verify document. Please try again.';
+      console.error("Verification failed:", err);
+      error = "Failed to verify document. Please try again.";
     } finally {
       loading = false;
       render();
@@ -630,7 +677,7 @@
   // Reset widget
   window.XertiQWidget.reset = () => {
     verificationData = null;
-    error = '';
+    error = "";
     loading = false;
     render();
   };
@@ -645,36 +692,38 @@
     containerElement = document.getElementById(containerId);
 
     if (!containerElement) {
-      console.error(`XertiQ Widget: Container element #${containerId} not found`);
+      console.error(
+        `XertiQ Widget: Container element #${containerId} not found`
+      );
       return;
     }
 
     // Add container class
-    containerElement.className = 'xertiq-widget-container';
+    containerElement.className = "xertiq-widget-container";
 
     // Inject styles
     injectStyles();
 
     // Check for auto-verification
-    const autoDocId = containerElement.getAttribute('data-doc') || config.docId;
-    
+    const autoDocId = containerElement.getAttribute("data-doc") || config.docId;
+
     if (autoDocId) {
       // Auto-verify on init
       setTimeout(async () => {
         loading = true;
         render();
-        
+
         try {
           const data = await verifyDocument(autoDocId);
-          
+
           if (data.valid) {
             verificationData = data;
           } else {
-            error = 'Document not found or invalid';
+            error = "Document not found or invalid";
           }
         } catch (err) {
-          console.error('Auto-verification failed:', err);
-          error = 'Failed to verify document';
+          console.error("Auto-verification failed:", err);
+          error = "Failed to verify document";
         } finally {
           loading = false;
           render();
@@ -687,8 +736,8 @@
   };
 
   // Auto-initialize on DOM ready
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => {
       if (document.getElementById(defaultConfig.container)) {
         window.XertiQWidget.init();
       }

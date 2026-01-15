@@ -18,10 +18,10 @@ import apiService from "../services/api";
  * Embeddable Verification Widget
  * Can be embedded in third-party websites via iframe
  * Compact, focused verification UI with XertiQ branding
- * 
+ *
  * Usage in iframe:
  * <iframe src="https://xertiq-frontend.vercel.app/embed/verify" width="100%" height="700"></iframe>
- * 
+ *
  * With auto-verification:
  * <iframe src="https://xertiq-frontend.vercel.app/embed/verify?doc=YOUR_DOC_ID" width="100%" height="700"></iframe>
  */
@@ -44,7 +44,7 @@ const EmbeddableVerify = () => {
 
     // Notify parent iframe (if embedded) that widget is loaded
     if (window.parent !== window) {
-      window.parent.postMessage({ type: 'xertiq-widget-loaded' }, '*');
+      window.parent.postMessage({ type: "xertiq-widget-loaded" }, "*");
     }
   }, []);
 
