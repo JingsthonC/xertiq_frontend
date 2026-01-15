@@ -1,11 +1,11 @@
 /**
  * XertiQ Verification Widget
  * Standalone embeddable widget matching Verify.jsx exactly
- * 
+ *
  * Usage - Auto-init:
  * <div id="xertiq-verify-widget" data-doc="YOUR_DOC_ID"></div>
  * <script src="https://xertiq-frontend.vercel.app/embed-widget.js"></script>
- * 
+ *
  * Usage - Programmatic:
  * XertiQWidget.init({
  *   container: 'my-widget-container',
@@ -37,18 +37,28 @@
 
   // SVG Icons (inline to avoid external dependencies)
   const icons = {
-    shield: '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>',
-    checkCircle: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>',
-    alertCircle: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>',
-    search: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>',
-    loader: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg>',
+    shield:
+      '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>',
+    checkCircle:
+      '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>',
+    alertCircle:
+      '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>',
+    search:
+      '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>',
+    loader:
+      '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg>',
     copy: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>',
-    check: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>',
-    externalLink: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>',
-    fileText: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>',
-    download: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>',
+    check:
+      '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>',
+    externalLink:
+      '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>',
+    fileText:
+      '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>',
+    download:
+      '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>',
     hash: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line><line x1="10" y1="3" x2="8" y2="21"></line><line x1="16" y1="3" x2="14" y2="21"></line></svg>',
-    graduationCap: '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg>',
+    graduationCap:
+      '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg>',
   };
 
   // Inject CSS styles matching Verify.jsx
@@ -863,7 +873,11 @@
                 class="xertiq-widget-button"
                 ${loading ? "disabled" : ""}
               >
-                ${loading ? `<span class="xertiq-widget-spinner">${icons.loader}</span>` : icons.search}
+                ${
+                  loading
+                    ? `<span class="xertiq-widget-spinner">${icons.loader}</span>`
+                    : icons.search
+                }
                 <span>${loading ? "Verifying..." : "Verify"}</span>
               </button>
             </div>
@@ -918,7 +932,9 @@
       const universityName =
         data.university?.name || data.document?.issuer || "Demo University";
       const universityDomain = data.university?.name
-        ? `verify.${data.university.name.toLowerCase().replace(/\s+/g, "-")}.com`
+        ? `verify.${data.university.name
+            .toLowerCase()
+            .replace(/\s+/g, "-")}.com`
         : "verify.demo-university.com";
 
       html += `
@@ -1000,7 +1016,9 @@
         html += `
           <div class="xertiq-widget-detail-box">
             <p class="xertiq-widget-detail-label">Date of Graduation</p>
-            <p class="xertiq-widget-detail-value">${formatDate(data.document.issuedAt)}</p>
+            <p class="xertiq-widget-detail-value">${formatDate(
+              data.document.issuedAt
+            )}</p>
           </div>
         `;
       }
@@ -1020,8 +1038,12 @@
         html += '<div class="xertiq-widget-file-list">';
 
         // Display document
-        if (data.access.displayDocument && data.access.displayDocument !== "null") {
-          const fileName = data.document?.title || `${data.holder?.name || "Document"}.pdf`;
+        if (
+          data.access.displayDocument &&
+          data.access.displayDocument !== "null"
+        ) {
+          const fileName =
+            data.document?.title || `${data.holder?.name || "Document"}.pdf`;
           html += `
             <a href="${data.access.displayDocument}" target="_blank" rel="noopener noreferrer" class="xertiq-widget-file-item">
               <div class="xertiq-widget-file-content">
@@ -1073,11 +1095,15 @@
             <div class="xertiq-widget-hash-box">
               <div class="xertiq-widget-hash-header">
                 <p class="xertiq-widget-hash-label">Personal Merkle Hash</p>
-                <button class="xertiq-widget-copy-btn" onclick="XertiQWidget.copy('${data.merkleHashes.personal}')">
+                <button class="xertiq-widget-copy-btn" onclick="XertiQWidget.copy('${
+                  data.merkleHashes.personal
+                }')">
                   ${copied ? icons.check : icons.copy}
                 </button>
               </div>
-              <p class="xertiq-widget-hash-value">${data.merkleHashes.personal}</p>
+              <p class="xertiq-widget-hash-value">${
+                data.merkleHashes.personal
+              }</p>
             </div>
           `;
         }
@@ -1087,7 +1113,9 @@
             <div class="xertiq-widget-hash-box">
               <div class="xertiq-widget-hash-header">
                 <p class="xertiq-widget-hash-label">Root Merkle Hash</p>
-                <button class="xertiq-widget-copy-btn" onclick="XertiQWidget.copy('${data.merkleHashes.root}')">
+                <button class="xertiq-widget-copy-btn" onclick="XertiQWidget.copy('${
+                  data.merkleHashes.root
+                }')">
                   ${copied ? icons.check : icons.copy}
                 </button>
               </div>
@@ -1123,11 +1151,15 @@
             <div class="xertiq-widget-hash-box">
               <div class="xertiq-widget-hash-header">
                 <p class="xertiq-widget-hash-label">Transaction Signature</p>
-                <button class="xertiq-widget-copy-btn" onclick="XertiQWidget.copy('${data.verification.transaction_signature}')">
+                <button class="xertiq-widget-copy-btn" onclick="XertiQWidget.copy('${
+                  data.verification.transaction_signature
+                }')">
                   ${copied ? icons.check : icons.copy}
                 </button>
               </div>
-              <p class="xertiq-widget-hash-value">${data.verification.transaction_signature}</p>
+              <p class="xertiq-widget-hash-value">${
+                data.verification.transaction_signature
+              }</p>
             </div>
           `;
         }
@@ -1159,7 +1191,9 @@
           html += `
             <div class="xertiq-widget-step">
               <div class="xertiq-widget-step-content">
-                <div class="xertiq-widget-step-number ${isValid ? "valid" : "invalid"}">
+                <div class="xertiq-widget-step-number ${
+                  isValid ? "valid" : "invalid"
+                }">
                   ${step.step}
                 </div>
                 <div class="xertiq-widget-step-info">
@@ -1169,8 +1203,15 @@
                       ${isValid ? icons.checkCircle : icons.alertCircle}
                     </span>
                   </div>
-                  <p class="xertiq-widget-step-message ${isValid ? "valid" : "invalid"}">
-                    ${step.details?.message || (isValid ? "Verification successful" : "Verification failed")}
+                  <p class="xertiq-widget-step-message ${
+                    isValid ? "valid" : "invalid"
+                  }">
+                    ${
+                      step.details?.message ||
+                      (isValid
+                        ? "Verification successful"
+                        : "Verification failed")
+                    }
                   </p>
                 </div>
               </div>
@@ -1203,7 +1244,9 @@
               <span class="xertiq-widget-summary-label">${label}:</span>
               <div class="xertiq-widget-summary-status">
                 ${isValid ? icons.checkCircle : icons.alertCircle}
-                <span class="xertiq-widget-summary-text ${isValid ? "valid" : "invalid"}">
+                <span class="xertiq-widget-summary-text ${
+                  isValid ? "valid" : "invalid"
+                }">
                   ${isValid ? "Valid" : "Invalid"}
                 </span>
               </div>
@@ -1256,7 +1299,9 @@
     containerElement = document.getElementById(containerId);
 
     if (!containerElement) {
-      console.error(`XertiQ Widget: Container element "${containerId}" not found`);
+      console.error(
+        `XertiQ Widget: Container element "${containerId}" not found`
+      );
       return;
     }
 
@@ -1295,3 +1340,5 @@
     }
   }
 })();
+
+//test
