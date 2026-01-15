@@ -1,17 +1,15 @@
 /**
  * XertiQ Verification Widget
- * Embeddable JavaScript widget for document verification (HubSpot-style)
- * No iframes - Direct DOM injection for seamless integration
- *
- * Usage - Auto-init (Recommended):
+ * Standalone embeddable widget matching Verify.jsx exactly
+ * 
+ * Usage - Auto-init:
  * <div id="xertiq-verify-widget" data-doc="YOUR_DOC_ID"></div>
  * <script src="https://xertiq-frontend.vercel.app/embed-widget.js"></script>
- *
+ * 
  * Usage - Programmatic:
  * XertiQWidget.init({
  *   container: 'my-widget-container',
- *   docId: 'cert_certificate_Name_123_abc',
- *   apiUrl: 'https://xertiq-backend.onrender.com/api'
+ *   docId: 'cert_certificate_Name_123_abc'
  * });
  */
 
@@ -26,8 +24,6 @@
     apiUrl: "https://xertiq-backend.onrender.com/api",
     container: "xertiq-verify-widget",
     theme: "light",
-    width: "100%",
-    maxWidth: "800px",
   };
 
   // Widget state
@@ -36,617 +32,743 @@
   let verificationData = null;
   let loading = false;
   let error = "";
+  let searchQuery = "";
+  let copied = false;
 
-  // Inject CSS styles
+  // SVG Icons (inline to avoid external dependencies)
+  const icons = {
+    shield: '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>',
+    checkCircle: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>',
+    alertCircle: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>',
+    search: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>',
+    loader: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg>',
+    copy: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>',
+    check: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>',
+    externalLink: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>',
+    fileText: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>',
+    download: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>',
+    hash: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line><line x1="10" y1="3" x2="8" y2="21"></line><line x1="16" y1="3" x2="14" y2="21"></line></svg>',
+    graduationCap: '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg>',
+  };
+
+  // Inject CSS styles matching Verify.jsx
   const injectStyles = () => {
     if (document.getElementById("xertiq-widget-styles")) return;
 
     const styleElement = document.createElement("style");
     styleElement.id = "xertiq-widget-styles";
     styleElement.textContent = `
+      /* Base Widget Styles */
       .xertiq-widget-container {
         width: 100%;
-        max-width: ${config.maxWidth};
         margin: 0 auto;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-        padding: 20px;
+        padding: 1rem;
         box-sizing: border-box;
+        background: #f7fafc;
+        min-height: 200px;
       }
-      
-      .xertiq-widget-card {
-        background: white;
-        border-radius: 16px;
-        padding: 24px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        margin-bottom: 16px;
+
+      .xertiq-widget-inner {
+        max-width: 64rem;
+        margin: 0 auto;
       }
-      
+
+      /* Header */
       .xertiq-widget-header {
         text-align: center;
-        margin-bottom: 24px;
+        margin-bottom: 2rem;
       }
-      
+
       .xertiq-widget-icon {
-        width: 56px;
-        height: 56px;
+        width: 64px;
+        height: 64px;
         background: #2d3748;
-        border-radius: 12px;
+        border-radius: 1rem;
         display: inline-flex;
         align-items: center;
-        justify-content: center;
-        margin-bottom: 12px;
+        justify-center;
+        margin-bottom: 1rem;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
       }
-      
+
+      .xertiq-widget-icon svg {
+        color: white;
+      }
+
       .xertiq-widget-title {
-        font-size: 24px;
+        font-size: 1.875rem;
         font-weight: bold;
         color: #2d3748;
-        margin: 0 0 8px 0;
+        margin: 0 0 0.5rem 0;
       }
-      
+
       .xertiq-widget-subtitle {
-        font-size: 14px;
-        color: #718096;
+        font-size: 0.875rem;
+        color: #4a5568;
         margin: 0;
       }
-      
-      .xertiq-widget-form {
-        margin-bottom: 16px;
+
+      /* Search Form */
+      .xertiq-widget-search-card {
+        background: white;
+        border: 1px solid rgba(74, 85, 104, 0.4);
+        border-radius: 1rem;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
       }
-      
-      .xertiq-widget-label {
+
+      .xertiq-widget-form-label {
         display: block;
-        font-size: 14px;
+        font-size: 0.875rem;
         font-weight: 500;
         color: #2d3748;
-        margin-bottom: 8px;
+        margin-bottom: 0.5rem;
       }
-      
+
       .xertiq-widget-input-group {
         display: flex;
-        gap: 12px;
-        flex-wrap: wrap;
+        gap: 1rem;
+        flex-direction: column;
       }
-      
+
+      @media (min-width: 640px) {
+        .xertiq-widget-input-group {
+          flex-direction: row;
+        }
+      }
+
       .xertiq-widget-input {
         flex: 1;
-        min-width: 200px;
         background: #f7fafc;
-        border: 2px solid #e2e8f0;
-        border-radius: 8px;
-        padding: 12px 16px;
-        font-size: 14px;
-        color: #2d3748;
+        border: 2px solid rgba(74, 85, 104, 0.6);
+        border-radius: 0.75rem;
+        padding: 0.75rem 1rem;
+        color: #000000;
+        font-size: 0.875rem;
         outline: none;
         transition: all 0.2s;
       }
-      
+
       .xertiq-widget-input:focus {
-        border-color: #2d3748;
-        background: white;
+        ring: 2px;
+        ring-color: rgba(45, 55, 72, 0.4);
+        border-color: rgba(45, 55, 72, 0.6);
       }
-      
+
       .xertiq-widget-input::placeholder {
-        color: #a0aec0;
+        color: #718096;
       }
-      
+
       .xertiq-widget-button {
         background: #2d3748;
         color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.75rem;
         border: none;
-        border-radius: 8px;
-        padding: 12px 24px;
-        font-size: 14px;
-        font-weight: 600;
         cursor: pointer;
-        display: inline-flex;
+        display: flex;
         align-items: center;
-        gap: 8px;
-        transition: all 0.2s;
-        white-space: nowrap;
+        justify-content: center;
+        gap: 0.5rem;
+        font-weight: 500;
+        font-size: 0.875rem;
+        transition: background 0.2s;
       }
-      
+
       .xertiq-widget-button:hover:not(:disabled) {
         background: #1a202c;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
       }
-      
+
       .xertiq-widget-button:disabled {
         opacity: 0.5;
         cursor: not-allowed;
       }
-      
+
+      .xertiq-widget-button svg {
+        flex-shrink: 0;
+      }
+
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+
+      .xertiq-widget-spinner {
+        animation: spin 1s linear infinite;
+      }
+
+      /* Error Message */
       .xertiq-widget-error {
         background: #fff5f5;
         border: 1px solid #feb2b2;
-        border-radius: 8px;
-        padding: 16px;
-        margin-bottom: 16px;
+        border-radius: 1rem;
+        padding: 1rem;
+        margin-bottom: 2rem;
         display: flex;
-        align-items: start;
-        gap: 12px;
+        align-items: flex-start;
+        gap: 0.75rem;
       }
-      
+
+      .xertiq-widget-error svg {
+        flex-shrink: 0;
+        margin-top: 0.125rem;
+      }
+
       .xertiq-widget-error-text {
         color: #c53030;
-        font-size: 14px;
+        font-size: 0.875rem;
         margin: 0;
       }
-      
-      .xertiq-widget-result {
-        background: white;
-        border-radius: 16px;
-        overflow: hidden;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+      /* Status Header */
+      .xertiq-widget-status-header {
+        border-radius: 1rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
       }
-      
-      .xertiq-widget-status {
-        padding: 20px;
-        text-align: center;
-        color: white;
-        font-size: 18px;
+
+      .xertiq-widget-status-header.valid {
+        background: #f0fff4;
+        border: 1px solid #9ae6b4;
+      }
+
+      .xertiq-widget-status-header.invalid {
+        background: #fff5f5;
+        border: 1px solid #feb2b2;
+      }
+
+      .xertiq-widget-status-content {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+
+      .xertiq-widget-status-title {
+        font-size: 1.5rem;
         font-weight: bold;
+        margin: 0 0 0.25rem 0;
+      }
+
+      .xertiq-widget-status-title.valid {
+        color: #22543d;
+      }
+
+      .xertiq-widget-status-title.invalid {
+        color: #742a2a;
+      }
+
+      .xertiq-widget-status-subtitle {
+        font-size: 0.875rem;
+        margin: 0;
+      }
+
+      .xertiq-widget-status-subtitle.valid {
+        color: #276749;
+      }
+
+      .xertiq-widget-status-subtitle.invalid {
+        color: #9b2c2c;
+      }
+
+      /* Certificate Card */
+      .xertiq-widget-certificate {
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+      }
+
+      .xertiq-widget-cert-header {
+        background: linear-gradient(to right, #2d3748, #1a202c);
+        padding: 1.5rem;
+        color: white;
+        text-align: center;
+      }
+
+      .xertiq-widget-cert-header-content {
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 8px;
+        gap: 0.5rem;
       }
-      
-      .xertiq-widget-status-valid {
-        background: #48bb78;
-      }
-      
-      .xertiq-widget-status-invalid {
-        background: #f56565;
-      }
-      
-      .xertiq-widget-details {
-        padding: 24px;
-      }
-      
-      .xertiq-widget-holder-info {
-        text-align: center;
-        margin-bottom: 24px;
-      }
-      
-      .xertiq-widget-holder-logo {
-        width: 64px;
-        height: 64px;
-        object-fit: contain;
-        margin: 0 auto 12px;
-      }
-      
-      .xertiq-widget-holder-name {
-        font-size: 20px;
+
+      .xertiq-widget-cert-header-title {
+        font-size: 1.5rem;
         font-weight: bold;
-        color: #2d3748;
-        margin: 0 0 4px 0;
+        margin: 0;
       }
-      
-      .xertiq-widget-holder-title {
-        font-size: 14px;
+
+      /* University Section */
+      .xertiq-widget-university {
+        padding: 2rem;
+        border-bottom: 1px solid #e2e8f0;
+        text-align: center;
+      }
+
+      .xertiq-widget-university-logo {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 1rem;
+        object-fit: contain;
+      }
+
+      .xertiq-widget-university-logo-placeholder {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(to bottom right, #2d3748, #1a202c);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+      }
+
+      .xertiq-widget-university-logo-placeholder svg {
+        color: white;
+      }
+
+      .xertiq-widget-university-name {
+        font-size: 1.875rem;
+        font-weight: bold;
+        color: #1a202c;
+        margin: 0 0 0.25rem 0;
+      }
+
+      .xertiq-widget-university-domain {
+        font-size: 0.875rem;
         color: #718096;
         margin: 0;
       }
-      
-      .xertiq-widget-grid {
+
+      /* Details Grid */
+      .xertiq-widget-details-section {
+        padding: 2rem;
+        background: #f7fafc;
+      }
+
+      .xertiq-widget-details-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 12px;
-        margin-bottom: 16px;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
       }
-      
-      .xertiq-widget-info-box {
-        background: #f7fafc;
-        border-radius: 8px;
-        padding: 12px;
+
+      @media (min-width: 640px) {
+        .xertiq-widget-details-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
       }
-      
-      .xertiq-widget-info-label {
-        font-size: 11px;
-        color: #718096;
-        margin: 0 0 4px 0;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
+
+      .xertiq-widget-detail-box {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 1rem;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
       }
-      
-      .xertiq-widget-info-value {
-        font-size: 14px;
+
+      .xertiq-widget-detail-box.full-width {
+        grid-column: 1 / -1;
+      }
+
+      .xertiq-widget-detail-label {
+        font-size: 0.75rem;
         font-weight: 600;
-        color: #2d3748;
+        color: #718096;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin: 0 0 0.25rem 0;
+      }
+
+      .xertiq-widget-detail-value {
+        font-size: 1.125rem;
+        font-weight: bold;
+        color: #1a202c;
         margin: 0;
+        word-break: break-all;
       }
-      
-      .xertiq-widget-verification-checks {
-        background: #f0fff4;
-        border-radius: 8px;
-        padding: 16px;
-        margin-bottom: 16px;
+
+      .xertiq-widget-detail-value.mono {
+        font-family: monospace;
+        font-size: 1rem;
       }
-      
-      .xertiq-widget-check-item {
+
+      /* Files Section */
+      .xertiq-widget-files-section {
+        padding: 2rem;
+        background: white;
+        border-top: 1px solid #e2e8f0;
+      }
+
+      .xertiq-widget-section-title {
+        font-size: 1.125rem;
+        font-weight: bold;
+        color: #1a202c;
+        margin: 0 0 1rem 0;
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        padding: 8px 0;
-        border-bottom: 1px solid #e6ffed;
+        gap: 0.5rem;
       }
-      
-      .xertiq-widget-check-item:last-child {
-        border-bottom: none;
+
+      .xertiq-widget-file-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
       }
-      
-      .xertiq-widget-check-label {
-        font-size: 13px;
-        color: #2d3748;
-      }
-      
-      .xertiq-widget-check-icon {
-        width: 16px;
-        height: 16px;
-      }
-      
-      .xertiq-widget-link {
+
+      .xertiq-widget-file-item {
         display: flex;
         align-items: center;
         justify-content: space-between;
         background: #f7fafc;
-        border: 1px solid #e2e8f0;
-        border-radius: 8px;
-        padding: 16px;
+        border: 1px solid rgba(74, 85, 104, 0.6);
+        border-radius: 0.75rem;
+        padding: 1rem;
         text-decoration: none;
         transition: all 0.2s;
-        margin-bottom: 16px;
       }
-      
-      .xertiq-widget-link:hover {
+
+      .xertiq-widget-file-item:hover {
         background: white;
-        border-color: #2d3748;
       }
-      
-      .xertiq-widget-link-content {
+
+      .xertiq-widget-file-content {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 0.75rem;
       }
-      
-      .xertiq-widget-link-icon {
-        width: 32px;
-        height: 32px;
+
+      .xertiq-widget-file-icon {
+        width: 40px;
+        height: 40px;
         background: #2d3748;
-        border-radius: 8px;
+        border-radius: 0.5rem;
         display: flex;
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
       }
-      
-      .xertiq-widget-link-text {
-        font-size: 14px;
-        font-weight: 600;
-        color: #2d3748;
-        margin: 0;
+
+      .xertiq-widget-file-icon svg {
+        color: white;
       }
-      
-      .xertiq-widget-link-subtext {
-        font-size: 12px;
+
+      .xertiq-widget-file-name {
+        font-weight: 600;
+        color: #1a202c;
+        margin: 0 0 0.125rem 0;
+        font-size: 0.875rem;
+      }
+
+      .xertiq-widget-file-item:hover .xertiq-widget-file-name {
+        color: #2d3748;
+      }
+
+      .xertiq-widget-file-size {
+        font-size: 0.75rem;
         color: #718096;
         margin: 0;
       }
-      
-      .xertiq-widget-branding {
-        text-align: center;
-        margin-top: 24px;
-        padding-top: 16px;
-        border-top: 1px solid #e2e8f0;
+
+      .xertiq-widget-file-external {
+        color: #a0aec0;
+        transition: color 0.2s;
       }
-      
-      .xertiq-widget-branding-badge {
+
+      .xertiq-widget-file-item:hover .xertiq-widget-file-external {
+        color: #2d3748;
+      }
+
+      /* Info Card */
+      .xertiq-widget-info-card {
+        background: white;
+        border: 1px solid rgba(74, 85, 104, 0.5);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+      }
+
+      /* Hash Box */
+      .xertiq-widget-hash-box {
+        background: #f7fafc;
+        border-radius: 0.75rem;
+        padding: 1rem;
+        border: 1px solid rgba(74, 85, 104, 0.4);
+        margin-bottom: 1rem;
+      }
+
+      .xertiq-widget-hash-box:last-child {
+        margin-bottom: 0;
+      }
+
+      .xertiq-widget-hash-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.25rem;
+      }
+
+      .xertiq-widget-hash-label {
+        font-size: 0.875rem;
+        color: #2d3748;
+        margin: 0;
+      }
+
+      .xertiq-widget-copy-btn {
+        padding: 0.25rem;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        border-radius: 0.25rem;
+        transition: background 0.2s;
+      }
+
+      .xertiq-widget-copy-btn:hover {
+        background: white;
+      }
+
+      .xertiq-widget-copy-btn svg {
+        display: block;
+      }
+
+      .xertiq-widget-hash-value {
+        color: #000000;
+        font-family: monospace;
+        font-size: 0.875rem;
+        word-break: break-all;
+        margin: 0;
+      }
+
+      /* Blockchain Info */
+      .xertiq-widget-blockchain-value {
+        color: #000000;
+        font-size: 0.875rem;
+        font-weight: 500;
+        margin: 0;
+      }
+
+      .xertiq-widget-explorer-link {
         display: inline-flex;
         align-items: center;
-        gap: 8px;
-        background: white;
-        border: 1px solid #e2e8f0;
-        border-radius: 20px;
-        padding: 8px 16px;
-        font-size: 12px;
-        color: #718096;
-      }
-      
-      .xertiq-widget-branding-link {
-        color: #2d3748;
-        font-weight: 600;
+        gap: 0.5rem;
+        background: rgba(45, 55, 72, 0.1);
+        border: 1px solid rgba(45, 55, 72, 0.4);
+        border-radius: 0.75rem;
+        padding: 0.75rem 1rem;
+        color: #1a202c;
         text-decoration: none;
+        font-weight: 500;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+        transition: background 0.2s;
       }
-      
-      .xertiq-widget-branding-link:hover {
-        text-decoration: underline;
+
+      .xertiq-widget-explorer-link:hover {
+        background: rgba(45, 55, 72, 0.2);
       }
-      
-      .xertiq-widget-branding-subtext {
-        font-size: 10px;
-        color: #a0aec0;
-        margin: 8px 0 0 0;
+
+      /* Verification Steps */
+      .xertiq-widget-step {
+        background: #f7fafc;
+        border-radius: 0.75rem;
+        padding: 1rem;
+        border: 1px solid rgba(74, 85, 104, 0.4);
+        margin-bottom: 1rem;
       }
-      
-      .xertiq-widget-spinner {
-        display: inline-block;
-        width: 16px;
-        height: 16px;
-        border: 2px solid rgba(255, 255, 255, 0.3);
+
+      .xertiq-widget-step:last-child {
+        margin-bottom: 0;
+      }
+
+      .xertiq-widget-step-content {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+      }
+
+      .xertiq-widget-step-number {
+        width: 32px;
+        height: 32px;
         border-radius: 50%;
-        border-top-color: white;
-        animation: xertiq-spin 0.6s linear infinite;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.875rem;
+        font-weight: bold;
+        flex-shrink: 0;
       }
-      
-      @keyframes xertiq-spin {
-        to { transform: rotate(360deg); }
+
+      .xertiq-widget-step-number.valid {
+        background: #48bb78;
+        color: white;
       }
-      
-      @media (max-width: 640px) {
-        .xertiq-widget-container {
-          padding: 12px;
+
+      .xertiq-widget-step-number.invalid {
+        background: #f56565;
+        color: white;
+      }
+
+      .xertiq-widget-step-info {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .xertiq-widget-step-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-bottom: 0.25rem;
+      }
+
+      .xertiq-widget-step-name {
+        color: #000000;
+        font-weight: 600;
+        font-size: 0.875rem;
+        margin: 0;
+      }
+
+      .xertiq-widget-step-status {
+        flex-shrink: 0;
+        margin-left: 0.5rem;
+      }
+
+      .xertiq-widget-step-message {
+        font-size: 0.875rem;
+        margin: 0;
+      }
+
+      .xertiq-widget-step-message.valid {
+        color: #276749;
+      }
+
+      .xertiq-widget-step-message.invalid {
+        color: #9b2c2c;
+      }
+
+      /* Summary Grid */
+      .xertiq-widget-summary-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+
+      @media (min-width: 640px) {
+        .xertiq-widget-summary-grid {
+          grid-template-columns: repeat(2, 1fr);
         }
-        
-        .xertiq-widget-card {
-          padding: 16px;
+      }
+
+      .xertiq-widget-summary-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #f7fafc;
+        border-radius: 0.75rem;
+        padding: 0.75rem;
+        border: 1px solid rgba(74, 85, 104, 0.4);
+      }
+
+      .xertiq-widget-summary-label {
+        color: #2d3748;
+        font-size: 0.875rem;
+        margin: 0;
+      }
+
+      .xertiq-widget-summary-status {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .xertiq-widget-summary-text {
+        font-size: 0.875rem;
+        font-weight: 500;
+        margin: 0;
+      }
+
+      .xertiq-widget-summary-text.valid {
+        color: #276749;
+      }
+
+      .xertiq-widget-summary-text.invalid {
+        color: #9b2c2c;
+      }
+
+      /* Footer */
+      .xertiq-widget-footer {
+        text-align: center;
+        margin-top: 3rem;
+        padding: 1rem 0;
+      }
+
+      .xertiq-widget-powered-by {
+        display: inline-flex;
+        align-items: center;
+        justify-center;
+        gap: 0.5rem;
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(4px);
+        border-radius: 9999px;
+        padding: 0.625rem 1.25rem;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(74, 85, 104, 0.3);
+        margin-bottom: 0.5rem;
+      }
+
+      .xertiq-widget-powered-label {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #2d3748;
+        margin: 0;
+      }
+
+      .xertiq-widget-brand-link {
+        font-size: 0.875rem;
+        font-weight: bold;
+        color: #1a202c;
+        text-decoration: none;
+        transition: color 0.2s;
+      }
+
+      .xertiq-widget-brand-link:hover {
+        color: #2d3748;
+      }
+
+      .xertiq-widget-tagline {
+        font-size: 0.75rem;
+        color: #718096;
+        margin: 0;
+      }
+
+      @media (min-width: 640px) {
+        .xertiq-widget-title {
+          font-size: 2.25rem;
         }
-        
-        .xertiq-widget-input-group {
-          flex-direction: column;
-        }
-        
-        .xertiq-widget-input {
-          width: 100%;
-          min-width: 100%;
-        }
-        
-        .xertiq-widget-button {
-          width: 100%;
-          justify-content: center;
+        .xertiq-widget-icon {
+          width: 80px;
+          height: 80px;
         }
       }
     `;
+
     document.head.appendChild(styleElement);
   };
 
-  // API call to verify document
+  // Copy to clipboard
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text).then(() => {
+      copied = true;
+      render();
+      setTimeout(() => {
+        copied = false;
+        render();
+      }, 2000);
+    });
+  };
+
+  // Verify document
   const verifyDocument = async (query) => {
-    const response = await fetch(
-      `${config.apiUrl}/verify?doc=${encodeURIComponent(query)}`
-    );
-
-    if (!response.ok) {
-      throw new Error("Failed to verify document");
-    }
-
-    return response.json();
-  };
-
-  // Render widget UI
-  const render = () => {
-    if (!containerElement) return;
-
-    let html = "";
-
-    // Show search form
-    if (!verificationData) {
-      html = `
-        <div class="xertiq-widget-card">
-          <div class="xertiq-widget-header">
-            <div class="xertiq-widget-icon">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-              </svg>
-            </div>
-            <h1 class="xertiq-widget-title">Document Verification</h1>
-            <p class="xertiq-widget-subtitle">Verify blockchain-secured documents</p>
-          </div>
-          
-          <form class="xertiq-widget-form" id="xertiq-verify-form">
-            <label class="xertiq-widget-label">Document ID or Hash</label>
-            <div class="xertiq-widget-input-group">
-              <input
-                type="text"
-                class="xertiq-widget-input"
-                id="xertiq-search-input"
-                placeholder="Enter document ID or hash..."
-                ${loading ? "disabled" : ""}
-              />
-              <button
-                type="submit"
-                class="xertiq-widget-button"
-                ${loading ? "disabled" : ""}
-              >
-                ${
-                  loading
-                    ? '<span class="xertiq-widget-spinner"></span>'
-                    : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>'
-                }
-                <span>${loading ? "Verifying..." : "Verify"}</span>
-              </button>
-            </div>
-          </form>
-        </div>
-      `;
-    }
-
-    // Show error
-    if (error) {
-      html += `
-        <div class="xertiq-widget-error">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c53030" stroke-width="2">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="12" y1="8" x2="12" y2="12"></line>
-            <line x1="12" y1="16" x2="12.01" y2="16"></line>
-          </svg>
-          <p class="xertiq-widget-error-text">${error}</p>
-        </div>
-      `;
-    }
-
-    // Show verification result
-    if (verificationData && verificationData.valid) {
-      const data = verificationData;
-      html += `
-        <div class="xertiq-widget-result">
-          <div class="xertiq-widget-status xertiq-widget-status-valid">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-              <polyline points="22 4 12 14.01 9 11.01"></polyline>
-            </svg>
-            <span>✓ Verified</span>
-          </div>
-          
-          <div class="xertiq-widget-details">
-            <div class="xertiq-widget-holder-info">
-              ${
-                data.university?.logo
-                  ? `<img src="${data.university.logo}" alt="${data.university.name}" class="xertiq-widget-holder-logo" />`
-                  : ""
-              }
-              <h3 class="xertiq-widget-holder-name">${
-                data.holder?.name || "Certificate Holder"
-              }</h3>
-              <p class="xertiq-widget-holder-title">${
-                data.document?.title || "Certificate"
-              }</p>
-            </div>
-            
-            <div class="xertiq-widget-grid">
-              ${
-                data.holder?.dateIssued
-                  ? `
-                <div class="xertiq-widget-info-box">
-                  <p class="xertiq-widget-info-label">Issued</p>
-                  <p class="xertiq-widget-info-value">${new Date(
-                    data.holder.dateIssued
-                  ).toLocaleDateString()}</p>
-                </div>
-              `
-                  : ""
-              }
-              ${
-                data.document?.issuer
-                  ? `
-                <div class="xertiq-widget-info-box">
-                  <p class="xertiq-widget-info-label">Issuer</p>
-                  <p class="xertiq-widget-info-value">${data.document.issuer}</p>
-                </div>
-              `
-                  : ""
-              }
-            </div>
-            
-            ${
-              data.verification?.summary
-                ? `
-              <div class="xertiq-widget-verification-checks">
-                ${[
-                  "identityHashValid",
-                  "merkleProofValid",
-                  "blockchainValid",
-                  "overallValid",
-                ]
-                  .map((key) => {
-                    const labels = {
-                      identityHashValid: "Identity Hash",
-                      merkleProofValid: "Merkle Proof",
-                      blockchainValid: "Blockchain",
-                      overallValid: "Overall Status",
-                    };
-                    const isValid = data.verification.summary[key];
-                    return `
-                    <div class="xertiq-widget-check-item">
-                      <span class="xertiq-widget-check-label">${
-                        labels[key]
-                      }</span>
-                      <svg class="xertiq-widget-check-icon" viewBox="0 0 24 24" fill="none" stroke="${
-                        isValid ? "#48bb78" : "#f56565"
-                      }" stroke-width="2">
-                        ${
-                          isValid
-                            ? '<polyline points="20 6 9 17 4 12"></polyline>'
-                            : '<line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>'
-                        }
-                      </svg>
-                    </div>
-                  `;
-                  })
-                  .join("")}
-              </div>
-            `
-                : ""
-            }
-            
-            ${
-              data.access?.displayDocument
-                ? `
-              <a href="${data.access.displayDocument}" target="_blank" rel="noopener noreferrer" class="xertiq-widget-link">
-                <div class="xertiq-widget-link-content">
-                  <div class="xertiq-widget-link-icon">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                      <polyline points="14 2 14 8 20 8"></polyline>
-                    </svg>
-                  </div>
-                  <div>
-                    <p class="xertiq-widget-link-text">View Document</p>
-                    <p class="xertiq-widget-link-subtext">PDF File</p>
-                  </div>
-                </div>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#718096" stroke-width="2">
-                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                  <polyline points="15 3 21 3 21 9"></polyline>
-                  <line x1="10" y1="14" x2="21" y2="3"></line>
-                </svg>
-              </a>
-            `
-                : ""
-            }
-            
-            <button
-              class="xertiq-widget-button"
-              style="width: 100%; background: rgba(45, 55, 72, 0.1); color: #2d3748; justify-content: center;"
-              onclick="XertiQWidget.reset()"
-            >
-              Verify Another Document
-            </button>
-          </div>
-        </div>
-      `;
-    }
-
-    // Add branding
-    html += `
-      <div class="xertiq-widget-branding">
-        <div class="xertiq-widget-branding-badge">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-          </svg>
-          <span>Powered by: <a href="https://xertiq.com" target="_blank" rel="noopener noreferrer" class="xertiq-widget-branding-link">XertiQ</a></span>
-        </div>
-        <p class="xertiq-widget-branding-subtext">Blockchain-Secured Document Verification</p>
-      </div>
-    `;
-
-    containerElement.innerHTML = html;
-
-    // Attach event listeners
-    const form = document.getElementById("xertiq-verify-form");
-    if (form) {
-      form.addEventListener("submit", handleSubmit);
-    }
-  };
-
-  // Handle form submission
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    const input = document.getElementById("xertiq-search-input");
-    const query = input?.value.trim();
-
     if (!query) {
       error = "Please enter a document ID or hash";
       render();
@@ -658,93 +780,517 @@
     render();
 
     try {
-      const data = await verifyDocument(query);
+      const response = await fetch(
+        `${config.apiUrl}/verify?doc=${encodeURIComponent(query)}`
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to verify document");
+      }
+
+      const data = await response.json();
 
       if (data.valid) {
         verificationData = data;
+        error = "";
       } else {
         error = "Document not found or invalid";
+        verificationData = null;
       }
     } catch (err) {
       console.error("Verification failed:", err);
       error = "Failed to verify document. Please try again.";
+      verificationData = null;
     } finally {
       loading = false;
       render();
     }
   };
 
-  // Reset widget
-  window.XertiQWidget.reset = () => {
-    verificationData = null;
-    error = "";
-    loading = false;
-    render();
+  // Handle form submit
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const input = document.getElementById("xertiq-search-input");
+    if (input) {
+      verifyDocument(input.value);
+    }
   };
 
-  // Initialize widget
+  // Format date
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  };
+
+  // Render widget
+  const render = () => {
+    if (!containerElement) return;
+
+    let html = '<div class="xertiq-widget-inner">';
+
+    // Header
+    html += `
+      <div class="xertiq-widget-header">
+        <div class="xertiq-widget-icon">
+          ${icons.shield}
+        </div>
+        <h1 class="xertiq-widget-title">Document Verification</h1>
+        <p class="xertiq-widget-subtitle">Verify blockchain-secured documents instantly</p>
+      </div>
+    `;
+
+    // Search form (show only if no verification data)
+    if (!verificationData) {
+      html += `
+        <div class="xertiq-widget-search-card">
+          <form id="xertiq-verify-form">
+            <label class="xertiq-widget-form-label">Document ID or Hash</label>
+            <div class="xertiq-widget-input-group">
+              <input
+                type="text"
+                class="xertiq-widget-input"
+                id="xertiq-search-input"
+                placeholder="Enter document ID or verification hash..."
+                ${loading ? "disabled" : ""}
+                value="${searchQuery}"
+              />
+              <button
+                type="submit"
+                class="xertiq-widget-button"
+                ${loading ? "disabled" : ""}
+              >
+                ${loading ? `<span class="xertiq-widget-spinner">${icons.loader}</span>` : icons.search}
+                <span>${loading ? "Verifying..." : "Verify"}</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      `;
+    }
+
+    // Error message
+    if (error) {
+      html += `
+        <div class="xertiq-widget-error">
+          ${icons.alertCircle}
+          <p class="xertiq-widget-error-text">${error}</p>
+        </div>
+      `;
+    }
+
+    // Verification results
+    if (verificationData && verificationData.valid) {
+      const data = verificationData;
+
+      // Status header
+      html += `
+        <div class="xertiq-widget-status-header valid">
+          <div class="xertiq-widget-status-content">
+            ${icons.checkCircle}
+            <div>
+              <h2 class="xertiq-widget-status-title valid">✓ Valid Verification Code</h2>
+              <p class="xertiq-widget-status-subtitle valid">
+                The following details are confirmed by verify.demo-university.com
+              </p>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Certificate card
+      html += '<div class="xertiq-widget-certificate">';
+
+      // Certificate header
+      html += `
+        <div class="xertiq-widget-cert-header">
+          <div class="xertiq-widget-cert-header-content">
+            ${icons.checkCircle}
+            <h2 class="xertiq-widget-cert-header-title">Valid Verification Code</h2>
+          </div>
+        </div>
+      `;
+
+      // University section
+      const universityName =
+        data.university?.name || data.document?.issuer || "Demo University";
+      const universityDomain = data.university?.name
+        ? `verify.${data.university.name.toLowerCase().replace(/\s+/g, "-")}.com`
+        : "verify.demo-university.com";
+
+      html += `
+        <div class="xertiq-widget-university">
+          ${
+            data.university?.logo
+              ? `<img src="${data.university.logo}" alt="${universityName}" class="xertiq-widget-university-logo" />`
+              : `<div class="xertiq-widget-university-logo-placeholder">${icons.graduationCap}</div>`
+          }
+          <h1 class="xertiq-widget-university-name">${universityName}</h1>
+          <p class="xertiq-widget-university-domain">The following details are confirmed by: ${universityDomain}</p>
+        </div>
+      `;
+
+      // Details grid
+      html += '<div class="xertiq-widget-details-section">';
+      html += '<div class="xertiq-widget-details-grid">';
+
+      // Student name
+      html += `
+        <div class="xertiq-widget-detail-box">
+          <p class="xertiq-widget-detail-label">Name</p>
+          <p class="xertiq-widget-detail-value">
+            ${data.holder?.name || data.document?.studentName || "N/A"}
+          </p>
+        </div>
+      `;
+
+      // Student number
+      if (data.holder?.studentNumber) {
+        html += `
+          <div class="xertiq-widget-detail-box">
+            <p class="xertiq-widget-detail-label">Student Number</p>
+            <p class="xertiq-widget-detail-value">${data.holder.studentNumber}</p>
+          </div>
+        `;
+      }
+
+      // Degree
+      if (data.document?.degree) {
+        html += `
+          <div class="xertiq-widget-detail-box">
+            <p class="xertiq-widget-detail-label">Degree</p>
+            <p class="xertiq-widget-detail-value">${data.document.degree}</p>
+          </div>
+        `;
+      }
+
+      // Batch number
+      if (data.batch?.batchId) {
+        html += `
+          <div class="xertiq-widget-detail-box">
+            <p class="xertiq-widget-detail-label">Batch Number</p>
+            <p class="xertiq-widget-detail-value mono">${data.batch.batchId}</p>
+          </div>
+        `;
+      }
+
+      // Document code
+      html += `
+        <div class="xertiq-widget-detail-box full-width">
+          <p class="xertiq-widget-detail-label">Document Code / Serial Number</p>
+          <p class="xertiq-widget-detail-value mono">${data.docId}</p>
+        </div>
+      `;
+
+      // Grade
+      if (data.document?.grade) {
+        html += `
+          <div class="xertiq-widget-detail-box">
+            <p class="xertiq-widget-detail-label">Grade</p>
+            <p class="xertiq-widget-detail-value">${data.document.grade}</p>
+          </div>
+        `;
+      }
+
+      // Date of graduation
+      if (data.document?.issuedAt) {
+        html += `
+          <div class="xertiq-widget-detail-box">
+            <p class="xertiq-widget-detail-label">Date of Graduation</p>
+            <p class="xertiq-widget-detail-value">${formatDate(data.document.issuedAt)}</p>
+          </div>
+        `;
+      }
+
+      html += "</div>"; // End details grid
+      html += "</div>"; // End details section
+
+      // Viewable files
+      if (data.access) {
+        html += '<div class="xertiq-widget-files-section">';
+        html += `
+          <h3 class="xertiq-widget-section-title">
+            ${icons.fileText}
+            <span>Viewable File(s)</span>
+          </h3>
+        `;
+        html += '<div class="xertiq-widget-file-list">';
+
+        // Display document
+        if (data.access.displayDocument && data.access.displayDocument !== "null") {
+          const fileName = data.document?.title || `${data.holder?.name || "Document"}.pdf`;
+          html += `
+            <a href="${data.access.displayDocument}" target="_blank" rel="noopener noreferrer" class="xertiq-widget-file-item">
+              <div class="xertiq-widget-file-content">
+                <div class="xertiq-widget-file-icon">${icons.fileText}</div>
+                <div>
+                  <p class="xertiq-widget-file-name">${fileName}</p>
+                  <p class="xertiq-widget-file-size">259 KB</p>
+                </div>
+              </div>
+              <span class="xertiq-widget-file-external">${icons.externalLink}</span>
+            </a>
+          `;
+        }
+
+        // Canonical document
+        if (data.access.canonicalDocument) {
+          html += `
+            <a href="${data.access.canonicalDocument}" target="_blank" rel="noopener noreferrer" class="xertiq-widget-file-item">
+              <div class="xertiq-widget-file-content">
+                <div class="xertiq-widget-file-icon">${icons.download}</div>
+                <div>
+                  <p class="xertiq-widget-file-name">Download Original Document</p>
+                  <p class="xertiq-widget-file-size">Canonical version (IPFS)</p>
+                </div>
+              </div>
+              <span class="xertiq-widget-file-external">${icons.externalLink}</span>
+            </a>
+          `;
+        }
+
+        html += "</div>"; // End file list
+        html += "</div>"; // End files section
+      }
+
+      html += "</div>"; // End certificate card
+
+      // Merkle hashes
+      if (data.merkleHashes) {
+        html += `
+          <div class="xertiq-widget-info-card">
+            <h3 class="xertiq-widget-section-title">
+              ${icons.hash}
+              <span>Merkle Hashes</span>
+            </h3>
+        `;
+
+        if (data.merkleHashes.personal) {
+          html += `
+            <div class="xertiq-widget-hash-box">
+              <div class="xertiq-widget-hash-header">
+                <p class="xertiq-widget-hash-label">Personal Merkle Hash</p>
+                <button class="xertiq-widget-copy-btn" onclick="XertiQWidget.copy('${data.merkleHashes.personal}')">
+                  ${copied ? icons.check : icons.copy}
+                </button>
+              </div>
+              <p class="xertiq-widget-hash-value">${data.merkleHashes.personal}</p>
+            </div>
+          `;
+        }
+
+        if (data.merkleHashes.root) {
+          html += `
+            <div class="xertiq-widget-hash-box">
+              <div class="xertiq-widget-hash-header">
+                <p class="xertiq-widget-hash-label">Root Merkle Hash</p>
+                <button class="xertiq-widget-copy-btn" onclick="XertiQWidget.copy('${data.merkleHashes.root}')">
+                  ${copied ? icons.check : icons.copy}
+                </button>
+              </div>
+              <p class="xertiq-widget-hash-value">${data.merkleHashes.root}</p>
+            </div>
+          `;
+        }
+
+        html += "</div>"; // End merkle hashes card
+      }
+
+      // Blockchain information
+      if (data.verification) {
+        html += `
+          <div class="xertiq-widget-info-card">
+            <h3 class="xertiq-widget-section-title">
+              ${icons.hash}
+              <span>Blockchain Information</span>
+            </h3>
+        `;
+
+        if (data.verification.blockchain_network) {
+          html += `
+            <div class="xertiq-widget-hash-box">
+              <p class="xertiq-widget-hash-label">Network</p>
+              <p class="xertiq-widget-blockchain-value">${data.verification.blockchain_network}</p>
+            </div>
+          `;
+        }
+
+        if (data.verification.transaction_signature) {
+          html += `
+            <div class="xertiq-widget-hash-box">
+              <div class="xertiq-widget-hash-header">
+                <p class="xertiq-widget-hash-label">Transaction Signature</p>
+                <button class="xertiq-widget-copy-btn" onclick="XertiQWidget.copy('${data.verification.transaction_signature}')">
+                  ${copied ? icons.check : icons.copy}
+                </button>
+              </div>
+              <p class="xertiq-widget-hash-value">${data.verification.transaction_signature}</p>
+            </div>
+          `;
+        }
+
+        if (data.verification.explorer_url) {
+          html += `
+            <a href="${data.verification.explorer_url}" target="_blank" rel="noopener noreferrer" class="xertiq-widget-explorer-link">
+              ${icons.externalLink}
+              <span>View on Blockchain Explorer</span>
+            </a>
+          `;
+        }
+
+        html += "</div>"; // End blockchain card
+      }
+
+      // Verification steps
+      if (data.verification?.steps) {
+        html += `
+          <div class="xertiq-widget-info-card">
+            <h3 class="xertiq-widget-section-title">
+              ${icons.shield}
+              <span>Verification Process</span>
+            </h3>
+        `;
+
+        data.verification.steps.forEach((step) => {
+          const isValid = step.status === "valid";
+          html += `
+            <div class="xertiq-widget-step">
+              <div class="xertiq-widget-step-content">
+                <div class="xertiq-widget-step-number ${isValid ? "valid" : "invalid"}">
+                  ${step.step}
+                </div>
+                <div class="xertiq-widget-step-info">
+                  <div class="xertiq-widget-step-header">
+                    <h4 class="xertiq-widget-step-name">${step.name}</h4>
+                    <span class="xertiq-widget-step-status">
+                      ${isValid ? icons.checkCircle : icons.alertCircle}
+                    </span>
+                  </div>
+                  <p class="xertiq-widget-step-message ${isValid ? "valid" : "invalid"}">
+                    ${step.details?.message || (isValid ? "Verification successful" : "Verification failed")}
+                  </p>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+
+        html += "</div>"; // End verification steps card
+      }
+
+      // Summary
+      if (data.verification?.summary) {
+        html += `
+          <div class="xertiq-widget-info-card">
+            <h3 class="xertiq-widget-section-title">Verification Summary</h3>
+            <div class="xertiq-widget-summary-grid">
+        `;
+
+        const summaryItems = [
+          { key: "identityHashValid", label: "Identity Hash" },
+          { key: "merkleProofValid", label: "Merkle Proof" },
+          { key: "blockchainValid", label: "Blockchain" },
+          { key: "overallValid", label: "Overall Status" },
+        ];
+
+        summaryItems.forEach(({ key, label }) => {
+          const isValid = data.verification.summary[key];
+          html += `
+            <div class="xertiq-widget-summary-item">
+              <span class="xertiq-widget-summary-label">${label}:</span>
+              <div class="xertiq-widget-summary-status">
+                ${isValid ? icons.checkCircle : icons.alertCircle}
+                <span class="xertiq-widget-summary-text ${isValid ? "valid" : "invalid"}">
+                  ${isValid ? "Valid" : "Invalid"}
+                </span>
+              </div>
+            </div>
+          `;
+        });
+
+        html += "</div></div>"; // End summary grid and card
+      }
+    }
+
+    // Footer
+    html += `
+      <div class="xertiq-widget-footer">
+        <div class="xertiq-widget-powered-by">
+          ${icons.shield}
+          <span class="xertiq-widget-powered-label">Powered by:</span>
+          <a href="https://xertiq.com" target="_blank" rel="noopener noreferrer" class="xertiq-widget-brand-link">
+            XertiQ
+          </a>
+        </div>
+        <p class="xertiq-widget-tagline">Blockchain-Secured Document Verification</p>
+      </div>
+    `;
+
+    html += "</div>"; // End inner
+
+    containerElement.innerHTML = html;
+
+    // Attach event listeners
+    const form = document.getElementById("xertiq-verify-form");
+    if (form) {
+      form.addEventListener("submit", handleSubmit);
+    }
+
+    const input = document.getElementById("xertiq-search-input");
+    if (input) {
+      input.addEventListener("input", (e) => {
+        searchQuery = e.target.value;
+      });
+    }
+  };
+
+  // Public API
   window.XertiQWidget.init = (options = {}) => {
-    // Merge config
     config = { ...defaultConfig, ...options };
 
-    // Find container
+    // Get container element
     const containerId = config.container;
     containerElement = document.getElementById(containerId);
 
     if (!containerElement) {
-      console.error(
-        `XertiQ Widget: Container element #${containerId} not found`
-      );
+      console.error(`XertiQ Widget: Container element "${containerId}" not found`);
       return;
     }
 
     // Add container class
-    containerElement.className = "xertiq-widget-container";
+    containerElement.classList.add("xertiq-widget-container");
 
     // Inject styles
     injectStyles();
 
-    // Check for auto-verification
-    const autoDocId = containerElement.getAttribute("data-doc") || config.docId;
-
-    if (autoDocId) {
-      // Auto-verify on init
-      setTimeout(async () => {
-        loading = true;
-        render();
-
-        try {
-          const data = await verifyDocument(autoDocId);
-
-          if (data.valid) {
-            verificationData = data;
-          } else {
-            error = "Document not found or invalid";
-          }
-        } catch (err) {
-          console.error("Auto-verification failed:", err);
-          error = "Failed to verify document";
-        } finally {
-          loading = false;
-          render();
-        }
-      }, 100);
+    // Check for data-doc attribute for auto-verification
+    const autoDoc = containerElement.getAttribute("data-doc");
+    if (autoDoc) {
+      verifyDocument(autoDoc);
+    } else if (config.docId) {
+      verifyDocument(config.docId);
+    } else {
+      render();
     }
-
-    // Initial render
-    render();
   };
 
-  // Auto-initialize on DOM ready
+  window.XertiQWidget.copy = copyToClipboard;
+
+  // Auto-initialize on DOMContentLoaded
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", () => {
-      if (document.getElementById(defaultConfig.container)) {
+      const defaultContainer = document.getElementById("xertiq-verify-widget");
+      if (defaultContainer) {
         window.XertiQWidget.init();
       }
     });
   } else {
     // DOM already loaded
-    if (document.getElementById(defaultConfig.container)) {
+    const defaultContainer = document.getElementById("xertiq-verify-widget");
+    if (defaultContainer) {
       window.XertiQWidget.init();
     }
   }
