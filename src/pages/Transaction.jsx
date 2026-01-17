@@ -186,7 +186,7 @@ const Transaction = () => {
                           "_blank"
                         )
                       }
-                      className="flex items-center space-x-2 text-brand-secondary hover:text-brand-primary text-sm transition-colors"
+                      className="flex items-center space-x-2 text-[#00E5FF] hover:text-[#3834A8] text-sm transition-colors"
                     >
                       <ExternalLink size={14} />
                       <span>View on Solana Explorer</span>

@@ -127,7 +127,7 @@ const CSVUploader = ({ onDataLoaded, onError }) => {
           onDrop={handleDrop}
           className={`border-2 border-dashed rounded-xl p-8 text-center transition-all ${
             dragActive
-              ? "border-brand-secondary bg-brand-primary/10"
+              ? "border-[#00E5FF] bg-[#3834A8]/10"
               : "border-white/20 hover:border-white/40"
           }`}
         >
@@ -194,7 +194,7 @@ const CSVUploader = ({ onDataLoaded, onError }) => {
                 {headers.map((header, index) => (
                   <span
                     key={index}
-                    className="px-3 py-1 bg-brand-primary/20 text-brand-secondary rounded-lg text-sm"
+                    className="px-3 py-1 bg-[#3834A8]/20 text-[#00E5FF] rounded-lg text-sm"
                   >
                     {header}
                   </span>
@@ -262,7 +262,7 @@ const CSVUploader = ({ onDataLoaded, onError }) => {
       {/* Loading State */}
       {isLoading && (
         <div className="text-center py-4">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-brand-primary"></div>
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#3834A8]"></div>
           <p className="text-sm text-gray-400 mt-2">Parsing CSV file...</p>
         </div>
       )}

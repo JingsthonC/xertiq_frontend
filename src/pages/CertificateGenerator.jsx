@@ -571,7 +571,7 @@ const CertificateGenerator = () => {
 
               <button
                 onClick={() => setShowTemplateLibrary(!showTemplateLibrary)}
-                className="flex items-center space-x-2 px-6 py-3 bg-brand-primaryDark/20 hover:bg-brand-primaryDark/30 text-brand-secondary rounded-xl transition-colors"
+                className="flex items-center space-x-2 px-6 py-3 bg-[#2A1B5D]/20 hover:bg-[#2A1B5D]/30 text-[#00E5FF] rounded-xl transition-colors"
               >
                 <FolderOpen size={18} />
                 <span>Template Library</span>
@@ -579,7 +579,7 @@ const CertificateGenerator = () => {
 
               <button
                 onClick={handleExportTemplate}
-                className="flex items-center space-x-2 px-6 py-3 bg-brand-primary/20 hover:bg-brand-primary/30 text-brand-secondary rounded-xl transition-colors"
+                className="flex items-center space-x-2 px-6 py-3 bg-[#3834A8]/20 hover:bg-[#3834A8]/30 text-[#00E5FF] rounded-xl transition-colors"
               >
                 <Download size={18} />
                 <span>Export</span>
@@ -638,7 +638,7 @@ const CertificateGenerator = () => {
                     onClick={() => setTemplateVisibility("private")}
                     className={`px-4 py-2 rounded-lg text-sm transition-colors ${
                       templateVisibility === "private"
-                        ? "bg-brand-primary text-white"
+                        ? "bg-[#3834A8] text-white"
                         : "bg-white/5 text-gray-400 hover:bg-white/10"
                     }`}
                   >
@@ -693,7 +693,7 @@ const CertificateGenerator = () => {
                       </div>
                       <button
                         onClick={() => handleLoadTemplate(tmpl.name)}
-                        className="w-full px-4 py-2 bg-brand-primary/20 hover:bg-brand-primary/30 text-brand-secondary rounded-lg transition-colors text-sm"
+                        className="w-full px-4 py-2 bg-[#3834A8]/20 hover:bg-[#3834A8]/30 text-[#00E5FF] rounded-lg transition-colors text-sm"
                       >
                         Load Template
                       </button>
@@ -824,7 +824,7 @@ const CertificateGenerator = () => {
                           onClick={() =>
                             handleLoadTemplateFromPlatform(tmpl.id || tmpl._id)
                           }
-                          className="w-full px-4 py-2 bg-brand-primaryDark/20 hover:bg-brand-primaryDark/30 text-brand-secondary rounded-lg transition-colors text-sm"
+                          className="w-full px-4 py-2 bg-[#2A1B5D]/20 hover:bg-[#2A1B5D]/30 text-[#00E5FF] rounded-lg transition-colors text-sm"
                         >
                           Load Template
                         </button>
@@ -855,7 +855,7 @@ const CertificateGenerator = () => {
                               tmpl.isPublic
                             )
                           }
-                          className="w-full px-4 py-2 bg-brand-primary/20 hover:bg-brand-primary/30 text-brand-secondary rounded-lg transition-colors text-sm"
+                          className="w-full px-4 py-2 bg-[#3834A8]/20 hover:bg-[#3834A8]/30 text-[#00E5FF] rounded-lg transition-colors text-sm"
                         >
                           Make {tmpl.isPublic ? "Private" : "Public"}
                         </button>

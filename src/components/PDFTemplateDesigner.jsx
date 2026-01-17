@@ -378,14 +378,14 @@ const PDFTemplateDesigner = ({
         <div className="flex flex-wrap gap-2 mt-3">
           <button
             onClick={addTextElement}
-            className="flex items-center space-x-2 px-3 py-2 bg-brand-primary/20 hover:bg-brand-primary/30 text-brand-secondary rounded-lg transition-colors text-sm"
+            className="flex items-center space-x-2 px-3 py-2 bg-[#3834A8]/20 hover:bg-[#3834A8]/30 text-[#00E5FF] rounded-lg transition-colors text-sm"
             title="Add Text"
           >
             <Type size={14} />
             <span>Text</span>
           </button>
 
-          <label className="flex items-center space-x-2 px-3 py-2 bg-brand-primaryDark/20 hover:bg-brand-primaryDark/30 text-brand-secondary rounded-lg transition-colors cursor-pointer text-sm">
+          <label className="flex items-center space-x-2 px-3 py-2 bg-[#2A1B5D]/20 hover:bg-[#2A1B5D]/30 text-[#00E5FF] rounded-lg transition-colors cursor-pointer text-sm">
             <ImageIcon size={14} />
             <span>Image</span>
             <input
@@ -794,7 +794,7 @@ const PDFTemplateDesigner = ({
                                 dataField: field,
                               })
                             }
-                            className="px-2 py-1 bg-brand-primary/20 hover:bg-brand-primary/30 text-brand-secondary rounded text-xs"
+                            className="px-2 py-1 bg-[#3834A8]/20 hover:bg-[#3834A8]/30 text-[#00E5FF] rounded text-xs"
                           >
                             {field}
                           </button>

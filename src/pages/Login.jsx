@@ -214,9 +214,16 @@ import {
   EyeOff,
   Loader,
   Shield,
+  Mail,
   Lock,
-  LogIn,
-  Sparkles,
+  FileCheck,
+  Award,
+  CheckCircle,
+  QrCode,
+  Fingerprint,
+  Database,
+  FileSearch,
+  BadgeCheck,
 } from "lucide-react";
 import apiService from "../services/api";
 import useWalletStore from "../store/wallet";
@@ -228,13 +235,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-
-  // Detect if running as extension
-  const isExtension =
-    typeof window !== "undefined" &&
-    typeof window.chrome !== "undefined" &&
-    window.chrome.runtime &&
-    window.chrome.runtime.id;
+  const [rememberMe, setRememberMe] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -267,230 +268,631 @@ const Login = () => {
   };
 
   return (
-    <div
-      className={
-        isExtension
-          ? "w-full h-full bg-lightest"
-          : "min-h-screen bg-lightest flex items-center justify-center p-4"
-      }
-    >
-      <div
-        className={`flex flex-col items-center relative border border-light bg-white ${
-          isExtension
-            ? "w-full h-full rounded-none py-4 px-5 justify-center overflow-hidden"
-            : "w-[360px] h-[600px] rounded-3xl justify-center overflow-hidden shadow-[0_0_30px_rgba(201,181,156,0.25)]"
-        }`}
-      >
-        {/* Animated gradient orbs - only show in web mode */}
-        {!isExtension && (
-          <>
-            <div className="absolute -top-20 -left-20 w-56 h-56 bg-gradient-to-br from-medium/25 to-dark/15 blur-[120px] rounded-full animate-pulse"></div>
-            <div
-              className="absolute -bottom-20 -right-20 w-72 h-72 bg-gradient-to-br from-dark/20 to-medium/15 blur-[140px] rounded-full animate-pulse"
-              style={{ animationDelay: "1s" }}
-            ></div>
-            <div
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-dark/10 blur-[100px] rounded-full animate-pulse"
-              style={{ animationDelay: "0.5s" }}
-            ></div>
+    <div className="min-h-screen flex flex-col lg:flex-row">
+      {/* Left Side - Blockchain Network Background */}
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#2A1B5D] via-[#3834A8] to-[#1F1449] relative overflow-hidden items-center justify-center order-1">
+        {/* XERTIQ Logo at top */}
+        <div className="absolute top-8 left-1/2 -translate-x-1/2 z-20 flex items-center space-x-3">
+          <div className="w-14 h-14 bg-white rounded-lg flex items-center justify-center shadow-lg">
+            <span className="text-3xl font-bold text-[#2A1B5D]">X</span>
+          </div>
+          <h1 className="text-4xl font-bold text-white tracking-wide">
+            XERTIQ
+          </h1>
+        </div>
 
-            {/* Floating particles */}
-            <div
-              className="absolute top-20 left-10 w-1 h-1 bg-dark rounded-full animate-ping"
-              style={{ animationDuration: "3s" }}
-            ></div>
-            <div
-              className="absolute top-40 right-16 w-1 h-1 bg-medium rounded-full animate-ping"
-              style={{ animationDuration: "4s", animationDelay: "1s" }}
-            ></div>
-            <div
-              className="absolute bottom-32 left-20 w-1 h-1 bg-dark rounded-full animate-ping"
-              style={{ animationDuration: "3.5s", animationDelay: "0.5s" }}
-            ></div>
-          </>
-        )}
-
-        {/* Glass card with enhanced backdrop */}
-        <div
-          className={`relative z-10 bg-lightest border border-light rounded-2xl shadow-[0_12px_30px_rgba(201,181,156,0.15)] ${
-            isExtension ? "w-full p-5" : "w-[90%] p-8"
-          }`}
-        >
+        {/* Blockchain Network Visualization */}
+        <div className="relative w-full h-full">
+          {/* Shield Badges with 3D effect - matching the reference image */}
           <div
-            className={isExtension ? "text-center mb-2" : "text-center mb-8"}
+            className="absolute top-[12%] left-1/2 -translate-x-1/2 w-32 h-36 animate-float"
+            style={{ animationDuration: "4s" }}
           >
-            {/* Enhanced logo with glow effect */}
-            <div
-              className={
-                isExtension
-                  ? "relative inline-flex mb-1.5"
-                  : "relative inline-flex mb-4"
-              }
-            >
-              {!isExtension && (
-                <div className="absolute inset-0 bg-gradient-to-r from-medium via-dark to-darker rounded-2xl blur-xl opacity-50 animate-pulse"></div>
-              )}
+            <div className="relative w-full h-full drop-shadow-2xl">
               <div
-                className={`relative bg-gradient-to-br from-dark via-darker to-dark rounded-2xl flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-110 hover:rotate-6 ${
-                  isExtension ? "w-12 h-12" : "w-16 h-16"
-                }`}
-              >
-                <Shield
-                  size={isExtension ? 24 : 32}
-                  className="text-white drop-shadow-lg"
-                />
-                {!isExtension && (
-                  <Sparkles
-                    size={12}
-                    className="absolute -top-1 -right-1 text-yellow-300 animate-pulse"
+                className="absolute inset-0 bg-gradient-to-br from-[#D84A4A] via-[#C93838] to-[#8B2525] opacity-90"
+                style={{
+                  clipPath:
+                    "polygon(50% 0%, 100% 20%, 100% 80%, 50% 100%, 0% 80%, 0% 20%)",
+                }}
+              ></div>
+              <div
+                className="absolute inset-0 bg-gradient-to-br from-[#E85E5E] to-[#C93838]"
+                style={{
+                  clipPath:
+                    "polygon(50% 0%, 100% 20%, 100% 80%, 50% 100%, 0% 80%, 0% 20%)",
+                  transform: "scale(0.85)",
+                }}
+              ></div>
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                <div className="relative w-16 h-16">
+                  <div
+                    className="absolute inset-0 bg-white/20 backdrop-blur-sm"
+                    style={{
+                      clipPath:
+                        "polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)",
+                    }}
+                  ></div>
+                  <Shield
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white"
+                    size={40}
+                    strokeWidth={2.5}
                   />
-                )}
+                </div>
               </div>
             </div>
-
-            <h1
-              className={`font-bold text-dark tracking-tight ${
-                isExtension ? "text-2xl mb-1" : "text-3xl mb-2"
-              }`}
-            >
-              XertiQ Wallet
-            </h1>
-            <p
-              className={`text-darker tracking-wide font-light ${
-                isExtension ? "text-xs" : "text-sm"
-              }`}
-            >
-              Secure blockchain authentication
-            </p>
           </div>
 
-          <div className={isExtension ? "space-y-3" : "space-y-5"}>
-            {error && (
+          <div
+            className="absolute top-[42%] left-[18%] w-28 h-32 animate-float-delayed"
+            style={{ animationDuration: "5s" }}
+          >
+            <div className="relative w-full h-full drop-shadow-2xl">
               <div
-                className={`bg-error-bg border border-error-border rounded-xl text-error text-center ${
-                  isExtension ? "p-2 text-[11px]" : "p-3 text-xs"
-                }`}
-              >
-                <span className="font-medium">{error}</span>
+                className="absolute inset-0 bg-gradient-to-br from-[#D84A4A] via-[#C93838] to-[#8B2525] opacity-90"
+                style={{
+                  clipPath:
+                    "polygon(50% 0%, 100% 20%, 100% 80%, 50% 100%, 0% 80%, 0% 20%)",
+                }}
+              ></div>
+              <div
+                className="absolute inset-0 bg-gradient-to-br from-[#E85E5E] to-[#C93838]"
+                style={{
+                  clipPath:
+                    "polygon(50% 0%, 100% 20%, 100% 80%, 50% 100%, 0% 80%, 0% 20%)",
+                  transform: "scale(0.85)",
+                }}
+              ></div>
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                <div className="relative w-14 h-14">
+                  <div
+                    className="absolute inset-0 bg-white/20 backdrop-blur-sm"
+                    style={{
+                      clipPath:
+                        "polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)",
+                    }}
+                  ></div>
+                  <Shield
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white"
+                    size={36}
+                    strokeWidth={2.5}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div
+            className="absolute bottom-[28%] right-[15%] w-30 h-34 animate-float"
+            style={{ animationDuration: "4.5s", animationDelay: "0.5s" }}
+          >
+            <div className="relative w-full h-full drop-shadow-2xl">
+              <div
+                className="absolute inset-0 bg-gradient-to-br from-[#D84A4A] via-[#C93838] to-[#8B2525] opacity-90"
+                style={{
+                  clipPath:
+                    "polygon(50% 0%, 100% 20%, 100% 80%, 50% 100%, 0% 80%, 0% 20%)",
+                }}
+              ></div>
+              <div
+                className="absolute inset-0 bg-gradient-to-br from-[#E85E5E] to-[#C93838]"
+                style={{
+                  clipPath:
+                    "polygon(50% 0%, 100% 20%, 100% 80%, 50% 100%, 0% 80%, 0% 20%)",
+                  transform: "scale(0.85)",
+                }}
+              ></div>
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                <div className="relative w-14 h-14">
+                  <div
+                    className="absolute inset-0 bg-white/20 backdrop-blur-sm"
+                    style={{
+                      clipPath:
+                        "polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)",
+                    }}
+                  ></div>
+                  <Shield
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white"
+                    size={36}
+                    strokeWidth={2.5}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Wireframe Cube Nodes */}
+          <div
+            className="absolute top-[18%] left-[12%] w-12 h-12 border-2 border-cyan-300/70 animate-pulse"
+            style={{
+              transform: "rotateX(45deg) rotateY(45deg)",
+              animationDuration: "3s",
+            }}
+          >
+            <div className="absolute inset-2 border-2 border-cyan-300/40"></div>
+          </div>
+          <div
+            className="absolute top-[15%] right-[8%] w-14 h-14 border-2 border-cyan-300/70 animate-pulse"
+            style={{
+              transform: "rotateX(45deg) rotateY(45deg)",
+              animationDuration: "3.5s",
+              animationDelay: "0.5s",
+            }}
+          >
+            <div className="absolute inset-2 border-2 border-cyan-300/40"></div>
+          </div>
+          <div
+            className="absolute top-[38%] right-[28%] w-10 h-10 border-2 border-cyan-300/70 animate-pulse"
+            style={{
+              transform: "rotateX(45deg) rotateY(45deg)",
+              animationDuration: "3.2s",
+              animationDelay: "0.3s",
+            }}
+          >
+            <div className="absolute inset-2 border-2 border-cyan-300/40"></div>
+          </div>
+          <div
+            className="absolute bottom-[35%] left-[8%] w-11 h-11 border-2 border-cyan-300/70 animate-pulse"
+            style={{
+              transform: "rotateX(45deg) rotateY(45deg)",
+              animationDuration: "3.8s",
+              animationDelay: "0.7s",
+            }}
+          >
+            <div className="absolute inset-2 border-2 border-cyan-300/40"></div>
+          </div>
+          <div
+            className="absolute bottom-[18%] right-[35%] w-13 h-13 border-2 border-cyan-300/70 animate-pulse"
+            style={{
+              transform: "rotateX(45deg) rotateY(45deg)",
+              animationDuration: "3.3s",
+              animationDelay: "1s",
+            }}
+          >
+            <div className="absolute inset-2 border-2 border-cyan-300/40"></div>
+          </div>
+          <div
+            className="absolute top-[55%] right-[12%] w-12 h-12 border-2 border-cyan-300/70 animate-pulse"
+            style={{
+              transform: "rotateX(45deg) rotateY(45deg)",
+              animationDuration: "3.6s",
+              animationDelay: "0.4s",
+            }}
+          >
+            <div className="absolute inset-2 border-2 border-cyan-300/40"></div>
+          </div>
+          <div
+            className="absolute bottom-[12%] left-[25%] w-10 h-10 border-2 border-cyan-300/70 animate-pulse"
+            style={{
+              transform: "rotateX(45deg) rotateY(45deg)",
+              animationDuration: "3.4s",
+              animationDelay: "0.6s",
+            }}
+          >
+            <div className="absolute inset-2 border-2 border-cyan-300/40"></div>
+          </div>
+
+          {/* Network Connection Lines with Glow */}
+          <svg className="absolute inset-0 w-full h-full" style={{ zIndex: 5 }}>
+            <defs>
+              <linearGradient id="lineGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#00E5FF" stopOpacity="0.8" />
+                <stop offset="50%" stopColor="#00B8D4" stopOpacity="0.9" />
+                <stop offset="100%" stopColor="#0097A7" stopOpacity="0.7" />
+              </linearGradient>
+              <filter id="glow">
+                <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+                <feMerge>
+                  <feMergeNode in="coloredBlur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            </defs>
+
+            {/* Horizontal lines */}
+            <line
+              x1="0%"
+              y1="15%"
+              x2="50%"
+              y2="20%"
+              stroke="url(#lineGlow)"
+              strokeWidth="2"
+              opacity="0.7"
+              filter="url(#glow)"
+            >
+              <animate
+                attributeName="opacity"
+                values="0.5;0.9;0.5"
+                dur="3s"
+                repeatCount="indefinite"
+              />
+            </line>
+            <line
+              x1="12%"
+              y1="20%"
+              x2="55%"
+              y2="18%"
+              stroke="url(#lineGlow)"
+              strokeWidth="2"
+              opacity="0.7"
+              filter="url(#glow)"
+              strokeDasharray="8,4"
+            >
+              <animate
+                attributeName="opacity"
+                values="0.6;1;0.6"
+                dur="2.5s"
+                repeatCount="indefinite"
+              />
+            </line>
+            <line
+              x1="50%"
+              y1="18%"
+              x2="92%"
+              y2="18%"
+              stroke="url(#lineGlow)"
+              strokeWidth="2"
+              opacity="0.7"
+              filter="url(#glow)"
+            >
+              <animate
+                attributeName="opacity"
+                values="0.5;0.9;0.5"
+                dur="3.5s"
+                repeatCount="indefinite"
+              />
+            </line>
+            <line
+              x1="92%"
+              y1="20%"
+              x2="100%"
+              y2="35%"
+              stroke="url(#lineGlow)"
+              strokeWidth="2"
+              opacity="0.6"
+              filter="url(#glow)"
+              strokeDasharray="6,3"
+            />
+
+            {/* Vertical and diagonal connections */}
+            <line
+              x1="12%"
+              y1="22%"
+              x2="8%"
+              y2="65%"
+              stroke="url(#lineGlow)"
+              strokeWidth="2"
+              opacity="0.6"
+              filter="url(#glow)"
+              strokeDasharray="8,4"
+            >
+              <animate
+                attributeName="opacity"
+                values="0.4;0.8;0.4"
+                dur="4s"
+                repeatCount="indefinite"
+              />
+            </line>
+            <line
+              x1="18%"
+              y1="50%"
+              x2="50%"
+              y2="45%"
+              stroke="url(#lineGlow)"
+              strokeWidth="2"
+              opacity="0.7"
+              filter="url(#glow)"
+            >
+              <animate
+                attributeName="opacity"
+                values="0.6;1;0.6"
+                dur="3s"
+                repeatCount="indefinite"
+              />
+            </line>
+            <line
+              x1="50%"
+              y1="45%"
+              x2="72%"
+              y2="42%"
+              stroke="url(#lineGlow)"
+              strokeWidth="2"
+              opacity="0.7"
+              filter="url(#glow)"
+              strokeDasharray="6,3"
+            />
+            <line
+              x1="72%"
+              y1="45%"
+              x2="88%"
+              y2="57%"
+              stroke="url(#lineGlow)"
+              strokeWidth="2"
+              opacity="0.6"
+              filter="url(#glow)"
+            >
+              <animate
+                attributeName="opacity"
+                values="0.5;0.9;0.5"
+                dur="3.2s"
+                repeatCount="indefinite"
+              />
+            </line>
+            <line
+              x1="50%"
+              y1="50%"
+              x2="60%"
+              y2="88%"
+              stroke="url(#lineGlow)"
+              strokeWidth="2"
+              opacity="0.6"
+              filter="url(#glow)"
+              strokeDasharray="8,4"
+            />
+            <line
+              x1="25%"
+              y1="88%"
+              x2="85%"
+              y2="72%"
+              stroke="url(#lineGlow)"
+              strokeWidth="2"
+              opacity="0.7"
+              filter="url(#glow)"
+            >
+              <animate
+                attributeName="opacity"
+                values="0.6;1;0.6"
+                dur="2.8s"
+                repeatCount="indefinite"
+              />
+            </line>
+
+            {/* Glowing connection dots */}
+            <circle
+              cx="12%"
+              cy="20%"
+              r="5"
+              fill="#00E5FF"
+              opacity="0.9"
+              filter="url(#glow)"
+            >
+              <animate
+                attributeName="r"
+                values="4;6;4"
+                dur="2s"
+                repeatCount="indefinite"
+              />
+            </circle>
+            <circle
+              cx="50%"
+              cy="18%"
+              r="5"
+              fill="#00E5FF"
+              opacity="0.9"
+              filter="url(#glow)"
+            >
+              <animate
+                attributeName="r"
+                values="4;6;4"
+                dur="2.5s"
+                repeatCount="indefinite"
+              />
+            </circle>
+            <circle
+              cx="92%"
+              cy="20%"
+              r="5"
+              fill="#00E5FF"
+              opacity="0.9"
+              filter="url(#glow)"
+            >
+              <animate
+                attributeName="r"
+                values="4;6;4"
+                dur="2.2s"
+                repeatCount="indefinite"
+              />
+            </circle>
+            <circle
+              cx="50%"
+              cy="45%"
+              r="5"
+              fill="#00E5FF"
+              opacity="0.9"
+              filter="url(#glow)"
+            >
+              <animate
+                attributeName="r"
+                values="4;6;4"
+                dur="2.8s"
+                repeatCount="indefinite"
+              />
+            </circle>
+            <circle
+              cx="72%"
+              cy="45%"
+              r="5"
+              fill="#00E5FF"
+              opacity="0.9"
+              filter="url(#glow)"
+            >
+              <animate
+                attributeName="r"
+                values="4;6;4"
+                dur="2.3s"
+                repeatCount="indefinite"
+              />
+            </circle>
+            <circle
+              cx="85%"
+              cy="72%"
+              r="5"
+              fill="#00E5FF"
+              opacity="0.9"
+              filter="url(#glow)"
+            >
+              <animate
+                attributeName="r"
+                values="4;6;4"
+                dur="2.6s"
+                repeatCount="indefinite"
+              />
+            </circle>
+          </svg>
+
+          {/* Additional glowing particles */}
+          <div
+            className="absolute top-[25%] left-[35%] w-2 h-2 bg-cyan-300 rounded-full shadow-lg shadow-cyan-400/70 animate-ping"
+            style={{ animationDuration: "3s" }}
+          ></div>
+          <div
+            className="absolute top-[60%] right-[40%] w-2 h-2 bg-cyan-300 rounded-full shadow-lg shadow-cyan-400/70 animate-ping"
+            style={{ animationDuration: "4s", animationDelay: "1s" }}
+          ></div>
+          <div
+            className="absolute bottom-[45%] left-[28%] w-2 h-2 bg-cyan-300 rounded-full shadow-lg shadow-cyan-400/70 animate-ping"
+            style={{ animationDuration: "3.5s", animationDelay: "0.5s" }}
+          ></div>
+        </div>
+      </div>
+
+      {/* Right Side - Login Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center px-8 lg:px-16 py-24 relative z-10 bg-white order-2">
+        <div className="w-full max-w-xl">
+          <div className="bg-white rounded-3xl shadow-2xl p-8 lg:p-12 border border-gray-100">
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-800 mb-4">
+              Log in to your account
+            </h2>
+            <p className="text-gray-500 text-base lg:text-lg mb-10">
+              Enter your credentials to access your account
+            </p>
+
+            {error && (
+              <div className="mb-6 bg-red-50 border border-red-200 rounded-xl p-3 text-sm text-red-600">
+                {error}
               </div>
             )}
 
-            <div className={isExtension ? "space-y-1.5" : "space-y-2"}>
-              <label
-                className={`block text-dark font-medium ${
-                  isExtension ? "text-xs" : "text-sm"
-                }`}
-              >
-                Email Address
-              </label>
-              <input
-                type="email"
-                value={formData.email}
-                onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
-                }
-                className={`w-full bg-white border-2 border-light rounded-xl text-[#000000] placeholder-medium focus:ring-2 focus:ring-dark/40 focus:border-dark/60 outline-none transition-all duration-200 hover:border-dark/40 ${
-                  isExtension ? "px-3 py-2 text-xs" : "px-4 py-3 text-sm"
-                }`}
-                placeholder="you@example.com"
-              />
-            </div>
-
-            <div className={isExtension ? "space-y-1.5" : "space-y-2"}>
-              <label
-                className={`block text-dark font-medium ${
-                  isExtension ? "text-xs" : "text-sm"
-                }`}
-              >
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={formData.password}
-                  onChange={(e) =>
-                    setFormData({ ...formData, password: e.target.value })
-                  }
-                  className={`w-full bg-white border-2 border-light rounded-xl text-[#000000] placeholder-medium focus:ring-2 focus:ring-dark/40 focus:border-dark/60 outline-none transition-all duration-200 hover:border-dark/40 pr-10 ${
-                    isExtension ? "px-3 py-2 text-xs" : "px-4 py-3 text-sm"
-                  }`}
-                  placeholder="••••••••"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-dark hover:text-darker transition-colors p-1 rounded-lg hover:bg-medium/30"
-                >
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Email Address */}
+              <div>
+                <label className="block text-base font-semibold text-gray-700 mb-2">
+                  Email address
+                </label>
+                <div className="relative">
+                  <Mail
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                    size={20}
+                  />
+                  <input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) =>
+                      setFormData({ ...formData, email: e.target.value })
+                    }
+                    className="w-full pl-12 pr-4 py-3.5 text-base border-2 border-gray-200 rounded-xl focus:border-[#6B5DD3] focus:ring-2 focus:ring-[#6B5DD3]/20 outline-none transition-all text-gray-800 bg-white/80"
+                    placeholder="email@example.com"
+                    required
+                  />
+                </div>
               </div>
-            </div>
 
-            <button
-              onClick={handleSubmit}
-              disabled={isLoading}
-              className={`w-full flex items-center justify-center bg-dark hover:bg-darker text-white font-semibold rounded-xl transition-all duration-200 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(201,181,156,0.25)] hover:shadow-[0_0_30px_rgba(184,164,138,0.35)] relative overflow-hidden group ${
-                isExtension ? "py-2.5 text-xs" : "py-3 text-sm"
-              }`}
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/25 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
-              {isLoading ? (
-                <>
-                  <Loader size={16} className="animate-spin mr-2" />
-                  <span>Authenticating...</span>
-                </>
-              ) : (
-                <>
-                  <Lock size={16} className="mr-2" />
-                  <span>Login Securely</span>
-                </>
-              )}
-            </button>
+              {/* Password */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-base font-semibold text-gray-700">
+                    Password
+                  </label>
+                  <Link
+                    to="/forgot-password"
+                    className="text-sm text-[#6B5DD3] hover:text-[#5A4DB8] font-medium"
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
+                <div className="relative">
+                  <Lock
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                    size={20}
+                  />
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={formData.password}
+                    onChange={(e) =>
+                      setFormData({ ...formData, password: e.target.value })
+                    }
+                    className="w-full pl-12 pr-12 py-3.5 text-base border-2 border-gray-200 rounded-xl focus:border-[#6B5DD3] focus:ring-2 focus:ring-[#6B5DD3]/20 outline-none transition-all text-gray-800 bg-white/80"
+                    placeholder="••••••••"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                </div>
+              </div>
 
-            <div
-              className={
-                isExtension
-                  ? "flex items-center justify-center my-2"
-                  : "flex items-center justify-center my-4"
-              }
-            >
-              <div className="flex-1 border-t border-light"></div>
-              <span
-                className={`text-dark font-medium ${
-                  isExtension ? "mx-2 text-[10px]" : "mx-3 text-xs"
-                }`}
-              >
-                or
-              </span>
-              <div className="flex-1 border-t border-light"></div>
-            </div>
-
-            <div className="text-center">
-              <Link
-                to="/register"
-                className={`text-dark hover:text-darker font-medium inline-flex items-center space-x-2 transition-all duration-200 hover:translate-x-1 group ${
-                  isExtension ? "text-xs" : "text-sm"
-                }`}
-              >
-                <span>Create New Wallet</span>
-                <LogIn
-                  size={14}
-                  className="group-hover:translate-x-1 transition-transform"
+              {/* Remember Me */}
+              <div className="flex items-center pt-2">
+                <input
+                  type="checkbox"
+                  id="remember"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="w-4 h-4 text-[#6B5DD3] border-gray-300 rounded focus:ring-[#6B5DD3]"
                 />
+                <label
+                  htmlFor="remember"
+                  className="ml-2 text-base text-gray-600"
+                >
+                  Remember me
+                </label>
+              </div>
+
+              {/* Login Button */}
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-gradient-to-r from-[#6B5DD3] to-[#7C6FDC] hover:from-[#5A4DB8] hover:to-[#6B5DD3] text-white text-lg font-semibold py-4 rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl mt-8"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader className="animate-spin" size={20} />
+                    <span>Logging in...</span>
+                  </>
+                ) : (
+                  <span>Log in</span>
+                )}
+              </button>
+            </form>
+
+            {/* Sign Up Link */}
+            <div className="mt-8 text-center">
+              <p className="text-base text-gray-600">
+                Don't have an account?{" "}
+                <Link
+                  to="/register"
+                  className="text-[#6B5DD3] hover:text-[#5A4DB8] font-semibold underline"
+                >
+                  Sign up
+                </Link>
+              </p>
+            </div>
+
+            {/* Back to Home */}
+            <div className="mt-6 text-center">
+              <Link
+                to="/"
+                className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                ← Back to Home
               </Link>
             </div>
           </div>
         </div>
-
-        {/* Enhanced footer - only show in web mode */}
-        {!isExtension && (
-          <div className="absolute bottom-4 text-[10px] text-darker flex items-center space-x-2 justify-center backdrop-blur-sm bg-white/70 px-4 py-2 rounded-full border border-light shadow-sm">
-            <Shield size={11} className="text-dark" />
-            <span className="font-medium">
-              256-bit encryption • Blockchain secured
-            </span>
-          </div>
-        )}
       </div>
     </div>
   );

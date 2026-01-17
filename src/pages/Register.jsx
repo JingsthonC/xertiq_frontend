@@ -11,7 +11,7 @@ import {
   User,
 } from "lucide-react";
 import apiService from "../services/api";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -108,7 +108,7 @@ const Register = () => {
   const ValidationItem = ({ isValid, text }) => (
     <div
       className={`flex items-center space-x-2 text-xs transition-colors duration-200 ${
-        isValid ? "text-success" : "text-medium"
+        isValid ? "text-green-600" : "text-gray-500"
       }`}
     >
       {isValid ? <Check size={12} /> : <X size={12} />}
@@ -117,17 +117,19 @@ const Register = () => {
   );
 
   return (
-    <div className="min-h-screen bg-lightest flex items-center justify-center p-3 sm:p-4 md:p-6 lg:p-8">
+    <div className="min-h-screen bg-gradient-to-br from-[#f7fafc] to-[#e6f2ff] flex items-center justify-center p-3 sm:p-4 md:p-6 lg:p-8">
       <div className="w-full max-w-7xl mx-auto grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
         {/* Left side - Branding */}
         <div className="hidden lg:block">
           <div className="space-y-6">
-            <div className="inline-flex w-20 h-20 bg-dark rounded-2xl items-center justify-center shadow-lg">
-              <UserPlus size={40} className="text-lightest" />
+            <div className="inline-flex w-20 h-20 bg-gradient-to-r from-[#3834A8] to-[#2A1B5D] rounded-2xl items-center justify-center shadow-lg">
+              <UserPlus size={40} className="text-white" />
             </div>
             <div>
-              <h1 className="text-5xl font-bold text-dark mb-4">Join XertiQ</h1>
-              <p className="text-lg text-medium leading-relaxed">
+              <h1 className="text-5xl font-bold text-[#2A1B5D] mb-4">
+                Join XertiQ
+              </h1>
+              <p className="text-lg text-gray-600 leading-relaxed">
                 Create your secure digital credential wallet. Issue and verify
                 blockchain-secured documents with ease.
               </p>
@@ -139,31 +141,31 @@ const Register = () => {
         <div className="w-full">
           {/* Mobile header */}
           <div className="text-center mb-6 lg:hidden">
-            <div className="inline-flex w-16 h-16 sm:w-20 sm:h-20 bg-dark rounded-2xl items-center justify-center mb-4 shadow-lg">
-              <UserPlus size={32} className="text-lightest sm:w-10 sm:h-10" />
+            <div className="inline-flex w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-r from-[#3834A8] to-[#2A1B5D] rounded-2xl items-center justify-center mb-4 shadow-lg">
+              <UserPlus size={32} className="text-white sm:w-10 sm:h-10" />
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-dark mb-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-[#2A1B5D] mb-2">
               Join XertiQ
             </h1>
-            <p className="text-sm sm:text-base text-medium">
+            <p className="text-sm sm:text-base text-gray-600">
               Create your secure wallet
             </p>
           </div>
 
           {/* Registration card */}
-          <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-xl border border-light">
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-xl border border-gray-200">
             <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
               {error && (
-                <div className="bg-error-bg border border-error-border rounded-xl p-3 sm:p-4">
+                <div className="bg-red-50 border border-red-200 rounded-xl p-3 sm:p-4">
                   <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-error rounded-full"></div>
-                    <p className="text-error text-sm font-medium">{error}</p>
+                    <div className="w-2 h-2 bg-red-600 rounded-full"></div>
+                    <p className="text-red-600 text-sm font-medium">{error}</p>
                   </div>
                 </div>
               )}
 
               {success && (
-                <div className="bg-success-bg border border-success-border rounded-xl p-3 sm:p-4">
+                <div className="bg-green-50 border border-green-200 rounded-xl p-3 sm:p-4">
                   <div className="flex items-center space-x-2">
                     <Check size={16} className="text-success" />
                     <p className="text-success text-sm font-medium">
@@ -234,8 +236,8 @@ const Register = () => {
                     onClick={() => setFormData({ ...formData, role: "USER" })}
                     className={`relative p-4 rounded-xl border-2 transition-all duration-200 ${
                       formData.role === "USER"
-                        ? "border-dark bg-dark/10"
-                        : "border-light bg-white hover:border-medium"
+                        ? "border-[#00B8D4] bg-[#00B8D4]/10"
+                        : "border-gray-200 bg-white hover:border-[#00B8D4]/50"
                     }`}
                     disabled={isLoading}
                   >
@@ -243,23 +245,27 @@ const Register = () => {
                       <User
                         size={24}
                         className={
-                          formData.role === "USER" ? "text-dark" : "text-medium"
+                          formData.role === "USER"
+                            ? "text-[#00B8D4]"
+                            : "text-gray-500"
                         }
                       />
                       <span
                         className={`text-sm font-medium ${
-                          formData.role === "USER" ? "text-dark" : "text-medium"
+                          formData.role === "USER"
+                            ? "text-[#00B8D4]"
+                            : "text-gray-600"
                         }`}
                       >
                         Holder
                       </span>
-                      <span className="text-xs text-medium text-center">
+                      <span className="text-xs text-gray-500 text-center">
                         Receive documents
                       </span>
                     </div>
                     {formData.role === "USER" && (
                       <div className="absolute top-2 right-2">
-                        <Check size={16} className="text-dark" />
+                        <Check size={16} className="text-[#00B8D4]" />
                       </div>
                     )}
                   </button>
@@ -269,8 +275,8 @@ const Register = () => {
                     onClick={() => setFormData({ ...formData, role: "ISSUER" })}
                     className={`relative p-4 rounded-xl border-2 transition-all duration-200 ${
                       formData.role === "ISSUER"
-                        ? "border-dark bg-dark/10"
-                        : "border-light bg-white hover:border-medium"
+                        ? "border-[#3834A8] bg-[#3834A8]/10"
+                        : "border-gray-200 bg-white hover:border-[#3834A8]/50"
                     }`}
                     disabled={isLoading}
                   >
@@ -279,31 +285,31 @@ const Register = () => {
                         size={24}
                         className={
                           formData.role === "ISSUER"
-                            ? "text-dark"
-                            : "text-medium"
+                            ? "text-[#3834A8]"
+                            : "text-gray-500"
                         }
                       />
                       <span
                         className={`text-sm font-medium ${
                           formData.role === "ISSUER"
-                            ? "text-dark"
-                            : "text-medium"
+                            ? "text-[#3834A8]"
+                            : "text-gray-600"
                         }`}
                       >
                         Issuer
                       </span>
-                      <span className="text-xs text-medium text-center">
+                      <span className="text-xs text-gray-500 text-center">
                         Issue documents
                       </span>
                     </div>
                     {formData.role === "ISSUER" && (
                       <div className="absolute top-2 right-2">
-                        <Check size={16} className="text-dark" />
+                        <Check size={16} className="text-[#3834A8]" />
                       </div>
                     )}
                   </button>
                 </div>
-                <p className="text-xs text-medium mt-2">
+                <p className="text-xs text-gray-500 mt-2">
                   {formData.role === "USER"
                     ? "Holders can view documents issued to them"
                     : "Issuers can create and manage document batches"}
@@ -318,16 +324,16 @@ const Register = () => {
                     : "max-h-0 opacity-0"
                 }`}
               >
-                <div className="space-y-1 sm:space-y-2 bg-medium/10 border border-light rounded-xl p-4">
-                  <label className="block text-sm font-medium text-[#000000] mb-1">
+                <div className="space-y-1 sm:space-y-2 bg-gray-100 border border-gray-200 rounded-xl p-4">
+                  <label className="block text-sm font-medium text-gray-800 mb-1">
                     Organization Name{" "}
-                    <span className="text-xs text-medium">
+                    <span className="text-xs text-gray-500">
                       (Required for Issuers)
                     </span>
                   </label>
                   <div className="relative">
                     <Building2
-                      className="absolute left-4 top-1/2 transform -translate-y-1/2 text-medium"
+                      className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500"
                       size={18}
                     />
                     <input
@@ -340,12 +346,12 @@ const Register = () => {
                           organizationName: e.target.value,
                         })
                       }
-                      className="w-full bg-white border-2 border-light rounded-xl pl-12 pr-4 py-3 text-[#000000] placeholder-medium focus:outline-none focus:border-dark transition-all duration-200"
+                      className="w-full bg-white border-2 border-gray-200 rounded-xl pl-12 pr-4 py-3 text-gray-800 placeholder-gray-500 focus:outline-none focus:border-[#3834A8] transition-all duration-200"
                       placeholder="e.g., Harvard University, Tech Corp"
                       disabled={isLoading}
                     />
                   </div>
-                  <p className="text-xs text-medium mt-1">
+                  <p className="text-xs text-gray-500 mt-1">
                     Your organization name will appear on all certificates you
                     issue
                   </p>
@@ -364,22 +370,22 @@ const Register = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, password: e.target.value })
                     }
-                    className="w-full bg-lightest border-2 border-light rounded-xl px-4 py-3 pr-12 text-[#000000] placeholder-medium focus:outline-none focus:border-dark transition-all duration-200"
+                    className="w-full bg-gray-50 border-2 border-gray-200 rounded-xl px-4 py-3 pr-12 text-gray-800 placeholder-gray-500 focus:outline-none focus:border-[#3834A8] transition-all duration-200"
                     placeholder="Create a strong password"
                     disabled={isLoading}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-medium hover:text-dark transition-colors"
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-[#3834A8] transition-colors"
                   >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
 
                 {formData.password && (
-                  <div className="mt-3 p-3 bg-medium/10 rounded-xl border border-light">
-                    <p className="text-xs text-[#000000] mb-2 font-medium">
+                  <div className="mt-3 p-3 bg-gray-100 rounded-xl border border-gray-200">
+                    <p className="text-xs text-gray-800 mb-2 font-medium">
                       Password requirements:
                     </p>
                     <div className="grid grid-cols-1 gap-1">
@@ -423,12 +429,12 @@ const Register = () => {
                         confirmPassword: e.target.value,
                       })
                     }
-                    className={`w-full bg-lightest border-2 rounded-xl px-4 py-3 pr-12 text-[#000000] placeholder-medium focus:outline-none transition-all duration-200 ${
+                    className={`w-full bg-gray-50 border-2 rounded-xl px-4 py-3 pr-12 text-gray-800 placeholder-gray-500 focus:outline-none transition-all duration-200 ${
                       formData.confirmPassword
                         ? passwordsMatch
-                          ? "border-success-border focus:border-success"
-                          : "border-error-border focus:border-error"
-                        : "border-light focus:border-dark"
+                          ? "border-green-500 focus:border-green-600"
+                          : "border-red-500 focus:border-red-600"
+                        : "border-gray-200 focus:border-[#3834A8]"
                     }`}
                     placeholder="Confirm your password"
                     disabled={isLoading}
@@ -436,9 +442,9 @@ const Register = () => {
                   {formData.confirmPassword && (
                     <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
                       {passwordsMatch ? (
-                        <Check size={18} className="text-success" />
+                        <Check size={18} className="text-green-600" />
                       ) : (
-                        <X size={18} className="text-error" />
+                        <X size={18} className="text-red-600" />
                       )}
                     </div>
                   )}
@@ -452,7 +458,7 @@ const Register = () => {
                   !passwordsMatch ||
                   !Object.values(passwordValidations).every((v) => v)
                 }
-                className="w-full bg-dark hover:bg-darker disabled:opacity-50 disabled:cursor-not-allowed text-lightest font-semibold py-3 px-6 rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg transform hover:scale-[1.01] active:scale-[0.99]"
+                className="w-full bg-gradient-to-r from-[#3834A8] to-[#2A1B5D] hover:from-[#2A1B5D] hover:to-[#1F1449] disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg transform hover:scale-[1.01] active:scale-[0.99]"
               >
                 {isLoading ? (
                   <>
@@ -471,10 +477,10 @@ const Register = () => {
 
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-light"></div>
+              <div className="w-full border-t border-gray-200"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-medium font-medium">
+              <span className="px-4 bg-white text-gray-600 font-medium">
                 Already have a wallet?
               </span>
             </div>
@@ -484,7 +490,7 @@ const Register = () => {
             <button
               type="button"
               onClick={() => navigate("/login")}
-              className="inline-flex items-center space-x-2 text-dark hover:text-darker font-semibold transition-colors duration-200 group"
+              className="inline-flex items-center space-x-2 text-[#3834A8] hover:text-[#2A1B5D] font-semibold transition-colors duration-200 group"
             >
               <span>Sign in to your wallet</span>
               <UserPlus
@@ -493,10 +499,20 @@ const Register = () => {
               />
             </button>
           </div>
+
+          {/* Back to Home link */}
+          <div className="text-center mt-4">
+            <Link
+              to="/"
+              className="text-gray-600 hover:text-[#3834A8] text-sm font-medium transition-colors"
+            >
+              ← Back to Home
+            </Link>
+          </div>
         </div>
 
         <div className="text-center mt-6 lg:mt-0">
-          <div className="inline-flex items-center space-x-2 text-xs text-medium bg-white px-4 py-2 rounded-full border border-light shadow-sm">
+          <div className="inline-flex items-center space-x-2 text-xs text-gray-600 bg-white px-4 py-2 rounded-full border border-gray-200 shadow-sm">
             <Shield size={14} />
             <span>End-to-end encrypted • Your keys, your crypto</span>
           </div>

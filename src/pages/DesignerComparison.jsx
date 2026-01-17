@@ -100,14 +100,14 @@ const DesignerComparison = () => {
         if (useCanvas) {
           // Use canvas-based generation for pixel-perfect accuracy
           console.log(
-            "🎨 Using canvas-based generation for pixel-perfect PDFs"
+            "🎨 Using canvas-based generation for pixel-perfect PDFs",
           );
           console.log("📦 Batch Info:", batchInfo);
           pdfs = await canvasPdfGenerator.generateBatch(
             updatedTemplate.fabricCanvas,
             updatedTemplate,
             csvRecords,
-            batchInfo // Pass batch info for course/batch name
+            batchInfo, // Pass batch info for course/batch name
           );
         } else {
           // Fallback to element-based generation
@@ -127,7 +127,7 @@ const DesignerComparison = () => {
 
             const pdf = pdfGenerator.generateSingleCertificate(
               updatedTemplate,
-              mergedData
+              mergedData,
             );
             return {
               pdf,
@@ -166,13 +166,13 @@ const DesignerComparison = () => {
           pdf = await canvasPdfGenerator.generateFromCanvas(
             updatedTemplate.fabricCanvas,
             updatedTemplate,
-            recipient
+            recipient,
           );
         } else {
           // Fallback to element-based generation
           pdf = pdfGenerator.generateSingleCertificate(
             updatedTemplate,
-            recipient
+            recipient,
           );
         }
 
@@ -211,7 +211,7 @@ const DesignerComparison = () => {
         pdfGenerator.downloadPDF(pdf, filename);
       });
       showToast.success(
-        `Successfully downloaded ${batchPreviews.length} certificate(s)!`
+        `Successfully downloaded ${batchPreviews.length} certificate(s)!`,
       );
     }
   };
@@ -262,7 +262,7 @@ const DesignerComparison = () => {
         const thumbnail = await thumbnailGenerator.generateFromTemplate(
           tmpl,
           600,
-          400
+          400,
         );
         thumbnails[tmpl.name] = thumbnail;
       } catch (error) {
@@ -282,7 +282,7 @@ const DesignerComparison = () => {
       const thumbnail = await thumbnailGenerator.generateFromTemplate(
         templateToLoad,
         600,
-        400
+        400,
       );
       setTemplateThumbnails((prev) => ({
         ...prev,
@@ -291,7 +291,7 @@ const DesignerComparison = () => {
     } catch (error) {
       console.error(
         `Failed to regenerate thumbnail for ${templateToLoad.name}:`,
-        error
+        error,
       );
     }
   };
@@ -327,20 +327,20 @@ const DesignerComparison = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-lightest p-4">
+    <div className="min-h-screen bg-gradient-to-br from-[#f7fafc] to-[#e6f2ff] p-4">
       <div className="max-w-[1920px] mx-auto">
         {/* Compact Header */}
-        <div className="bg-white backdrop-blur-xl border border-light rounded-2xl p-4 mb-4 shadow-xl">
+        <div className="bg-white border border-gray-200 rounded-2xl p-4 mb-4 shadow-lg">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="p-2 bg-dark rounded-xl shadow-lg">
+              <div className="p-2 bg-gradient-to-r from-[#3834A8] to-[#2A1B5D] rounded-xl shadow-lg">
                 <Sparkles className="text-white" size={20} />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-white">
+                <h1 className="text-xl font-bold text-[#2A1B5D]">
                   Certificate Designer
                 </h1>
-                <p className="text-gray-400 text-xs">
+                <p className="text-gray-500 text-xs">
                   Drag-and-drop template editor
                 </p>
               </div>
@@ -348,9 +348,9 @@ const DesignerComparison = () => {
 
             <div className="flex items-center gap-3">
               {/* Designer Name - Only Konva */}
-              <div className="flex items-center gap-2 px-4 py-2 bg-light/50 border border-medium rounded-xl">
-                <Palette size={16} className="text-pink-400" />
-                <span className="text-sm font-semibold text-white">
+              <div className="flex items-center gap-2 px-4 py-2 bg-[#3834A8]/10 border border-[#3834A8]/20 rounded-xl">
+                <Palette size={16} className="text-[#3834A8]" />
+                <span className="text-sm font-semibold text-[#2A1B5D]">
                   Konva Designer
                 </span>
               </div>
@@ -358,7 +358,7 @@ const DesignerComparison = () => {
               {/* Save button - visible for all designers */}
               <button
                 onClick={() => setShowSaveDialog(!showSaveDialog)}
-                className="px-4 py-2 bg-green-500/20 hover:bg-green-500/30 text-green-400 rounded-lg transition-all shadow-lg hover:shadow-green-500/20 flex items-center gap-2 text-sm"
+                className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-all shadow-lg hover:shadow-green-500/30 flex items-center gap-2 text-sm font-medium"
                 title="Save Template"
               >
                 <Save size={16} />
@@ -368,7 +368,7 @@ const DesignerComparison = () => {
               {/* Template Sidebar Toggle button */}
               <button
                 onClick={() => setShowSidebar(!showSidebar)}
-                className="px-4 py-2 bg-brand-primaryDark/20 hover:bg-brand-primaryDark/30 text-brand-secondary rounded-lg transition-all shadow-lg hover:shadow-brand-primaryDark/20 flex items-center gap-2 text-sm"
+                className="px-4 py-2 bg-[#3834A8] hover:bg-[#2A1B5D] text-white rounded-lg transition-all shadow-lg hover:shadow-[#3834A8]/30 flex items-center gap-2 text-sm font-medium"
                 title={showSidebar ? "Hide Templates" : "Show Templates"}
               >
                 <FolderOpen size={16} />
@@ -380,14 +380,14 @@ const DesignerComparison = () => {
 
         {/* Save Template Dialog */}
         {showSaveDialog && (
-          <div className="bg-success-bg border border-success-border rounded-2xl p-4 mb-4 shadow-xl">
-            <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
-              <Save size={20} className="text-green-400" />
+          <div className="bg-green-50 border border-green-200 rounded-2xl p-4 mb-4 shadow-lg">
+            <h3 className="text-lg font-semibold text-[#2A1B5D] mb-3 flex items-center gap-2">
+              <Save size={20} className="text-green-500" />
               Save Template
             </h3>
             <div className="flex gap-3 items-end">
               <div className="flex-1">
-                <label className="block text-sm text-gray-300 mb-2">
+                <label className="block text-sm text-gray-600 mb-2">
                   Template Name
                 </label>
                 <input
@@ -395,7 +395,7 @@ const DesignerComparison = () => {
                   value={templateName}
                   onChange={(e) => setTemplateName(e.target.value)}
                   placeholder="Enter template name..."
-                  className="w-full px-4 py-2 bg-gray-900/50 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-green-500/50"
+                  className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-[#2A1B5D] placeholder-gray-400 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20"
                   onKeyPress={(e) => {
                     if (e.key === "Enter") handleSaveTemplate();
                   }}
@@ -409,12 +409,12 @@ const DesignerComparison = () => {
               </button>
               <button
                 onClick={() => setShowSaveDialog(false)}
-                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-all"
+                className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-all"
               >
                 Cancel
               </button>
             </div>
-            <p className="text-xs text-gray-400 mt-2">
+            <p className="text-xs text-gray-500 mt-2">
               💡 Tip: Give your template a descriptive name to find it easily
               later
             </p>
@@ -423,20 +423,20 @@ const DesignerComparison = () => {
 
         {/* Templates Sidebar - Between Header and Editor */}
         <div
-          className={`bg-white backdrop-blur-xl border border-light rounded-2xl p-4 mb-4 shadow-xl transition-all duration-300 ease-in-out overflow-hidden ${
+          className={`bg-white border border-gray-200 rounded-2xl p-4 mb-4 shadow-lg transition-all duration-300 ease-in-out overflow-hidden ${
             showSidebar
               ? "max-h-[400px] opacity-100"
               : "max-h-0 opacity-0 p-0 border-0 mb-0"
           }`}
         >
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-              <FolderOpen size={20} className="text-brand-primaryDark" />
+            <h3 className="text-lg font-semibold text-[#2A1B5D] flex items-center gap-2">
+              <FolderOpen size={20} className="text-[#3834A8]" />
               Templates ({savedTemplates.length})
             </h3>
             <button
               onClick={() => setShowSidebar(false)}
-              className="p-1.5 hover:bg-white/10 rounded-lg transition-all"
+              className="p-1.5 hover:bg-gray-100 rounded-lg transition-all"
               title="Hide templates"
             >
               <ChevronUp size={18} className="text-gray-400" />
@@ -449,7 +449,7 @@ const DesignerComparison = () => {
                 savedTemplates.map((tmpl) => (
                   <div
                     key={tmpl.name}
-                    className="bg-white/5 border border-white/10 rounded-xl overflow-hidden hover:bg-white/10 hover:border-brand-primaryDark/30 transition-all cursor-pointer group"
+                    className="bg-gray-50 border border-gray-200 rounded-xl overflow-hidden hover:bg-white hover:border-[#3834A8]/50 hover:shadow-lg transition-all cursor-pointer group"
                     onClick={() => handleLoadTemplate(tmpl)}
                   >
                     {/* Template Preview - Emphasize the design */}
@@ -466,8 +466,8 @@ const DesignerComparison = () => {
                         </div>
                       )}
                       {/* Overlay on hover */}
-                      <div className="absolute inset-0 bg-brand-primaryDark/0 group-hover:bg-brand-primaryDark/10 transition-colors flex items-center justify-center">
-                        <span className="text-white text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="absolute inset-0 bg-[#3834A8]/0 group-hover:bg-[#3834A8]/10 transition-colors flex items-center justify-center">
+                        <span className="text-[#2A1B5D] text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 px-3 py-1 rounded-full">
                           Click to Load
                         </span>
                       </div>
@@ -476,13 +476,13 @@ const DesignerComparison = () => {
                     {/* Template Name - Below preview, readable */}
                     <div className="p-3">
                       <p
-                        className="text-white font-medium text-sm truncate"
+                        className="text-[#2A1B5D] font-medium text-sm truncate"
                         title={tmpl.name}
                       >
                         {tmpl.name}
                       </p>
                       <div className="flex items-center justify-between mt-1">
-                        <p className="text-xs text-gray-400">
+                        <p className="text-xs text-gray-500">
                           {tmpl.elements?.length || 0} elements
                         </p>
                         <button
@@ -490,10 +490,10 @@ const DesignerComparison = () => {
                             e.stopPropagation();
                             handleDeleteTemplate(tmpl.name);
                           }}
-                          className="p-1 hover:bg-red-500/20 rounded transition-colors opacity-0 group-hover:opacity-100"
+                          className="p-1 hover:bg-red-100 rounded transition-colors opacity-0 group-hover:opacity-100"
                           title="Delete template"
                         >
-                          <X size={14} className="text-red-400" />
+                          <X size={14} className="text-red-500" />
                         </button>
                       </div>
                     </div>
@@ -503,12 +503,12 @@ const DesignerComparison = () => {
                 <div className="col-span-full text-center py-8">
                   <FolderOpen
                     size={48}
-                    className="text-gray-600 mx-auto mb-3"
+                    className="text-gray-300 mx-auto mb-3"
                   />
-                  <p className="text-gray-400 mb-2 text-sm">
+                  <p className="text-gray-500 mb-2 text-sm">
                     No saved templates yet
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-400">
                     Design and save your first template
                   </p>
                 </div>
@@ -523,7 +523,7 @@ const DesignerComparison = () => {
             showSidebar ? "h-[calc(100vh-540px)]" : "h-[calc(100vh-120px)]"
           }`}
         >
-          <div className="bg-white backdrop-blur-xl border border-light rounded-2xl p-2 shadow-2xl h-full">
+          <div className="bg-white border border-gray-200 rounded-2xl p-2 shadow-lg h-full">
             <div className="h-full">
               <KonvaPdfDesigner
                 template={loadedTemplate || template}
@@ -535,15 +535,15 @@ const DesignerComparison = () => {
 
         {/* PDF Preview Modal */}
         {showPreviewModal && (
-          <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white border border-light rounded-2xl shadow-2xl w-full h-full max-w-[95vw] max-h-[95vh] flex flex-col">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white border border-gray-200 rounded-2xl shadow-2xl w-full h-full max-w-[95vw] max-h-[95vh] flex flex-col">
               {/* Modal Header */}
-              <div className="flex items-center justify-between p-4 border-b border-white/10">
+              <div className="flex items-center justify-between p-4 border-b border-gray-200">
                 <div>
-                  <h2 className="text-xl font-bold text-white mb-1">
+                  <h2 className="text-xl font-bold text-[#2A1B5D] mb-1">
                     PDF Preview
                   </h2>
-                  <p className="text-sm text-gray-400">
+                  <p className="text-sm text-gray-500">
                     {previewData
                       ? `Certificate for ${
                           previewData.recipient?.name ||
@@ -555,26 +555,26 @@ const DesignerComparison = () => {
                 </div>
                 <button
                   onClick={closePreview}
-                  className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 >
-                  <X size={24} className="text-gray-400 hover:text-white" />
+                  <X size={24} className="text-gray-400 hover:text-gray-600" />
                 </button>
               </div>
 
               {/* PDF Preview Area */}
-              <div className="flex-1 overflow-hidden p-4 min-h-0">
+              <div className="flex-1 overflow-hidden p-4 min-h-0 bg-gray-50">
                 {previewPdfUrl ? (
                   // Single PDF Preview - Full height
                   <iframe
                     src={previewPdfUrl}
-                    className="w-full h-full rounded-lg border border-white/10 bg-gray-900"
+                    className="w-full h-full rounded-lg border border-gray-200 bg-white"
                     title="PDF Preview"
                   />
                 ) : batchPreviews.length > 0 ? (
                   // Batch Preview - Show list
                   <div className="h-full overflow-y-auto space-y-3">
-                    <div className="bg-brand-primary/10 border border-brand-secondary/30 rounded-xl p-4 mb-4">
-                      <p className="text-brand-secondary text-sm">
+                    <div className="bg-[#3834A8]/10 border border-[#3834A8]/20 rounded-xl p-4 mb-4">
+                      <p className="text-[#3834A8] text-sm">
                         <strong>{batchPreviews.length} certificates</strong>{" "}
                         generated and ready to download
                       </p>
@@ -583,17 +583,14 @@ const DesignerComparison = () => {
                       {batchPreviews.map((preview, index) => (
                         <div
                           key={index}
-                          className="bg-white/5 border border-white/10 rounded-lg p-4 hover:bg-white/10 transition-colors"
+                          className="bg-white border border-gray-200 rounded-lg p-4 hover:border-[#3834A8]/50 hover:shadow-md transition-all"
                         >
                           <div className="flex items-center gap-3">
-                            <div className="p-2 bg-brand-primary/20 rounded-lg">
-                              <FileText
-                                size={20}
-                                className="text-brand-secondary"
-                              />
+                            <div className="p-2 bg-[#3834A8]/10 rounded-lg">
+                              <FileText size={20} className="text-[#3834A8]" />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-white font-medium truncate">
+                              <p className="text-[#2A1B5D] font-medium truncate">
                                 {preview.recipient?.name ||
                                   preview.recipient?.fullname ||
                                   "Recipient"}
@@ -606,12 +603,12 @@ const DesignerComparison = () => {
                               onClick={() => {
                                 pdfGenerator.downloadPDF(
                                   preview.pdf,
-                                  preview.filename
+                                  preview.filename,
                                 );
                               }}
-                              className="p-2 bg-green-500/20 hover:bg-green-500/30 rounded-lg transition-colors"
+                              className="p-2 bg-green-100 hover:bg-green-200 rounded-lg transition-colors"
                             >
-                              <Download size={16} className="text-green-400" />
+                              <Download size={16} className="text-green-600" />
                             </button>
                           </div>
                         </div>
@@ -626,10 +623,10 @@ const DesignerComparison = () => {
               </div>
 
               {/* Modal Footer */}
-              <div className="flex items-center justify-between p-4 border-t border-white/10 bg-gray-800/50">
+              <div className="flex items-center justify-between p-4 border-t border-gray-200 bg-gray-50">
                 <button
                   onClick={closePreview}
-                  className="px-6 py-2.5 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-all text-sm"
+                  className="px-6 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-all text-sm font-medium"
                 >
                   Close
                 </button>
@@ -637,7 +634,7 @@ const DesignerComparison = () => {
                   {previewData && (
                     <button
                       onClick={downloadSinglePDF}
-                      className="flex items-center gap-2 px-6 py-2.5 bg-success hover:opacity-90 text-white rounded-lg transition-all shadow-lg text-sm"
+                      className="flex items-center gap-2 px-6 py-2.5 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-all shadow-lg text-sm font-medium"
                     >
                       <Download size={16} />
                       Download Certificate
@@ -646,7 +643,7 @@ const DesignerComparison = () => {
                   {batchPreviews.length > 0 && (
                     <button
                       onClick={downloadAllPDFs}
-                      className="flex items-center gap-2 px-6 py-2.5 bg-dark hover:bg-darker text-white rounded-lg transition-all shadow-lg text-sm"
+                      className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-[#3834A8] to-[#2A1B5D] hover:from-[#2A1B5D] hover:to-[#1a1040] text-white rounded-lg transition-all shadow-lg text-sm font-medium"
                     >
                       <Download size={16} />
                       Download All ({batchPreviews.length})

@@ -34,6 +34,9 @@
   let error = "";
   let searchQuery = "";
   let copied = false;
+  let showDocumentPreview = false;
+  let showBatchTransaction = false;
+  let showHolderTransaction = false;
 
   // SVG Icons (inline to avoid external dependencies)
   const icons = {
@@ -59,6 +62,11 @@
     hash: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line><line x1="10" y1="3" x2="8" y2="21"></line><line x1="16" y1="3" x2="14" y2="21"></line></svg>',
     graduationCap:
       '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg>',
+    chevronDown:
+      '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>',
+    chevronUp:
+      '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"></polyline></svg>',
+    user: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>',
   };
 
   // Inject CSS styles matching Verify.jsx
@@ -489,6 +497,210 @@
         color: #2d3748;
       }
 
+      /* Accordion Styles */
+      .xertiq-widget-accordion {
+        background: white;
+        border-radius: 0.75rem;
+        overflow: hidden;
+        margin-bottom: 1rem;
+        border: 1px solid #e2e8f0;
+      }
+
+      .xertiq-widget-accordion-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+
+      .xertiq-widget-accordion-header:hover {
+        background: rgba(0, 0, 0, 0.02);
+      }
+
+      .xertiq-widget-accordion-left {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+
+      .xertiq-widget-accordion-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+
+      .xertiq-widget-accordion-icon.purple {
+        background: linear-gradient(135deg, #3834A8, #2A1B5D);
+      }
+
+      .xertiq-widget-accordion-icon.amber {
+        background: linear-gradient(135deg, #f59e0b, #ea580c);
+      }
+
+      .xertiq-widget-accordion-icon.teal {
+        background: linear-gradient(135deg, #14b8a6, #10b981);
+      }
+
+      .xertiq-widget-accordion-icon svg {
+        color: white;
+      }
+
+      .xertiq-widget-accordion-title {
+        font-weight: 600;
+        color: #1a202c;
+        margin: 0 0 0.125rem 0;
+        font-size: 0.9rem;
+      }
+
+      .xertiq-widget-accordion-subtitle {
+        font-size: 0.75rem;
+        color: #718096;
+        margin: 0;
+      }
+
+      .xertiq-widget-accordion-right {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .xertiq-widget-accordion-btn {
+        padding: 0.5rem;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        border-radius: 0.5rem;
+        transition: background 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .xertiq-widget-accordion-btn:hover {
+        background: rgba(0, 0, 0, 0.05);
+      }
+
+      .xertiq-widget-accordion-content {
+        border-top: 1px solid #e2e8f0;
+        background: #f7fafc;
+        padding: 1rem;
+      }
+
+      .xertiq-widget-iframe-container {
+        background: white;
+        border-radius: 0.5rem;
+        overflow: hidden;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .xertiq-widget-iframe {
+        width: 100%;
+        height: 500px;
+        border: none;
+      }
+
+      .xertiq-widget-iframe.pdf {
+        height: 600px;
+      }
+
+      .xertiq-widget-accordion-footer {
+        margin-top: 1rem;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+      }
+
+      .xertiq-widget-accordion-url {
+        flex: 1;
+        min-width: 0;
+        font-size: 0.75rem;
+        color: #718096;
+        font-family: monospace;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .xertiq-widget-accordion-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-shrink: 0;
+      }
+
+      .xertiq-widget-action-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.5rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .xertiq-widget-action-btn.outline {
+        background: rgba(56, 52, 168, 0.1);
+        color: #3834A8;
+      }
+
+      .xertiq-widget-action-btn.outline:hover {
+        background: rgba(56, 52, 168, 0.2);
+      }
+
+      .xertiq-widget-action-btn.outline.amber {
+        background: rgba(245, 158, 11, 0.1);
+        color: #d97706;
+      }
+
+      .xertiq-widget-action-btn.outline.amber:hover {
+        background: rgba(245, 158, 11, 0.2);
+      }
+
+      .xertiq-widget-action-btn.outline.teal {
+        background: rgba(20, 184, 166, 0.1);
+        color: #0d9488;
+      }
+
+      .xertiq-widget-action-btn.outline.teal:hover {
+        background: rgba(20, 184, 166, 0.2);
+      }
+
+      .xertiq-widget-action-btn.solid {
+        background: #3834A8;
+        color: white;
+      }
+
+      .xertiq-widget-action-btn.solid:hover {
+        background: #2A1B5D;
+      }
+
+      .xertiq-widget-action-btn.solid.amber {
+        background: #f59e0b;
+      }
+
+      .xertiq-widget-action-btn.solid.amber:hover {
+        background: #d97706;
+      }
+
+      .xertiq-widget-action-btn.solid.teal {
+        background: #14b8a6;
+      }
+
+      .xertiq-widget-action-btn.solid.teal:hover {
+        background: #0d9488;
+      }
+
       /* Info Card */
       .xertiq-widget-info-card {
         background: white;
@@ -791,7 +1003,7 @@
 
     try {
       const response = await fetch(
-        `${config.apiUrl}/verify?doc=${encodeURIComponent(query)}`
+        `${config.apiUrl}/verify?doc=${encodeURIComponent(query)}`,
       );
 
       if (!response.ok) {
@@ -1017,7 +1229,7 @@
           <div class="xertiq-widget-detail-box">
             <p class="xertiq-widget-detail-label">Date of Graduation</p>
             <p class="xertiq-widget-detail-value">${formatDate(
-              data.document.issuedAt
+              data.document.issuedAt,
             )}</p>
           </div>
         `;
@@ -1026,31 +1238,195 @@
       html += "</div>"; // End details grid
       html += "</div>"; // End details section
 
-      // Viewable files
+      // Viewable files with Accordions
       if (data.access) {
         html += '<div class="xertiq-widget-files-section">';
         html += `
           <h3 class="xertiq-widget-section-title">
             ${icons.fileText}
-            <span>Viewable File(s)</span>
+            <span>Document Access & Blockchain Links</span>
           </h3>
         `;
-        html += '<div class="xertiq-widget-file-list">';
 
-        // Display document
+        // Original Document Accordion
+        if (
+          data.access.canonicalDocument &&
+          !data.access.canonicalDocument.includes("/null")
+        ) {
+          html += `
+            <div class="xertiq-widget-accordion" id="doc-accordion">
+              <div class="xertiq-widget-accordion-header" onclick="XertiQWidget.toggleAccordion('document')">
+                <div class="xertiq-widget-accordion-left">
+                  <div class="xertiq-widget-accordion-icon purple">
+                    ${icons.fileText}
+                  </div>
+                  <div>
+                    <p class="xertiq-widget-accordion-title">Original Document (IPFS)</p>
+                    <p class="xertiq-widget-accordion-subtitle">${showDocumentPreview ? "Click to hide preview" : "Click to view document"}</p>
+                  </div>
+                </div>
+                <div class="xertiq-widget-accordion-right">
+                  <a href="${data.access.canonicalDocument}" target="_blank" rel="noopener noreferrer" class="xertiq-widget-accordion-btn" onclick="event.stopPropagation()" title="Open in new tab">
+                    ${icons.externalLink}
+                  </a>
+                  <a href="${data.access.canonicalDocument}" download class="xertiq-widget-accordion-btn" onclick="event.stopPropagation()" title="Download">
+                    ${icons.download}
+                  </a>
+                  <div class="xertiq-widget-accordion-btn">
+                    ${showDocumentPreview ? icons.chevronUp : icons.chevronDown}
+                  </div>
+                </div>
+              </div>
+              ${
+                showDocumentPreview
+                  ? `
+                <div class="xertiq-widget-accordion-content">
+                  <div class="xertiq-widget-iframe-container">
+                    <iframe src="${data.access.canonicalDocument}#toolbar=1&navpanes=0&scrollbar=1" class="xertiq-widget-iframe pdf" title="Document Preview"></iframe>
+                  </div>
+                  <div class="xertiq-widget-accordion-footer">
+                    <span class="xertiq-widget-accordion-url">${data.access.canonicalDocument}</span>
+                    <div class="xertiq-widget-accordion-actions">
+                      <button class="xertiq-widget-action-btn outline" onclick="XertiQWidget.copy('${data.access.canonicalDocument}')">
+                        ${copied ? icons.check : icons.copy}
+                        <span>${copied ? "Copied!" : "Copy URL"}</span>
+                      </button>
+                      <a href="${data.access.canonicalDocument}" target="_blank" rel="noopener noreferrer" class="xertiq-widget-action-btn solid">
+                        ${icons.externalLink}
+                        <span>Open in IPFS</span>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              `
+                  : ""
+              }
+            </div>
+          `;
+        }
+
+        // Batch Transaction Accordion (Solana)
+        if (data.access.blockchainExplorer) {
+          html += `
+            <div class="xertiq-widget-accordion" id="batch-accordion">
+              <div class="xertiq-widget-accordion-header" onclick="XertiQWidget.toggleAccordion('batch')">
+                <div class="xertiq-widget-accordion-left">
+                  <div class="xertiq-widget-accordion-icon amber">
+                    ${icons.hash}
+                  </div>
+                  <div>
+                    <p class="xertiq-widget-accordion-title">Batch Transaction (Solana)</p>
+                    <p class="xertiq-widget-accordion-subtitle">${showBatchTransaction ? "Click to hide explorer" : "Click to view on Solana Explorer"}</p>
+                  </div>
+                </div>
+                <div class="xertiq-widget-accordion-right">
+                  <a href="${data.access.blockchainExplorer}" target="_blank" rel="noopener noreferrer" class="xertiq-widget-accordion-btn" onclick="event.stopPropagation()" title="Open in new tab">
+                    ${icons.externalLink}
+                  </a>
+                  <button class="xertiq-widget-accordion-btn" onclick="event.stopPropagation(); XertiQWidget.copy('${data.access.blockchainExplorer}')" title="Copy URL">
+                    ${copied ? icons.check : icons.copy}
+                  </button>
+                  <div class="xertiq-widget-accordion-btn">
+                    ${showBatchTransaction ? icons.chevronUp : icons.chevronDown}
+                  </div>
+                </div>
+              </div>
+              ${
+                showBatchTransaction
+                  ? `
+                <div class="xertiq-widget-accordion-content">
+                  <div class="xertiq-widget-iframe-container">
+                    <iframe src="${data.access.blockchainExplorer}" class="xertiq-widget-iframe" title="Solana Explorer - Batch Transaction"></iframe>
+                  </div>
+                  <div class="xertiq-widget-accordion-footer">
+                    <span class="xertiq-widget-accordion-url">${data.access.blockchainExplorer}</span>
+                    <div class="xertiq-widget-accordion-actions">
+                      <button class="xertiq-widget-action-btn outline amber" onclick="XertiQWidget.copy('${data.access.blockchainExplorer}')">
+                        ${copied ? icons.check : icons.copy}
+                        <span>${copied ? "Copied!" : "Copy URL"}</span>
+                      </button>
+                      <a href="${data.access.blockchainExplorer}" target="_blank" rel="noopener noreferrer" class="xertiq-widget-action-btn solid amber">
+                        ${icons.externalLink}
+                        <span>Open in Solana Explorer</span>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              `
+                  : ""
+              }
+            </div>
+          `;
+        }
+
+        // Holder Transaction Accordion (Solana)
+        if (data.access.holderExplorerUrl) {
+          html += `
+            <div class="xertiq-widget-accordion" id="holder-accordion">
+              <div class="xertiq-widget-accordion-header" onclick="XertiQWidget.toggleAccordion('holder')">
+                <div class="xertiq-widget-accordion-left">
+                  <div class="xertiq-widget-accordion-icon teal">
+                    ${icons.user}
+                  </div>
+                  <div>
+                    <p class="xertiq-widget-accordion-title">Holder Transaction (Solana)</p>
+                    <p class="xertiq-widget-accordion-subtitle">${showHolderTransaction ? "Click to hide explorer" : "Click to view individual holder record"}</p>
+                  </div>
+                </div>
+                <div class="xertiq-widget-accordion-right">
+                  <a href="${data.access.holderExplorerUrl}" target="_blank" rel="noopener noreferrer" class="xertiq-widget-accordion-btn" onclick="event.stopPropagation()" title="Open in new tab">
+                    ${icons.externalLink}
+                  </a>
+                  <button class="xertiq-widget-accordion-btn" onclick="event.stopPropagation(); XertiQWidget.copy('${data.access.holderExplorerUrl}')" title="Copy URL">
+                    ${copied ? icons.check : icons.copy}
+                  </button>
+                  <div class="xertiq-widget-accordion-btn">
+                    ${showHolderTransaction ? icons.chevronUp : icons.chevronDown}
+                  </div>
+                </div>
+              </div>
+              ${
+                showHolderTransaction
+                  ? `
+                <div class="xertiq-widget-accordion-content">
+                  <div class="xertiq-widget-iframe-container">
+                    <iframe src="${data.access.holderExplorerUrl}" class="xertiq-widget-iframe" title="Solana Explorer - Holder Transaction"></iframe>
+                  </div>
+                  <div class="xertiq-widget-accordion-footer">
+                    <span class="xertiq-widget-accordion-url">${data.access.holderExplorerUrl}</span>
+                    <div class="xertiq-widget-accordion-actions">
+                      <button class="xertiq-widget-action-btn outline teal" onclick="XertiQWidget.copy('${data.access.holderExplorerUrl}')">
+                        ${copied ? icons.check : icons.copy}
+                        <span>${copied ? "Copied!" : "Copy URL"}</span>
+                      </button>
+                      <a href="${data.access.holderExplorerUrl}" target="_blank" rel="noopener noreferrer" class="xertiq-widget-action-btn solid teal">
+                        ${icons.externalLink}
+                        <span>Open in Solana Explorer</span>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              `
+                  : ""
+              }
+            </div>
+          `;
+        }
+
+        // Display document link (simple, not accordion)
         if (
           data.access.displayDocument &&
-          data.access.displayDocument !== "null"
+          !data.access.displayDocument.includes("/null")
         ) {
           const fileName =
             data.document?.title || `${data.holder?.name || "Document"}.pdf`;
           html += `
-            <a href="${data.access.displayDocument}" target="_blank" rel="noopener noreferrer" class="xertiq-widget-file-item">
+            <a href="${data.access.displayDocument}" target="_blank" rel="noopener noreferrer" class="xertiq-widget-file-item" style="margin-top: 0.75rem;">
               <div class="xertiq-widget-file-content">
-                <div class="xertiq-widget-file-icon">${icons.fileText}</div>
+                <div class="xertiq-widget-file-icon" style="background: linear-gradient(135deg, #10b981, #059669);">${icons.fileText}</div>
                 <div>
-                  <p class="xertiq-widget-file-name">${fileName}</p>
-                  <p class="xertiq-widget-file-size">259 KB</p>
+                  <p class="xertiq-widget-file-name">Display Document with QR Code</p>
+                  <p class="xertiq-widget-file-size">Version with embedded verification QR</p>
                 </div>
               </div>
               <span class="xertiq-widget-file-external">${icons.externalLink}</span>
@@ -1058,23 +1434,6 @@
           `;
         }
 
-        // Canonical document
-        if (data.access.canonicalDocument) {
-          html += `
-            <a href="${data.access.canonicalDocument}" target="_blank" rel="noopener noreferrer" class="xertiq-widget-file-item">
-              <div class="xertiq-widget-file-content">
-                <div class="xertiq-widget-file-icon">${icons.download}</div>
-                <div>
-                  <p class="xertiq-widget-file-name">Download Original Document</p>
-                  <p class="xertiq-widget-file-size">Canonical version (IPFS)</p>
-                </div>
-              </div>
-              <span class="xertiq-widget-file-external">${icons.externalLink}</span>
-            </a>
-          `;
-        }
-
-        html += "</div>"; // End file list
         html += "</div>"; // End files section
       }
 
@@ -1300,7 +1659,7 @@
 
     if (!containerElement) {
       console.error(
-        `XertiQ Widget: Container element "${containerId}" not found`
+        `XertiQ Widget: Container element "${containerId}" not found`,
       );
       return;
     }
@@ -1323,6 +1682,18 @@
   };
 
   window.XertiQWidget.copy = copyToClipboard;
+
+  // Toggle accordion sections
+  window.XertiQWidget.toggleAccordion = (section) => {
+    if (section === "document") {
+      showDocumentPreview = !showDocumentPreview;
+    } else if (section === "batch") {
+      showBatchTransaction = !showBatchTransaction;
+    } else if (section === "holder") {
+      showHolderTransaction = !showHolderTransaction;
+    }
+    render(); // Re-render to update the UI
+  };
 
   // Auto-initialize on DOMContentLoaded
   if (document.readyState === "loading") {

@@ -66,20 +66,20 @@ const TemplateBasedEditor = ({
       const templateFields = detectDataFields(currentTemplate.elements);
       const headerMapping = matchHeadersToFields(
         parsedData.headers,
-        templateFields
+        templateFields,
       );
 
       // Apply smart positioning
       const updatedElements = applySmartPositioning(
         currentTemplate.elements,
         parsedData.headers,
-        headerMapping
+        headerMapping,
       );
 
       // Auto-detect dynamic fields
       const finalElements = autoDetectDynamicFields(
         updatedElements,
-        parsedData.headers
+        parsedData.headers,
       );
 
       return {
@@ -87,7 +87,7 @@ const TemplateBasedEditor = ({
         elements: finalElements,
       };
     },
-    []
+    [],
   );
 
   const handleTemplateUpload = useCallback(async (acceptedFiles) => {
@@ -127,7 +127,7 @@ const TemplateBasedEditor = ({
           if (currentTemplate) {
             const updated = applySmartPositioningToTemplate(
               parsedData,
-              currentTemplate
+              currentTemplate,
             );
             setStep(2); // Move to edit step
             return updated;
@@ -141,7 +141,7 @@ const TemplateBasedEditor = ({
         setIsLoading(false);
       }
     },
-    [applySmartPositioningToTemplate]
+    [applySmartPositioningToTemplate],
   );
 
   // Template file dropzone
@@ -190,7 +190,7 @@ const TemplateBasedEditor = ({
     setTemplate({
       ...template,
       elements: template.elements.map((el) =>
-        el.id === elementId ? { ...el, ...updates } : el
+        el.id === elementId ? { ...el, ...updates } : el,
       ),
     });
   };
@@ -245,12 +245,12 @@ const TemplateBasedEditor = ({
   if (step === 1) {
     return (
       <div className="space-y-6">
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-          <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-            <Wand2 className="text-brand-primaryDark" size={24} />
+        <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+          <h3 className="text-xl font-semibold text-[#2A1B5D] mb-4 flex items-center gap-2">
+            <Wand2 className="text-[#3834A8]" size={24} />
             Smart Template Editor
           </h3>
-          <p className="text-gray-400 mb-6">
+          <p className="text-gray-600 mb-6">
             Upload a template file (PDF, Word, or Image) and a data source (CSV
             or Excel) to automatically position fields and customize your
             certificate.
@@ -259,26 +259,26 @@ const TemplateBasedEditor = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Template Upload */}
             <div>
-              <h4 className="text-white font-medium mb-3 flex items-center gap-2">
-                <FileText className="text-brand-secondary" size={18} />
+              <h4 className="text-[#2A1B5D] font-medium mb-3 flex items-center gap-2">
+                <FileText className="text-[#3834A8]" size={18} />
                 Template File
               </h4>
               <div
                 {...getTemplateRootProps()}
                 className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${
                   isTemplateDragActive
-                    ? "border-blue-400 bg-blue-500/10"
-                    : "border-white/20 hover:border-white/40 bg-white/5"
+                    ? "border-[#3834A8] bg-[#3834A8]/10"
+                    : "border-gray-300 hover:border-gray-400 bg-gray-50"
                 }`}
               >
                 <input {...getTemplateInputProps()} />
                 {templateFile ? (
                   <div className="space-y-2">
-                    <CheckCircle className="text-green-400 mx-auto" size={32} />
-                    <p className="text-white font-medium">
+                    <CheckCircle className="text-green-500 mx-auto" size={32} />
+                    <p className="text-[#2A1B5D] font-medium">
                       {templateFile.name}
                     </p>
-                    <p className="text-sm text-gray-400">
+                    <p className="text-sm text-gray-500">
                       {template
                         ? `${template.elements.length} elements detected`
                         : "Processing..."}
@@ -289,19 +289,16 @@ const TemplateBasedEditor = ({
                         setTemplateFile(null);
                         setTemplate(null);
                       }}
-                      className="text-red-400 hover:text-red-300 text-sm"
+                      className="text-red-500 hover:text-red-600 text-sm"
                     >
                       Remove
                     </button>
                   </div>
                 ) : (
                   <>
-                    <Upload
-                      className="mx-auto mb-3 text-brand-secondary"
-                      size={32}
-                    />
-                    <p className="text-white mb-2">Upload Template</p>
-                    <p className="text-sm text-gray-400">
+                    <Upload className="mx-auto mb-3 text-[#3834A8]" size={32} />
+                    <p className="text-[#2A1B5D] mb-2">Upload Template</p>
+                    <p className="text-sm text-gray-500">
                       PDF, Word, or Image files
                     </p>
                   </>
@@ -311,24 +308,26 @@ const TemplateBasedEditor = ({
 
             {/* Data Source Upload */}
             <div>
-              <h4 className="text-white font-medium mb-3 flex items-center gap-2">
-                <FileSpreadsheet className="text-green-400" size={18} />
+              <h4 className="text-[#2A1B5D] font-medium mb-3 flex items-center gap-2">
+                <FileSpreadsheet className="text-green-500" size={18} />
                 Data Source
               </h4>
               <div
                 {...getDataRootProps()}
                 className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${
                   isDataDragActive
-                    ? "border-green-400 bg-green-500/10"
-                    : "border-white/20 hover:border-white/40 bg-white/5"
+                    ? "border-green-500 bg-green-50"
+                    : "border-gray-300 hover:border-gray-400 bg-gray-50"
                 }`}
               >
                 <input {...getDataInputProps()} />
                 {dataFile ? (
                   <div className="space-y-2">
-                    <CheckCircle className="text-green-400 mx-auto" size={32} />
-                    <p className="text-white font-medium">{dataFile.name}</p>
-                    <p className="text-sm text-gray-400">
+                    <CheckCircle className="text-green-500 mx-auto" size={32} />
+                    <p className="text-[#2A1B5D] font-medium">
+                      {dataFile.name}
+                    </p>
+                    <p className="text-sm text-gray-500">
                       {dataSource
                         ? `${dataSource.totalRows} rows, ${dataSource.headers.length} columns`
                         : "Processing..."}
@@ -339,7 +338,7 @@ const TemplateBasedEditor = ({
                         setDataFile(null);
                         setDataSource(null);
                       }}
-                      className="text-red-400 hover:text-red-300 text-sm"
+                      className="text-red-500 hover:text-red-600 text-sm"
                     >
                       Remove
                     </button>
@@ -347,11 +346,11 @@ const TemplateBasedEditor = ({
                 ) : (
                   <>
                     <FileSpreadsheet
-                      className="mx-auto mb-3 text-green-400"
+                      className="mx-auto mb-3 text-green-500"
                       size={32}
                     />
-                    <p className="text-white mb-2">Upload Data</p>
-                    <p className="text-sm text-gray-400">CSV or Excel files</p>
+                    <p className="text-[#2A1B5D] mb-2">Upload Data</p>
+                    <p className="text-sm text-gray-500">CSV or Excel files</p>
                   </>
                 )}
               </div>
@@ -360,19 +359,19 @@ const TemplateBasedEditor = ({
 
           {/* Data Preview */}
           {dataSource && (
-            <div className="mt-6 bg-white/5 border border-white/10 rounded-xl p-4">
-              <h4 className="text-white font-medium mb-3">Data Headers</h4>
+            <div className="mt-6 bg-gray-50 border border-gray-200 rounded-xl p-4">
+              <h4 className="text-[#2A1B5D] font-medium mb-3">Data Headers</h4>
               <div className="flex flex-wrap gap-2">
                 {dataSource.headers.map((header, index) => (
                   <span
                     key={index}
-                    className="px-3 py-1 bg-brand-primary/20 text-brand-secondary rounded-lg text-sm"
+                    className="px-3 py-1 bg-[#3834A8]/10 text-[#3834A8] rounded-lg text-sm"
                   >
                     {header}
                   </span>
                 ))}
               </div>
-              <p className="text-sm text-gray-400 mt-3">
+              <p className="text-sm text-gray-500 mt-3">
                 {dataSource.totalRows} rows of data ready
               </p>
             </div>
@@ -380,10 +379,10 @@ const TemplateBasedEditor = ({
 
           {/* Error Display */}
           {error && (
-            <div className="mt-4 bg-red-500/10 border border-red-400/40 rounded-xl p-4">
+            <div className="mt-4 bg-red-50 border border-red-200 rounded-xl p-4">
               <div className="flex items-center gap-2">
-                <AlertCircle className="text-red-400" size={20} />
-                <p className="text-red-300">{error}</p>
+                <AlertCircle className="text-red-500" size={20} />
+                <p className="text-red-600">{error}</p>
               </div>
             </div>
           )}
@@ -393,7 +392,7 @@ const TemplateBasedEditor = ({
             <div className="mt-6 flex justify-end">
               <button
                 onClick={handleProceedToEditor}
-                className="px-6 py-3 bg-gradient-to-r from-brand-primaryDark to-brand-primary text-white rounded-xl font-semibold hover:opacity-90 transition-opacity flex items-center gap-2"
+                className="px-6 py-3 bg-gradient-to-r from-[#3834A8] to-[#2A1B5D] text-white rounded-xl font-semibold hover:opacity-90 transition-opacity flex items-center gap-2 shadow-lg"
               >
                 <Wand2 size={18} />
                 Open Editor with Smart Positioning
@@ -403,8 +402,7 @@ const TemplateBasedEditor = ({
 
           {/* Loading State */}
           {isLoading && (
-            <div className="mt-4 flex items-center justify-center gap-2 text-brand-secondary">
-              >
+            <div className="mt-4 flex items-center justify-center gap-2 text-[#3834A8]">
               <Loader className="animate-spin" size={20} />
               <span>Processing files...</span>
             </div>
@@ -417,7 +415,7 @@ const TemplateBasedEditor = ({
   // Render editor step
   if (step === 2 && template) {
     const selectedEl = template.elements.find(
-      (el) => el.id === selectedElement
+      (el) => el.id === selectedElement,
     );
 
     return (
@@ -425,10 +423,10 @@ const TemplateBasedEditor = ({
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-2xl font-bold text-white mb-2">
+            <h3 className="text-2xl font-bold text-[#2A1B5D] mb-2">
               Template Editor
             </h3>
-            <p className="text-gray-400">
+            <p className="text-gray-600">
               Customize your template. Fields from data source are automatically
               positioned.
             </p>
@@ -436,7 +434,7 @@ const TemplateBasedEditor = ({
           <div className="flex gap-2">
             <button
               onClick={() => setStep(1)}
-              className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors"
+              className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors"
             >
               Back
             </button>
@@ -444,7 +442,7 @@ const TemplateBasedEditor = ({
               onClick={() => {
                 if (onSave) onSave(template);
               }}
-              className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors flex items-center gap-2"
+              className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors flex items-center gap-2"
             >
               <Save size={18} />
               Save
@@ -455,20 +453,20 @@ const TemplateBasedEditor = ({
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Canvas Area */}
           <div className="lg:col-span-3">
-            <div className="bg-white/5 border border-white/10 rounded-xl p-6">
+            <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
               <div className="flex items-center justify-between mb-4">
-                <h4 className="text-white font-medium">Template Canvas</h4>
+                <h4 className="text-[#2A1B5D] font-medium">Template Canvas</h4>
                 <div className="flex gap-2">
                   <button
                     onClick={addTextElement}
-                    className="px-3 py-1 bg-brand-primary/20 hover:bg-brand-primary/30 text-brand-secondary rounded-lg text-sm flex items-center gap-1"
+                    className="px-3 py-1 bg-[#3834A8]/10 hover:bg-[#3834A8]/20 text-[#3834A8] rounded-lg text-sm flex items-center gap-1"
                   >
                     <Type size={14} />
                     Add Text
                   </button>
                   <button
                     onClick={() => setShowSettings(!showSettings)}
-                    className="px-3 py-1 bg-gray-500/20 hover:bg-gray-500/30 text-gray-400 rounded-lg text-sm flex items-center gap-1"
+                    className="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg text-sm flex items-center gap-1"
                   >
                     <Settings size={14} />
                     Settings
@@ -573,8 +571,8 @@ const TemplateBasedEditor = ({
 
           {/* Properties Panel */}
           <div className="lg:col-span-1">
-            <div className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-4">
-              <h4 className="text-white font-medium">Properties</h4>
+            <div className="bg-white border border-gray-200 rounded-xl p-4 space-y-4 shadow-sm">
+              <h4 className="text-[#2A1B5D] font-medium">Properties</h4>
 
               {selectedEl ? (
                 <div className="space-y-4">
@@ -582,7 +580,7 @@ const TemplateBasedEditor = ({
                   {selectedEl.type === "text" && (
                     <>
                       <div>
-                        <label className="text-sm text-gray-400 block mb-1">
+                        <label className="text-sm text-gray-500 block mb-1">
                           Text Content
                         </label>
                         <input
@@ -593,7 +591,7 @@ const TemplateBasedEditor = ({
                               text: e.target.value,
                             })
                           }
-                          className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm"
+                          className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#3834A8]/20 focus:border-[#3834A8]"
                         />
                       </div>
 
@@ -612,7 +610,7 @@ const TemplateBasedEditor = ({
                         />
                         <label
                           htmlFor="isDynamic"
-                          className="text-sm text-gray-300"
+                          className="text-sm text-gray-700"
                         >
                           Use data field
                         </label>
@@ -621,7 +619,7 @@ const TemplateBasedEditor = ({
                       {/* Data Field Selection */}
                       {selectedEl.isDynamic && dataSource && (
                         <div>
-                          <label className="text-sm text-gray-400 block mb-1">
+                          <label className="text-sm text-gray-500 block mb-1">
                             Data Field
                           </label>
                           <select
@@ -632,7 +630,7 @@ const TemplateBasedEditor = ({
                                 text: `{{${e.target.value}}}`,
                               })
                             }
-                            className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm"
+                            className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#3834A8]/20 focus:border-[#3834A8]"
                           >
                             <option value="">Select field</option>
                             {dataSource.headers.map((header) => (
@@ -647,7 +645,7 @@ const TemplateBasedEditor = ({
                       {/* Position */}
                       <div className="grid grid-cols-2 gap-2">
                         <div>
-                          <label className="text-sm text-gray-400 block mb-1">
+                          <label className="text-sm text-gray-500 block mb-1">
                             X (mm)
                           </label>
                           <input
@@ -658,11 +656,11 @@ const TemplateBasedEditor = ({
                                 x: parseFloat(e.target.value) || 0,
                               })
                             }
-                            className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm"
+                            className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#3834A8]/20 focus:border-[#3834A8]"
                           />
                         </div>
                         <div>
-                          <label className="text-sm text-gray-400 block mb-1">
+                          <label className="text-sm text-gray-500 block mb-1">
                             Y (mm)
                           </label>
                           <input
@@ -673,14 +671,14 @@ const TemplateBasedEditor = ({
                                 y: parseFloat(e.target.value) || 0,
                               })
                             }
-                            className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm"
+                            className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#3834A8]/20 focus:border-[#3834A8]"
                           />
                         </div>
                       </div>
 
                       {/* Font Size */}
                       <div>
-                        <label className="text-sm text-gray-400 block mb-1">
+                        <label className="text-sm text-gray-500 block mb-1">
                           Font Size
                         </label>
                         <input
@@ -691,7 +689,7 @@ const TemplateBasedEditor = ({
                               fontSize: parseFloat(e.target.value) || 12,
                             })
                           }
-                          className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm"
+                          className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#3834A8]/20 focus:border-[#3834A8]"
                           min="8"
                           max="72"
                         />
@@ -699,7 +697,7 @@ const TemplateBasedEditor = ({
 
                       {/* Color */}
                       <div>
-                        <label className="text-sm text-gray-400 block mb-1">
+                        <label className="text-sm text-gray-500 block mb-1">
                           Color
                         </label>
                         <input
@@ -716,7 +714,7 @@ const TemplateBasedEditor = ({
 
                       {/* Alignment */}
                       <div>
-                        <label className="text-sm text-gray-400 block mb-1">
+                        <label className="text-sm text-gray-500 block mb-1">
                           Alignment
                         </label>
                         <select
@@ -726,7 +724,7 @@ const TemplateBasedEditor = ({
                               align: e.target.value,
                             })
                           }
-                          className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm"
+                          className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#3834A8]/20 focus:border-[#3834A8]"
                         >
                           <option value="left">Left</option>
                           <option value="center">Center</option>
@@ -739,21 +737,21 @@ const TemplateBasedEditor = ({
                   {/* Delete Button */}
                   <button
                     onClick={() => removeElement(selectedEl.id)}
-                    className="w-full px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg transition-colors text-sm"
+                    className="w-full px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-lg transition-colors text-sm"
                   >
                     Delete Element
                   </button>
                 </div>
               ) : (
-                <p className="text-gray-400 text-sm text-center py-4">
+                <p className="text-gray-500 text-sm text-center py-4">
                   Select an element to edit
                 </p>
               )}
 
               {/* Available Data Fields */}
               {dataSource && (
-                <div className="mt-6 pt-4 border-t border-white/10">
-                  <h5 className="text-sm text-gray-400 mb-2">
+                <div className="mt-6 pt-4 border-t border-gray-200">
+                  <h5 className="text-sm text-gray-500 mb-2">
                     Available Data Fields
                   </h5>
                   <div className="flex flex-wrap gap-2">
@@ -775,7 +773,7 @@ const TemplateBasedEditor = ({
                             }
                           }, 100);
                         }}
-                        className="px-2 py-1 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded text-xs"
+                        className="px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded text-xs border border-blue-200"
                       >
                         {header}
                       </button>

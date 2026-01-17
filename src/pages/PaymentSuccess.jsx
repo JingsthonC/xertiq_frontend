@@ -18,29 +18,29 @@ const STATUS_COPY = {
   polling: {
     title: "Verifying your payment",
     description: "Hang tight while we sync your new credits.",
-    accent: "text-blue-300",
-    bg: "bg-blue-500/20 border-blue-500/40",
+    accent: "text-blue-600",
+    bg: "bg-blue-50 border-blue-200",
     Icon: Loader2,
   },
   synced: {
     title: "Credits synced",
     description: "Your wallet has the latest balance.",
-    accent: "text-green-300",
-    bg: "bg-green-500/20 border-green-500/40",
+    accent: "text-green-600",
+    bg: "bg-green-50 border-green-200",
     Icon: CheckCircle,
   },
   timeout: {
     title: "Taking longer than expected",
     description: "You can retry syncing or contact support if this continues.",
-    accent: "text-yellow-300",
-    bg: "bg-yellow-500/20 border-yellow-500/40",
+    accent: "text-yellow-600",
+    bg: "bg-yellow-50 border-yellow-200",
     Icon: AlertTriangle,
   },
   error: {
     title: "Unable to verify payment",
     description: "Retry syncing or try purchasing again.",
-    accent: "text-red-300",
-    bg: "bg-red-500/20 border-red-500/40",
+    accent: "text-red-600",
+    bg: "bg-red-50 border-red-200",
     Icon: AlertTriangle,
   },
 };
@@ -65,7 +65,7 @@ const PaymentSuccess = () => {
 
   const queryParams = useMemo(
     () => new URLSearchParams(location.search),
-    [location.search]
+    [location.search],
   );
 
   const checkoutIdFromQuery = queryParams.get("checkoutId");
@@ -73,7 +73,7 @@ const PaymentSuccess = () => {
 
   console.log(
     "[PaymentSuccess] checkoutId from URL query:",
-    checkoutIdFromQuery
+    checkoutIdFromQuery,
   );
   console.log("[PaymentSuccess] packageId from URL query:", packageIdFromQuery);
 
@@ -88,14 +88,14 @@ const PaymentSuccess = () => {
         }
         console.log(
           "[PaymentSuccess] Merged checkoutMeta from sessionStorage:",
-          parsed
+          parsed,
         );
         setCheckoutMeta(parsed);
       } else if (checkoutIdFromQuery) {
         // No sessionStorage but we have the checkoutId from query
         console.log(
           "[PaymentSuccess] No sessionStorage; using query checkoutId:",
-          checkoutIdFromQuery
+          checkoutIdFromQuery,
         );
         setCheckoutMeta({
           checkoutId: checkoutIdFromQuery,
@@ -119,14 +119,14 @@ const PaymentSuccess = () => {
       try {
         console.log(
           "[PaymentSuccess] Verifying payment status for checkoutId:",
-          checkoutId
+          checkoutId,
         );
         const result = await apiService.verifyPayMongoPaymentStatus(checkoutId);
 
         if (result.success && result.data) {
           console.log(
             "[PaymentSuccess] Payment verification result:",
-            result.data
+            result.data,
           );
 
           if (result.data.paid && result.data.creditsAdded) {
@@ -142,10 +142,10 @@ const PaymentSuccess = () => {
             // Payment is paid but credits weren't added - this shouldn't happen
             // but the backend should have added them via verifyPayMongoPaymentStatus
             console.warn(
-              "[PaymentSuccess] Payment paid but credits not added yet"
+              "[PaymentSuccess] Payment paid but credits not added yet",
             );
             setVerificationError(
-              "Payment verified but credits are being processed. Please wait..."
+              "Payment verified but credits are being processed. Please wait...",
             );
             // Start polling to wait for credits
             if (!hasStarted) {
@@ -156,7 +156,7 @@ const PaymentSuccess = () => {
             // Payment not completed yet
             console.log(
               "[PaymentSuccess] Payment not completed yet, status:",
-              result.data.status
+              result.data.status,
             );
             setVerificationError("Payment not completed yet. Please wait...");
             // Start polling to wait for payment
@@ -169,7 +169,7 @@ const PaymentSuccess = () => {
       } catch (error) {
         console.error("[PaymentSuccess] Payment verification error:", error);
         setVerificationError(
-          "Unable to verify payment status. Credits will be added automatically."
+          "Unable to verify payment status. Credits will be added automatically.",
         );
         // Start polling anyway - webhook might still process it
         if (!hasStarted) {
@@ -228,29 +228,36 @@ const PaymentSuccess = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0d0f2e] via-[#181143] to-[#05030f] text-white">
+    <div className="min-h-screen bg-gradient-to-br from-[#f7fafc] to-[#e6f2ff] p-4 sm:p-6">
       <NavigationHeader title="Payment Success" showBack={true} />
 
       <div className="max-w-3xl mx-auto px-4 py-10">
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-8">
+        {/* Success Header Card */}
+        <div className="bg-white border border-gray-200 rounded-2xl p-6 mb-8 shadow-lg">
           <div className="flex items-center gap-4">
-            <StatusIcon className={`w-10 h-10 ${statusConfig.accent}`} />
+            <div
+              className={`p-3 rounded-full ${status === "synced" ? "bg-green-100" : status === "error" ? "bg-red-100" : status === "timeout" ? "bg-yellow-100" : "bg-blue-100"}`}
+            >
+              <StatusIcon className={`w-8 h-8 ${statusConfig.accent}`} />
+            </div>
             <div>
-              <h1 className="text-2xl font-semibold">{statusConfig.title}</h1>
-              <p className="text-gray-300 text-sm">
+              <h1 className="text-2xl font-bold text-[#2A1B5D]">
+                {statusConfig.title}
+              </h1>
+              <p className="text-gray-600 text-sm">
                 {statusConfig.description}
               </p>
             </div>
           </div>
-          <p className="text-gray-400 text-sm mt-4">
+          <p className="text-gray-500 text-sm mt-4 pl-16">
             {paymentVerified
               ? "Payment verified! Your credits have been added."
               : verificationError
-              ? verificationError
-              : "We're verifying your payment and refreshing your wallet balance."}
+                ? verificationError
+                : "We're verifying your payment and refreshing your wallet balance."}
           </p>
           {!paymentVerified && (
-            <p className="text-gray-400 text-sm">
+            <p className="text-gray-400 text-sm pl-16">
               Attempt {Math.min(attempts, MAX_POLL_ATTEMPTS)} of{" "}
               {MAX_POLL_ATTEMPTS}
             </p>
@@ -258,105 +265,121 @@ const PaymentSuccess = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Balance Card */}
           <div
-            className={`rounded-2xl border ${statusConfig.bg} p-5 flex flex-col gap-4`}
+            className={`rounded-2xl border-2 ${statusConfig.bg} p-6 flex flex-col gap-5 shadow-lg`}
           >
-            <div className="flex items-center gap-3">
-              <Wallet className="w-5 h-5 text-white/80" />
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-xl bg-[#3834A8]/10">
+                <Wallet className="w-6 h-6 text-[#3834A8]" />
+              </div>
               <div>
-                <p className="text-sm text-white/70">Latest known balance</p>
-                <p className="text-3xl font-bold text-white">{credits}</p>
+                <p className="text-sm font-medium text-gray-500">
+                  Latest known balance
+                </p>
+                <p className="text-4xl font-bold text-[#2A1B5D]">{credits}</p>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3 text-sm text-white/80">
-              <div className="bg-black/20 rounded-lg p-3">
-                <p className="text-xs uppercase tracking-wide text-white/50">
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="bg-white/80 rounded-xl p-4 border border-gray-100 shadow-sm">
+                <p className="text-xs uppercase tracking-wide text-gray-400 font-medium mb-1">
                   Incoming credits
                 </p>
-                <p className="text-xl font-semibold">
-                  {details?.credits ? `${details.credits}` : "–"}
+                <p className="text-2xl font-bold text-[#3834A8]">
+                  {details?.credits ? `+${details.credits}` : "–"}
                 </p>
               </div>
-              <div className="bg-black/20 rounded-lg p-3">
-                <p className="text-xs uppercase tracking-wide text-white/50">
+              <div className="bg-white/80 rounded-xl p-4 border border-gray-100 shadow-sm">
+                <p className="text-xs uppercase tracking-wide text-gray-400 font-medium mb-1">
                   PayMongo ref
                 </p>
-                <p className="text-sm break-all">
+                <p className="text-xs break-all text-[#2A1B5D] font-mono">
                   {details?.reference || "Pending"}
                 </p>
               </div>
             </div>
-            <div className="bg-black/30 rounded-lg p-3 text-sm text-white/70">
-              <p className="text-xs uppercase tracking-wide text-white/50">
+            <div className="bg-white/80 rounded-xl p-4 border border-gray-100 shadow-sm">
+              <p className="text-xs uppercase tracking-wide text-gray-400 font-medium mb-1">
                 Last fetched credits
               </p>
-              <p className="text-2xl font-semibold">
+              <p className="text-3xl font-bold text-[#2A1B5D]">
                 {typeof lastCredits === "number" ? lastCredits : "—"}
               </p>
             </div>
           </div>
 
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-5 flex flex-col gap-4">
-            <div>
-              <p className="text-sm text-white/60">Package</p>
-              <p className="text-xl font-semibold">
-                {details?.packageName ||
-                  packageIdFromQuery ||
-                  "Unknown package"}
-              </p>
+          {/* Package Card */}
+          <div className="bg-white border border-gray-200 rounded-2xl p-6 flex flex-col gap-5 shadow-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-500">Package</p>
+                <p className="text-2xl font-bold text-[#2A1B5D]">
+                  {details?.packageName ||
+                    packageIdFromQuery ||
+                    "Unknown package"}
+                </p>
+              </div>
+              <div className="p-3 rounded-xl bg-gradient-to-r from-[#3834A8]/10 to-[#2A1B5D]/10">
+                <CheckCircle className="w-6 h-6 text-green-500" />
+              </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-black/20 rounded-lg p-3">
-                <p className="text-xs uppercase tracking-wide text-white/50">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-gradient-to-br from-[#3834A8]/5 to-[#2A1B5D]/10 rounded-xl p-4 border border-[#3834A8]/10">
+                <p className="text-xs uppercase tracking-wide text-gray-400 font-medium mb-1">
                   Credits purchased
                 </p>
-                <p className="text-2xl font-semibold">
+                <p className="text-3xl font-bold text-[#3834A8]">
                   {details?.credits ? `${details.credits}` : "—"}
                 </p>
               </div>
-              <div className="bg-black/20 rounded-lg p-3">
-                <p className="text-xs uppercase tracking-wide text-white/50">
+              <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-4 border border-green-100">
+                <p className="text-xs uppercase tracking-wide text-gray-400 font-medium mb-1">
                   Amount paid
                 </p>
-                <p className="text-2xl font-semibold">
-                  {details?.price ? `$${details.price}` : "—"}
+                <p className="text-3xl font-bold text-green-600">
+                  {details?.price ? `₱${details.price}` : "—"}
                 </p>
               </div>
             </div>
-            <div className="text-sm text-white/70">
+            <div className="text-sm text-gray-500 bg-gray-50 rounded-xl p-4">
               <p>
                 Need a receipt? Check your email for PayMongo's confirmation or
-                reach out to support@xertiq.com.
+                reach out to{" "}
+                <span className="text-[#3834A8] font-medium">
+                  support@xertiq.com
+                </span>
+                .
               </p>
             </div>
           </div>
         </div>
 
-        <div className="mt-10 flex flex-wrap gap-3">
+        {/* Action Buttons */}
+        <div className="mt-10 flex flex-wrap justify-center gap-4">
           <button
             onClick={handleGoToDashboard}
-            className="px-6 py-3 rounded-xl bg-gradient-to-r from-brand-primary to-brand-primaryDark font-semibold"
+            className="px-8 py-4 rounded-xl bg-gradient-to-r from-[#3834A8] to-[#2A1B5D] text-white font-semibold shadow-lg hover:shadow-xl hover:from-[#2A1B5D] hover:to-[#1a1040] transition-all transform hover:scale-105"
           >
             Go to dashboard
           </button>
           <button
             onClick={handleBuyMore}
-            className="px-6 py-3 rounded-xl border border-white/30 text-white/90"
+            className="px-8 py-4 rounded-xl border-2 border-[#3834A8] text-[#3834A8] font-semibold hover:bg-[#3834A8] hover:text-white transition-all transform hover:scale-105"
           >
             Buy more credits
           </button>
           {(status === "timeout" || status === "error") && (
             <button
               onClick={handleRetry}
-              className="px-6 py-3 rounded-xl border border-yellow-400/50 text-yellow-200 flex items-center gap-2"
+              className="px-8 py-4 rounded-xl border-2 border-yellow-500 text-yellow-600 flex items-center gap-2 font-semibold hover:bg-yellow-500 hover:text-white transition-all transform hover:scale-105"
             >
               <RefreshCcw className="w-4 h-4" />
               Retry sync
             </button>
           )}
           {isPolling && status === "polling" && (
-            <div className="flex items-center gap-2 text-sm text-white/70">
-              <Loader2 className="w-4 h-4 animate-spin" />
+            <div className="flex items-center gap-2 text-sm text-gray-500 bg-white px-4 py-2 rounded-full shadow-md">
+              <Loader2 className="w-4 h-4 animate-spin text-[#3834A8]" />
               Syncing wallet...
             </div>
           )}
