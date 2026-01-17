@@ -47,12 +47,12 @@ const IssuerDashboard = () => {
 
   // Quick actions for issuers
   const quickActions = [
-    {
-      title: "PDF Generator",
-      description: "Design & generate certificate PDFs",
-      icon: FileText,
-      action: () => navigate("/certificate-generator"),
-    },
+    // {
+    //   title: "PDF Generator",
+    //   description: "Design & generate certificate PDFs",
+    //   icon: FileText,
+    //   action: () => navigate("/certificate-generator"),
+    // },
     {
       title: "Smart Template Editor",
       description: "AI-powered template editor with smart positioning",
@@ -123,14 +123,14 @@ const IssuerDashboard = () => {
     (doc) =>
       doc.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       doc.studentName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      doc.identityEmail?.toLowerCase().includes(searchTerm.toLowerCase())
+      doc.identityEmail?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const filteredHeldDocuments = heldDocuments.filter(
     (doc) =>
       doc.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       doc.studentName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      doc.issuer?.toLowerCase().includes(searchTerm.toLowerCase())
+      doc.issuer?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const handleViewPDF = (doc) => {
@@ -159,7 +159,7 @@ const IssuerDashboard = () => {
       });
     } else {
       showToast.warning(
-        "PDF not available for this document. The document may not have been uploaded to IPFS yet."
+        "PDF not available for this document. The document may not have been uploaded to IPFS yet.",
       );
     }
   };
@@ -173,67 +173,75 @@ const IssuerDashboard = () => {
         {/* Stats Section */}
         {stats && (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white backdrop-blur-xl border border-brand-border rounded-2xl p-6 shadow-lg">
+            <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-brand-secondary text-sm mb-1">
+                  <p className="text-gray-500 text-sm font-medium mb-1">
                     Total Batches
                   </p>
-                  <p className="text-3xl font-bold text-brand-text">
+                  <p className="text-3xl font-bold text-[#2A1B5D]">
                     {stats.totalBatches || 0}
                   </p>
                 </div>
-                <Building2 className="text-brand-primaryDark" size={32} />
+                <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                  <Building2 className="text-[#3834A8]" size={24} />
+                </div>
               </div>
             </div>
 
-            <div className="bg-white backdrop-blur-xl border border-brand-border rounded-2xl p-6 shadow-lg">
+            <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-brand-secondary text-sm mb-1">
+                  <p className="text-gray-500 text-sm font-medium mb-1">
                     Total Documents
                   </p>
-                  <p className="text-3xl font-bold text-brand-text">
+                  <p className="text-3xl font-bold text-[#2A1B5D]">
                     {stats.totalDocuments || 0}
                   </p>
                 </div>
-                <FileText className="text-brand-secondary" size={32} />
+                <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                  <FileText className="text-blue-600" size={24} />
+                </div>
               </div>
             </div>
 
-            <div className="bg-white backdrop-blur-xl border border-brand-border rounded-2xl p-6 shadow-lg">
+            <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-brand-secondary text-sm mb-1">
+                  <p className="text-gray-500 text-sm font-medium mb-1">
                     Total Holders
                   </p>
-                  <p className="text-3xl font-bold text-brand-text">
+                  <p className="text-3xl font-bold text-[#2A1B5D]">
                     {stats.totalHolders || 0}
                   </p>
                 </div>
-                <Users className="text-green-400" size={32} />
+                <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                  <Users className="text-green-600" size={24} />
+                </div>
               </div>
             </div>
 
-            <div className="bg-white backdrop-blur-xl border border-brand-border rounded-2xl p-6 shadow-lg">
+            <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-brand-secondary text-sm mb-1">
+                  <p className="text-gray-500 text-sm font-medium mb-1">
                     Certificates
                   </p>
-                  <p className="text-3xl font-bold text-brand-text">
+                  <p className="text-3xl font-bold text-[#2A1B5D]">
                     {stats.issuedCertificates || 0}
                   </p>
                 </div>
-                <FileText className="text-yellow-400" size={32} />
+                <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
+                  <FileText className="text-amber-600" size={24} />
+                </div>
               </div>
             </div>
           </div>
         )}
 
         {/* Quick Actions Section */}
-        <div className="bg-white backdrop-blur-xl border border-brand-border rounded-2xl p-6 mb-8 shadow-lg">
-          <h2 className="text-2xl font-bold text-brand-text mb-6">
+        <div className="bg-white border border-gray-200 rounded-2xl p-6 mb-8 shadow-sm">
+          <h2 className="text-2xl font-bold text-[#2A1B5D] mb-6">
             Quick Actions
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -241,22 +249,24 @@ const IssuerDashboard = () => {
               <button
                 key={index}
                 onClick={action.action}
-                className="bg-brand-background hover:bg-white border border-brand-border rounded-xl p-6 transition-all duration-200 group text-left shadow-md hover:shadow-lg"
+                className="bg-gray-50 hover:bg-white border border-gray-200 hover:border-[#3834A8]/30 rounded-xl p-5 transition-all duration-200 group text-left hover:shadow-md"
               >
                 <div className="flex items-center space-x-4">
-                  <div className="w-16 h-16 bg-dark hover:bg-darker rounded-xl flex items-center justify-center group-hover:scale-105 transition-all">
-                    <action.icon size={24} className="text-white" />
+                  <div className="w-14 h-14 bg-[#3834A8] group-hover:bg-[#2A1B5D] rounded-xl flex items-center justify-center group-hover:scale-105 transition-all">
+                    <action.icon size={22} className="text-white" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-dark group-hover:text-darker flex items-center gap-2">
+                    <h3 className="text-base font-semibold text-[#2A1B5D] flex items-center gap-2">
                       {action.title}
                       {action.badge && (
-                        <span className="text-xs bg-yellow-400 text-gray-900 px-2 py-1 rounded-full font-bold">
+                        <span className="text-xs bg-amber-400 text-amber-900 px-2 py-0.5 rounded-full font-bold">
                           {action.badge}
                         </span>
                       )}
                     </h3>
-                    <p className="text-medium text-sm">{action.description}</p>
+                    <p className="text-gray-500 text-sm">
+                      {action.description}
+                    </p>
                   </div>
                 </div>
               </button>
@@ -265,17 +275,17 @@ const IssuerDashboard = () => {
         </div>
 
         {/* Tabs */}
-        <div className="bg-white backdrop-blur-xl border border-brand-border rounded-2xl p-6 mb-6 shadow-lg">
-          <div className="flex items-center gap-4 mb-6">
+        <div className="bg-white border border-gray-200 rounded-2xl p-6 mb-6 shadow-sm">
+          <div className="flex items-center gap-3 mb-6">
             <button
               onClick={() => {
                 setActiveTab("issued");
                 setPage(1);
               }}
-              className={`px-6 py-3 rounded-xl font-semibold transition-all ${
+              className={`px-5 py-2.5 rounded-xl font-medium transition-all ${
                 activeTab === "issued"
-                  ? "bg-brand-primaryDark text-white"
-                  : "bg-white/5 text-gray-400 hover:bg-white/10"
+                  ? "bg-[#3834A8] text-white shadow-sm"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
               }`}
             >
               Issued Documents
@@ -285,10 +295,10 @@ const IssuerDashboard = () => {
                 setActiveTab("held");
                 setPage(1);
               }}
-              className={`px-6 py-3 rounded-xl font-semibold transition-all ${
+              className={`px-5 py-2.5 rounded-xl font-medium transition-all ${
                 activeTab === "held"
-                  ? "bg-brand-primaryDark text-white"
-                  : "bg-white/5 text-gray-400 hover:bg-white/10"
+                  ? "bg-[#3834A8] text-white shadow-sm"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
               }`}
             >
               Held Documents
@@ -298,7 +308,7 @@ const IssuerDashboard = () => {
           {/* Search */}
           <div className="relative w-full max-w-md">
             <Search
-              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-brand-secondary"
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
               size={20}
             />
             <input
@@ -310,39 +320,36 @@ const IssuerDashboard = () => {
               }
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-brand-background border-2 border-brand-border rounded-xl px-10 py-2 text-brand-text placeholder-brand-secondary focus:outline-none focus:ring-2 focus:ring-brand-primary/50 focus:border-brand-primary"
+              className="w-full bg-gray-50 border border-gray-200 rounded-xl px-10 py-2.5 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#3834A8]/20 focus:border-[#3834A8] transition-all"
             />
           </div>
         </div>
 
         {/* Content */}
         {activeTab === "issued" ? (
-          <div className="bg-white backdrop-blur-xl border border-brand-border rounded-2xl p-6 shadow-lg">
-            <h2 className="text-2xl font-bold text-brand-text mb-6">
+          <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+            <h2 className="text-2xl font-bold text-[#2A1B5D] mb-2">
               Issued Documents
             </h2>
-            <p className="text-brand-secondary text-sm mb-6">
+            <p className="text-gray-500 text-sm mb-6">
               Documents you have issued to others (single or multiple)
             </p>
 
             {loading ? (
               <div className="text-center py-12">
                 <Clock
-                  className="animate-spin text-purple-400 mx-auto mb-4"
+                  className="animate-spin text-[#3834A8] mx-auto mb-4"
                   size={32}
                 />
-                <p className="text-gray-400">Loading documents...</p>
+                <p className="text-gray-500">Loading documents...</p>
               </div>
             ) : filteredIssuedDocuments.length === 0 ? (
               <div className="text-center py-12">
-                <FileText
-                  className="text-brand-secondary mx-auto mb-4"
-                  size={48}
-                />
-                <p className="text-brand-text text-lg">
+                <FileText className="text-gray-300 mx-auto mb-4" size={48} />
+                <p className="text-gray-700 text-lg">
                   No issued documents found
                 </p>
-                <p className="text-brand-secondary text-sm mt-2">
+                <p className="text-gray-500 text-sm mt-2">
                   Documents you issue will appear here
                 </p>
               </div>
@@ -352,26 +359,30 @@ const IssuerDashboard = () => {
                   {filteredIssuedDocuments.map((doc) => (
                     <div
                       key={doc.id || doc.docId}
-                      className="bg-white border border-brand-border rounded-xl p-4 hover:bg-brand-background transition-all shadow-md"
+                      className="bg-gray-50 border border-gray-200 rounded-xl p-5 hover:border-[#3834A8]/30 hover:shadow-md transition-all"
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <h3 className="text-lg font-semibold text-brand-text mb-2">
+                          <h3 className="text-lg font-semibold text-[#2A1B5D] mb-3">
                             {doc.title}
                           </h3>
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                             <div>
-                              <p className="text-brand-secondary">Holder</p>
-                              <p className="text-brand-text">
+                              <p className="text-gray-500 font-medium">
+                                Holder
+                              </p>
+                              <p className="text-gray-800">
                                 {doc.studentName || "N/A"}
                               </p>
-                              <p className="text-brand-secondary text-xs">
+                              <p className="text-[#3834A8] text-xs">
                                 {doc.identityEmail}
                               </p>
                             </div>
                             <div>
-                              <p className="text-brand-secondary">Issued</p>
-                              <p className="text-brand-text">
+                              <p className="text-gray-500 font-medium">
+                                Issued
+                              </p>
+                              <p className="text-gray-800">
                                 {doc.issuedAt
                                   ? new Date(doc.issuedAt).toLocaleDateString()
                                   : "N/A"}
@@ -379,12 +390,14 @@ const IssuerDashboard = () => {
                             </div>
                             {doc.blockchain?.transactionId && (
                               <div>
-                                <p className="text-gray-400">Transaction</p>
+                                <p className="text-gray-500 font-medium">
+                                  Transaction
+                                </p>
                                 <a
                                   href={doc.blockchain.explorerUrl}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="text-brand-primaryDark hover:text-brand-primary flex items-center gap-1"
+                                  className="text-[#3834A8] hover:text-[#2A1B5D] flex items-center gap-1"
                                 >
                                   View
                                   <ExternalLink size={14} />
@@ -393,12 +406,14 @@ const IssuerDashboard = () => {
                             )}
                             {doc.verification?.verifyUrl && (
                               <div>
-                                <p className="text-gray-400">Verification</p>
+                                <p className="text-gray-500 font-medium">
+                                  Verification
+                                </p>
                                 <a
                                   href={doc.verification.verifyUrl}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="text-brand-secondary hover:text-brand-primary flex items-center gap-1"
+                                  className="text-[#3834A8] hover:text-[#2A1B5D] flex items-center gap-1"
                                 >
                                   Verify
                                   <ExternalLink size={14} />
@@ -407,10 +422,10 @@ const IssuerDashboard = () => {
                             )}
                           </div>
                         </div>
-                        <div className="mt-4 flex gap-2">
+                        <div className="flex gap-2">
                           <button
                             onClick={() => handleViewPDF(doc)}
-                            className="flex items-center gap-2 px-4 py-2 bg-brand-primaryDark/20 hover:bg-brand-primaryDark/30 border border-brand-primaryDark/30 rounded-xl text-brand-secondary transition-all"
+                            className="flex items-center gap-2 px-4 py-2 bg-[#3834A8] hover:bg-[#2A1B5D] rounded-xl text-white transition-all shadow-sm"
                           >
                             <Eye size={16} />
                             View PDF
@@ -427,11 +442,11 @@ const IssuerDashboard = () => {
                     <button
                       onClick={() => setPage((p) => Math.max(1, p - 1))}
                       disabled={page === 1}
-                      className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/10"
+                      className="px-4 py-2 bg-gray-100 border border-gray-200 rounded-xl text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200"
                     >
                       Previous
                     </button>
-                    <span className="text-gray-400">
+                    <span className="text-gray-600">
                       Page {pagination.page} of {pagination.pages}
                     </span>
                     <button
@@ -439,7 +454,7 @@ const IssuerDashboard = () => {
                         setPage((p) => Math.min(pagination.pages, p + 1))
                       }
                       disabled={page === pagination.pages}
-                      className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/10"
+                      className="px-4 py-2 bg-gray-100 border border-gray-200 rounded-xl text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200"
                     >
                       Next
                     </button>
@@ -449,26 +464,26 @@ const IssuerDashboard = () => {
             )}
           </div>
         ) : (
-          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
-            <h2 className="text-2xl font-bold text-white mb-6">
+          <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+            <h2 className="text-2xl font-bold text-[#2A1B5D] mb-2">
               Held Documents
             </h2>
-            <p className="text-gray-400 text-sm mb-6">
+            <p className="text-gray-500 text-sm mb-6">
               Your personal authenticated documents (like a holder would see)
             </p>
 
             {loading ? (
               <div className="text-center py-12">
                 <Clock
-                  className="animate-spin text-purple-400 mx-auto mb-4"
+                  className="animate-spin text-[#3834A8] mx-auto mb-4"
                   size={32}
                 />
-                <p className="text-gray-400">Loading documents...</p>
+                <p className="text-gray-500">Loading documents...</p>
               </div>
             ) : filteredHeldDocuments.length === 0 ? (
               <div className="text-center py-12">
-                <FileText className="text-gray-500 mx-auto mb-4" size={48} />
-                <p className="text-gray-400 text-lg">No held documents found</p>
+                <FileText className="text-gray-300 mx-auto mb-4" size={48} />
+                <p className="text-gray-700 text-lg">No held documents found</p>
                 <p className="text-gray-500 text-sm mt-2">
                   Documents issued to you will appear here
                 </p>
@@ -480,13 +495,13 @@ const IssuerDashboard = () => {
                     const getDocumentTypeBadge = (type) => {
                       if (type === "BATCH_DOCUMENT") {
                         return (
-                          <span className="px-2 py-1 text-xs font-medium bg-blue-500/20 text-blue-300 rounded-full">
+                          <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-600 rounded-full">
                             Batch Document
                           </span>
                         );
                       }
                       return (
-                        <span className="px-2 py-1 text-xs font-medium bg-purple-500/20 text-purple-300 rounded-full">
+                        <span className="px-2 py-1 text-xs font-medium bg-purple-100 text-purple-600 rounded-full">
                           Certificate
                         </span>
                       );
@@ -495,41 +510,47 @@ const IssuerDashboard = () => {
                     return (
                       <div
                         key={doc.id || doc.docId}
-                        className="bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition-all"
+                        className="bg-gray-50 border border-gray-200 rounded-xl p-5 hover:border-[#3834A8]/30 hover:shadow-md transition-all"
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-2">
-                              <h3 className="text-lg font-semibold text-white">
+                            <div className="flex items-center gap-3 mb-3">
+                              <h3 className="text-lg font-semibold text-[#2A1B5D]">
                                 {doc.title}
                               </h3>
                               {getDocumentTypeBadge(doc.type)}
                             </div>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                               <div>
-                                <p className="text-gray-400">Issuer</p>
-                                <p className="text-white">
+                                <p className="text-gray-500 font-medium">
+                                  Issuer
+                                </p>
+                                <p className="text-gray-800">
                                   {doc.issuer || "N/A"}
                                 </p>
                               </div>
                               <div>
-                                <p className="text-gray-400">Issued</p>
-                                <p className="text-white">
+                                <p className="text-gray-500 font-medium">
+                                  Issued
+                                </p>
+                                <p className="text-gray-800">
                                   {doc.issuedAt
                                     ? new Date(
-                                        doc.issuedAt
+                                        doc.issuedAt,
                                       ).toLocaleDateString()
                                     : "N/A"}
                                 </p>
                               </div>
                               {doc.blockchain?.transactionId && (
                                 <div>
-                                  <p className="text-gray-400">Transaction</p>
+                                  <p className="text-gray-500 font-medium">
+                                    Transaction
+                                  </p>
                                   <a
                                     href={doc.blockchain.explorerUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="text-purple-400 hover:text-purple-300 flex items-center gap-1"
+                                    className="text-[#3834A8] hover:text-[#2A1B5D] flex items-center gap-1"
                                   >
                                     View
                                     <ExternalLink size={14} />
@@ -538,12 +559,14 @@ const IssuerDashboard = () => {
                               )}
                               {doc.verification?.verifyUrl && (
                                 <div>
-                                  <p className="text-gray-400">Verification</p>
+                                  <p className="text-gray-500 font-medium">
+                                    Verification
+                                  </p>
                                   <a
                                     href={doc.verification.verifyUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="text-blue-400 hover:text-blue-300 flex items-center gap-1"
+                                    className="text-[#3834A8] hover:text-[#2A1B5D] flex items-center gap-1"
                                   >
                                     Verify
                                     <ExternalLink size={14} />
@@ -555,7 +578,7 @@ const IssuerDashboard = () => {
                           <div className="ml-4">
                             <button
                               onClick={() => handleViewPDF(doc)}
-                              className="flex items-center gap-2 px-4 py-2 bg-green-500/20 hover:bg-green-500/30 border border-green-500/30 rounded-xl text-green-400 transition-all"
+                              className="flex items-center gap-2 px-4 py-2 bg-[#3834A8] hover:bg-[#2A1B5D] rounded-xl text-white transition-all shadow-sm"
                             >
                               <Eye size={16} />
                               View PDF
@@ -573,11 +596,11 @@ const IssuerDashboard = () => {
                     <button
                       onClick={() => setPage((p) => Math.max(1, p - 1))}
                       disabled={page === 1}
-                      className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/10"
+                      className="px-4 py-2 bg-gray-100 border border-gray-200 rounded-xl text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200"
                     >
                       Previous
                     </button>
-                    <span className="text-gray-400">
+                    <span className="text-gray-600">
                       Page {pagination.page} of {pagination.pages}
                     </span>
                     <button
@@ -585,7 +608,7 @@ const IssuerDashboard = () => {
                         setPage((p) => Math.min(pagination.pages, p + 1))
                       }
                       disabled={page === pagination.pages}
-                      className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/10"
+                      className="px-4 py-2 bg-gray-100 border border-gray-200 rounded-xl text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200"
                     >
                       Next
                     </button>

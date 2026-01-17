@@ -156,7 +156,7 @@ const NavigationHeader = ({ title, showBack = true }) => {
                 </div>
               ) : (
                 <div className="flex items-center space-x-2">
-                  <Home size={14} className="text-brand-secondary" />
+                  <Home size={14} className="text-[#00E5FF]" />
                   <h1 className="text-sm font-semibold text-white truncate">
                     {getPageTitle()}
                   </h1>
@@ -215,7 +215,7 @@ const NavigationHeader = ({ title, showBack = true }) => {
                       }}
                       className={`w-full flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 ${
                         location.pathname === item.path
-                          ? "bg-brand-primary/20 border border-brand-secondary/30 text-brand-secondary"
+                          ? "bg-[#3834A8]/20 border border-[#00E5FF]/30 text-[#00E5FF]"
                           : item.highlight
                           ? "bg-gradient-to-r from-green-500/20 to-brand-primary/20 border border-green-400/30 text-green-300 hover:from-green-500/30 hover:to-brand-primary/30"
                           : "text-gray-300 hover:bg-white/10 hover:text-white"
@@ -224,7 +224,7 @@ const NavigationHeader = ({ title, showBack = true }) => {
                       <div
                         className={`w-8 h-8 rounded-lg flex items-center justify-center ${
                           location.pathname === item.path
-                            ? "bg-brand-primary/30"
+                            ? "bg-[#3834A8]/30"
                             : item.highlight
                             ? "bg-green-500/30"
                             : "bg-white/10"
@@ -249,8 +249,8 @@ const NavigationHeader = ({ title, showBack = true }) => {
                     <div
                       className={`w-2 h-2 rounded-full ${
                         normalizedRole === "ISSUER"
-                          ? "bg-brand-primaryDark"
-                          : "bg-brand-primary"
+                          ? "bg-[#2A1B5D]"
+                          : "bg-[#3834A8]"
                       }`}
                     />
                     <span className="text-sm font-semibold text-white capitalize">

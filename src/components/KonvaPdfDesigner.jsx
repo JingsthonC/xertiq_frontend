@@ -200,7 +200,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
           ...baseElement,
           points: el.points
             ? el.points.map((p, i) =>
-                i % 2 === 0 ? p * pixelToMmX : p * pixelToMmY
+                i % 2 === 0 ? p * pixelToMmX : p * pixelToMmY,
               )
             : [],
           stroke: el.stroke || "#000000",
@@ -361,7 +361,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
               type: "line",
               points: el.points
                 ? el.points.map((p, i) =>
-                    i % 2 === 0 ? p * mmToPixelX : p * mmToPixelY
+                    i % 2 === 0 ? p * mmToPixelX : p * mmToPixelY,
                   )
                 : [0, 0, 100 * mmToPixelX, 0],
               stroke: el.stroke || el.color || "#000000",
@@ -375,7 +375,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
               type: "arrow",
               points: el.points
                 ? el.points.map((p, i) =>
-                    i % 2 === 0 ? p * mmToPixelX : p * mmToPixelY
+                    i % 2 === 0 ? p * mmToPixelX : p * mmToPixelY,
                   )
                 : [0, 0, 100 * mmToPixelX, 0],
               stroke: el.stroke || "#000000",
@@ -760,7 +760,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
   const handleToggleLock = () => {
     if (!selectedId) return;
     const newElements = elements.map((el) =>
-      el.id === selectedId ? { ...el, locked: !el.locked } : el
+      el.id === selectedId ? { ...el, locked: !el.locked } : el,
     );
     setElements(newElements);
     saveHistory(newElements);
@@ -841,7 +841,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
         img.onerror = (error) => {
           console.error("Error loading image:", error);
           showToast.error(
-            "Failed to load image. Please try a different image file."
+            "Failed to load image. Please try a different image file.",
           );
         };
       };
@@ -965,14 +965,14 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
 
     // Check if there are any dynamic fields assigned
     const hasDynamicFields = elements.some(
-      (el) => el.type === "text" && el.isDynamic && el.dataField
+      (el) => el.type === "text" && el.isDynamic && el.dataField,
     );
 
     if (!hasDynamicFields) {
       const proceed = window.confirm(
         "⚠️ No dynamic fields assigned!\n\nYou haven't assigned any CSV fields to text elements.\n\n" +
           "To use CSV data:\n1. Select a text element\n2. Check 'Dynamic Field (from CSV)'\n3. Enter the CSV field name\n\n" +
-          "Continue anyway to preview?"
+          "Continue anyway to preview?",
       );
       if (!proceed) return;
     }
@@ -1061,7 +1061,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
             filename: pdfData.filename,
             recipient: pdfData.data,
           };
-        })
+        }),
       );
 
       setBatchPreviews(previews);
@@ -1082,7 +1082,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
       pdf.save(filename);
     });
     showToast.success(
-      `Successfully downloaded ${batchPreviews.length} certificate(s)!`
+      `Successfully downloaded ${batchPreviews.length} certificate(s)!`,
     );
   };
 
@@ -1119,8 +1119,8 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
           fetchedCredits !== null && fetchedCredits !== undefined
             ? fetchedCredits
             : typeof credits === "number"
-            ? credits
-            : 0;
+              ? credits
+              : 0;
       } catch (fetchError) {
         console.error("Failed to fetch credits:", fetchError);
         // Try to use cached credits if available
@@ -1134,7 +1134,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
       ) {
         console.error("Unable to determine credit balance");
         showToast.error(
-          "Unable to fetch credit balance. Please refresh the page or contact support."
+          "Unable to fetch credit balance. Please refresh the page or contact support.",
         );
         setCreditCheckLoading(false);
         return;
@@ -1240,7 +1240,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
       const errorMessage =
         error?.message || error?.toString() || "Unknown error";
       showToast.error(
-        `Export failed: ${errorMessage}. Credits were not deducted.`
+        `Export failed: ${errorMessage}. Credits were not deducted.`,
       );
     } finally {
       setCreditCheckLoading(false);
@@ -1301,7 +1301,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
           record.name || record.Name || `record_${previewRecordIndex + 1}`;
         konvaPdfGenerator.downloadPDF(
           pdf,
-          `certificate_${recordName.replace(/\s+/g, "_")}.pdf`
+          `certificate_${recordName.replace(/\s+/g, "_")}.pdf`,
         );
       } else {
         // No CSV data, export as-is
@@ -1320,7 +1320,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
     }
 
     const confirmExport = window.confirm(
-      `This will generate ${csvData.length} PDF files. Continue?`
+      `This will generate ${csvData.length} PDF files. Continue?`,
     );
 
     if (!confirmExport) return;
@@ -1351,7 +1351,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
       }
 
       showToast.success(
-        `✓ Successfully generated ${pdfs.length} PDF certificates!`
+        `✓ Successfully generated ${pdfs.length} PDF certificates!`,
       );
     } catch (error) {
       console.error("Error generating batch PDFs:", error);
@@ -1366,7 +1366,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
     }
 
     const confirmExport = window.confirm(
-      `This will generate 1 PDF file with ${csvData.length} pages. Continue?`
+      `This will generate 1 PDF file with ${csvData.length} pages. Continue?`,
     );
 
     if (!confirmExport) return;
@@ -1431,7 +1431,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
         pageWidth,
         pageHeight,
         undefined,
-        "FAST"
+        "FAST",
       );
 
       // Restore original text
@@ -1453,7 +1453,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
     // Download the single multi-page PDF
     pdf.save(`certificates_all_${csvData.length}_pages.pdf`);
     showToast.success(
-      `✓ Successfully generated 1 PDF with ${csvData.length} pages!`
+      `✓ Successfully generated 1 PDF with ${csvData.length} pages!`,
     );
   };
 
@@ -1521,7 +1521,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
 
       if (!extractedEmail) {
         showToast.warning(
-          "No email address found in the certificate content. Please add an email address to the certificate text."
+          "No email address found in the certificate content. Please add an email address to the certificate text.",
         );
         setIsUploading(false);
         return;
@@ -1539,7 +1539,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
         {
           course: title,
           completion_date: new Date().toISOString().split("T")[0],
-        }
+        },
       );
 
       // Create FormData with PDF and CSV (using batch endpoint format)
@@ -1592,7 +1592,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
     }
 
     const confirmUpload = window.confirm(
-      `This will upload ${csvData.length} PDF files to blockchain as a batch. Continue?`
+      `This will upload ${csvData.length} PDF files to blockchain as a batch. Continue?`,
     );
 
     if (!confirmUpload) return;
@@ -1619,12 +1619,12 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
       // Log generated filenames for debugging
       console.log(
         "Generated PDF filenames:",
-        pdfs.map((p) => p.filename)
+        pdfs.map((p) => p.filename),
       );
 
       // Convert PDFs to Files
       const pdfFiles = pdfs.map((item) =>
-        konvaPdfGenerator.pdfToFile(item.pdf, item.filename)
+        konvaPdfGenerator.pdfToFile(item.pdf, item.filename),
       );
 
       // Add filename column to CSV data to match PDF filenames exactly
@@ -1658,13 +1658,13 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
       // Log CSV filenames for debugging
       console.log(
         "CSV filenames:",
-        csvDataWithFilenames.map((r) => r.filename)
+        csvDataWithFilenames.map((r) => r.filename),
       );
 
       // Generate CSV File with filename column
       const csvFile = konvaPdfGenerator.generateCSVFile(
         csvDataWithFilenames,
-        "metadata.csv"
+        "metadata.csv",
       );
 
       // Create FormData
@@ -1680,7 +1680,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
       showToast.success(
         `✓ Successfully uploaded batch to blockchain! Batch ID: ${
           response.batch?.id || response.id || "N/A"
-        } - ${pdfFiles.length} documents`
+        } - ${pdfFiles.length} documents`,
       );
 
       // Refresh credits after upload
@@ -1853,14 +1853,14 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
       const topLeftY = nodeY - (scaleY < 0 ? imageHeight : 0);
       const newAttrs = { x: topLeftX, y: topLeftY };
       const updatedElements = elements.map((el) =>
-        el.id === id ? { ...el, ...newAttrs } : el
+        el.id === id ? { ...el, ...newAttrs } : el,
       );
       setElements(updatedElements);
       saveHistory(updatedElements);
     } else {
       const newAttrs = { x: node.x(), y: node.y() };
       const updatedElements = elements.map((el) =>
-        el.id === id ? { ...el, ...newAttrs } : el
+        el.id === id ? { ...el, ...newAttrs } : el,
       );
       setElements(updatedElements);
       saveHistory(updatedElements);
@@ -1925,7 +1925,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
           opacity: element.opacity !== undefined ? element.opacity : 1,
         };
         const updatedElements = prevElements.map((el) =>
-          el.id === id ? { ...el, ...newAttrs } : el
+          el.id === id ? { ...el, ...newAttrs } : el,
         );
         saveHistory(updatedElements);
 
@@ -1957,7 +1957,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
           opacity: element.opacity !== undefined ? element.opacity : 1,
         };
         const updatedElements = prevElements.map((el) =>
-          el.id === id ? { ...el, ...newAttrs } : el
+          el.id === id ? { ...el, ...newAttrs } : el,
         );
         saveHistory(updatedElements);
         return updatedElements;
@@ -2022,15 +2022,15 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
   };
 
   return (
-    <div className="h-full flex flex-col bg-gray-800 text-white">
+    <div className="h-full flex flex-col bg-[#f0f4f8] text-gray-800">
       {/* Toolbar */}
       <div
-        className="bg-gray-900 p-2 flex items-center gap-2 border-b border-gray-700 relative z-50 flex-shrink-0 overflow-x-auto"
+        className="bg-white p-2 flex items-center gap-2 border-b border-gray-200 relative z-50 flex-shrink-0 overflow-x-auto shadow-sm"
         style={{ pointerEvents: "auto", minHeight: "48px" }}
       >
         <button
           onClick={handleAddText}
-          className="p-2 hover:bg-gray-700 rounded cursor-pointer"
+          className="p-2 hover:bg-gray-100 rounded cursor-pointer text-gray-600 hover:text-[#3834A8]"
           title="Add Text"
           style={{ pointerEvents: "auto" }}
         >
@@ -2038,35 +2038,35 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
         </button>
         <button
           onClick={handleAddRect}
-          className="p-2 hover:bg-gray-700 rounded cursor-pointer"
+          className="p-2 hover:bg-gray-100 rounded cursor-pointer text-gray-600 hover:text-[#3834A8]"
           title="Add Rectangle"
         >
           <RectangleHorizontal />
         </button>
         <button
           onClick={handleAddCircle}
-          className="p-2 hover:bg-gray-700 rounded cursor-pointer"
+          className="p-2 hover:bg-gray-100 rounded cursor-pointer text-gray-600 hover:text-[#3834A8]"
           title="Add Circle"
         >
           <CircleIcon />
         </button>
         <button
           onClick={handleAddStar}
-          className="p-2 hover:bg-gray-700 rounded cursor-pointer"
+          className="p-2 hover:bg-gray-100 rounded cursor-pointer text-gray-600 hover:text-[#3834A8]"
           title="Add Star"
         >
           <StarIcon />
         </button>
         <button
           onClick={handleAddLine}
-          className="p-2 hover:bg-gray-700 rounded cursor-pointer"
+          className="p-2 hover:bg-gray-100 rounded cursor-pointer text-gray-600 hover:text-[#3834A8]"
           title="Add Line"
         >
           <Minus />
         </button>
         <button
           onClick={handleAddArrow}
-          className="p-2 hover:bg-gray-700 rounded cursor-pointer"
+          className="p-2 hover:bg-gray-100 rounded cursor-pointer text-gray-600 hover:text-[#3834A8]"
           title="Add Arrow"
         >
           <ArrowRight />
@@ -2076,8 +2076,8 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
             setDrawingMode(drawingMode === "pen" ? null : "pen");
             setSelectedId(null);
           }}
-          className={`p-2 hover:bg-gray-700 rounded ${
-            drawingMode === "pen" ? "bg-blue-600" : ""
+          className={`p-2 hover:bg-gray-100 rounded text-gray-600 ${
+            drawingMode === "pen" ? "bg-[#3834A8] text-white" : ""
           }`}
           title="Freeform Drawing (Pen)"
         >
@@ -2085,14 +2085,14 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
         </button>
         <button
           onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-          className="p-2 hover:bg-gray-700 rounded relative"
+          className="p-2 hover:bg-gray-100 rounded relative text-gray-600 hover:text-[#3834A8]"
           title="Add Emoji"
         >
           <Smile />
         </button>
         <button
           onClick={() => fileUploadRef.current.click()}
-          className="p-2 hover:bg-gray-700 rounded cursor-pointer"
+          className="p-2 hover:bg-gray-100 rounded cursor-pointer text-gray-600 hover:text-[#3834A8]"
           title="Upload Image"
         >
           <ImageIcon />
@@ -2104,12 +2104,12 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
           className="hidden"
           accept="image/*"
         />
-        <div className="w-px h-6 bg-gray-700 mx-2"></div>
+        <div className="w-px h-6 bg-gray-200 mx-2"></div>
         {/* Element Controls */}
         <button
           onClick={handleCopy}
           disabled={!selectedId && selectedIds.length === 0}
-          className="p-2 hover:bg-gray-700 rounded disabled:opacity-50"
+          className="p-2 hover:bg-gray-100 rounded disabled:opacity-50 text-gray-600 hover:text-[#3834A8]"
           title="Copy (Ctrl+C)"
         >
           <Copy size={18} />
@@ -2117,7 +2117,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
         <button
           onClick={handlePaste}
           disabled={copiedElements.length === 0}
-          className="p-2 hover:bg-gray-700 rounded disabled:opacity-50"
+          className="p-2 hover:bg-gray-100 rounded disabled:opacity-50 text-gray-600 hover:text-[#3834A8]"
           title="Paste (Ctrl+V)"
         >
           <Clipboard size={18} />
@@ -2125,7 +2125,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
         <button
           onClick={handleDuplicateElement}
           disabled={!selectedId && selectedIds.length === 0}
-          className="p-2 hover:bg-gray-700 rounded disabled:opacity-50"
+          className="p-2 hover:bg-gray-100 rounded disabled:opacity-50 text-gray-600 hover:text-[#3834A8]"
           title="Duplicate"
         >
           <Copy size={18} />
@@ -2133,7 +2133,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
         <button
           onClick={handleBringToFront}
           disabled={!selectedId}
-          className="p-2 hover:bg-gray-700 rounded disabled:opacity-50"
+          className="p-2 hover:bg-gray-100 rounded disabled:opacity-50 text-gray-600 hover:text-[#3834A8]"
           title="Bring to Front"
         >
           <MoveUp />
@@ -2141,7 +2141,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
         <button
           onClick={handleSendToBack}
           disabled={!selectedId}
-          className="p-2 hover:bg-gray-700 rounded disabled:opacity-50"
+          className="p-2 hover:bg-gray-100 rounded disabled:opacity-50 text-gray-600 hover:text-[#3834A8]"
           title="Send to Back"
         >
           <MoveDown />
@@ -2149,7 +2149,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
         <button
           onClick={handleToggleLock}
           disabled={!selectedId}
-          className="p-2 hover:bg-gray-700 rounded disabled:opacity-50"
+          className="p-2 hover:bg-gray-100 rounded disabled:opacity-50 text-gray-600 hover:text-[#3834A8]"
           title="Lock/Unlock"
         >
           {selectedId && elements.find((el) => el.id === selectedId)?.locked ? (
@@ -2158,19 +2158,19 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
             <Unlock />
           )}
         </button>
-        <div className="w-px h-6 bg-gray-700 mx-2"></div>
+        <div className="w-px h-6 bg-gray-200 mx-2"></div>
         <button
           onClick={() => csvUploadRef.current.click()}
           className={`p-2 rounded relative ${
             csvData.length > 0
-              ? "bg-green-600 hover:bg-green-700"
-              : "hover:bg-green-700 bg-green-600"
+              ? "bg-green-500 hover:bg-green-600 text-white"
+              : "bg-green-500 hover:bg-green-600 text-white"
           }`}
           title="Upload CSV for Batch Generation"
         >
           <Upload />
           {csvData.length > 0 && (
-            <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+            <span className="absolute -top-1 -right-1 bg-[#3834A8] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
               {csvData.length}
             </span>
           )}
@@ -2178,8 +2178,10 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
         {csvData.length > 0 && (
           <button
             onClick={() => setShowCsvFieldsPanel(!showCsvFieldsPanel)}
-            className={`p-2 rounded ${
-              showCsvFieldsPanel ? "bg-blue-600" : "hover:bg-gray-700"
+            className={`p-2 rounded text-gray-600 ${
+              showCsvFieldsPanel
+                ? "bg-[#3834A8] text-white"
+                : "hover:bg-gray-100"
             }`}
             title="Toggle CSV Fields Panel"
           >
@@ -2188,15 +2190,15 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
         )}
         {csvData.length > 0 && (
           <>
-            <div className="w-px h-6 bg-gray-700 mx-2"></div>
+            <div className="w-px h-6 bg-gray-200 mx-2"></div>
             <div className="flex items-center gap-2 px-2">
-              <span className="text-xs text-gray-400">Display:</span>
+              <span className="text-xs text-gray-500">Display:</span>
               <button
                 onClick={() => setShowActualData(!showActualData)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                   showActualData
-                    ? "bg-green-600 hover:bg-green-700 text-white"
-                    : "bg-gray-700 hover:bg-gray-600 text-gray-300"
+                    ? "bg-green-500 hover:bg-green-600 text-white"
+                    : "bg-gray-100 hover:bg-gray-200 text-gray-600"
                 }`}
                 title={
                   showActualData
@@ -2213,22 +2215,22 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                       setPreviewRecordIndex(Math.max(0, previewRecordIndex - 1))
                     }
                     disabled={previewRecordIndex === 0}
-                    className="px-2 py-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed rounded text-white text-xs"
+                    className="px-2 py-1 bg-[#3834A8] hover:bg-[#2A1B5D] disabled:opacity-50 disabled:cursor-not-allowed rounded text-white text-xs"
                     title="Previous record"
                   >
                     ←
                   </button>
-                  <span className="text-xs text-gray-400 px-1">
+                  <span className="text-xs text-gray-500 px-1">
                     {previewRecordIndex + 1}/{csvData.length}
                   </span>
                   <button
                     onClick={() =>
                       setPreviewRecordIndex(
-                        Math.min(csvData.length - 1, previewRecordIndex + 1)
+                        Math.min(csvData.length - 1, previewRecordIndex + 1),
                       )
                     }
                     disabled={previewRecordIndex === csvData.length - 1}
-                    className="px-2 py-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed rounded text-white text-xs"
+                    className="px-2 py-1 bg-[#3834A8] hover:bg-[#2A1B5D] disabled:opacity-50 disabled:cursor-not-allowed rounded text-white text-xs"
                     title="Next record"
                   >
                     →
@@ -2245,21 +2247,21 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
           className="hidden"
           accept=".csv"
         />
-        <div className="w-px h-6 bg-gray-700 mx-2"></div>
+        <div className="w-px h-6 bg-gray-200 mx-2"></div>
         <button
           onClick={handleDelete}
           disabled={!selectedId}
-          className="p-2 hover:bg-red-700 rounded disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+          className="p-2 hover:bg-red-100 rounded disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed text-gray-600 hover:text-red-500"
           title="Delete"
           style={{ pointerEvents: "auto" }}
         >
           <Trash2 />
         </button>
-        <div className="w-px h-6 bg-gray-700 mx-2"></div>
+        <div className="w-px h-6 bg-gray-200 mx-2"></div>
         <button
           onClick={handleUndo}
           disabled={historyStep === 0}
-          className="p-2 hover:bg-gray-700 rounded disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+          className="p-2 hover:bg-gray-100 rounded disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed text-gray-600 hover:text-[#3834A8]"
           title="Undo"
           style={{ pointerEvents: "auto" }}
         >
@@ -2268,17 +2270,17 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
         <button
           onClick={handleRedo}
           disabled={historyStep === history.length - 1}
-          className="p-2 hover:bg-gray-700 rounded disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+          className="p-2 hover:bg-gray-100 rounded disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed text-gray-600 hover:text-[#3834A8]"
           title="Redo"
           style={{ pointerEvents: "auto" }}
         >
           <Redo />
         </button>
-        <div className="w-px h-6 bg-gray-700 mx-2"></div>
+        <div className="w-px h-6 bg-gray-200 mx-2"></div>
         {/* Zoom Controls */}
         <button
           onClick={handleZoomOut}
-          className="p-2 hover:bg-gray-700 rounded cursor-pointer"
+          className="p-2 hover:bg-gray-100 rounded cursor-pointer text-gray-600 hover:text-[#3834A8]"
           title="Zoom Out (Ctrl/Cmd + -)"
           style={{ pointerEvents: "auto" }}
         >
@@ -2292,13 +2294,13 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
             onBlur={handleZoomInputBlur}
             onKeyDown={handleZoomInputKeyDown}
             onFocus={handleZoomInputFocus}
-            className="w-16 px-2 py-1 bg-gray-700 border border-gray-600 rounded text-sm text-center text-white focus:outline-none focus:border-blue-500"
+            className="w-16 px-2 py-1 bg-gray-100 border border-gray-200 rounded text-sm text-center text-gray-800 focus:outline-none focus:border-[#3834A8]"
             autoFocus
           />
         ) : (
           <span
             onClick={handleZoomInputFocus}
-            className="px-2 py-1 text-sm text-gray-300 min-w-[60px] text-center cursor-text hover:bg-gray-700 rounded"
+            className="px-2 py-1 text-sm text-gray-600 min-w-[60px] text-center cursor-text hover:bg-gray-100 rounded"
             title="Click to edit zoom percentage"
           >
             {Math.round(scale * 100)}%
@@ -2306,7 +2308,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
         )}
         <button
           onClick={handleZoomIn}
-          className="p-2 hover:bg-gray-700 rounded cursor-pointer"
+          className="p-2 hover:bg-gray-100 rounded cursor-pointer text-gray-600 hover:text-[#3834A8]"
           title="Zoom In (Ctrl/Cmd + +)"
           style={{ pointerEvents: "auto" }}
         >
@@ -2315,7 +2317,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
         <div className="flex-grow"></div>
         <button
           onClick={handlePreview}
-          className="p-2 bg-purple-600 hover:bg-purple-700 rounded flex items-center gap-2 mr-2 cursor-pointer"
+          className="p-2 bg-purple-500 hover:bg-purple-600 rounded flex items-center gap-2 mr-2 cursor-pointer text-white"
           title="Preview"
           style={{ pointerEvents: "auto" }}
         >
@@ -2333,13 +2335,13 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
               }
             }}
             disabled={isUploading || creditCheckLoading}
-            className="p-2 bg-green-600 hover:bg-green-700 rounded flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-all"
+            className="p-2 bg-green-500 hover:bg-green-600 rounded flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-all text-white"
             title={
               isUploading
                 ? "Uploading..."
                 : creditCheckLoading
-                ? "Checking credits..."
-                : "Upload to Blockchain"
+                  ? "Checking credits..."
+                  : "Upload to Blockchain"
             }
             style={{ pointerEvents: "auto", position: "relative", zIndex: 101 }}
             type="button"
@@ -2373,7 +2375,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                 const rect = button.getBoundingClientRect();
                 const dropdownContent = (
                   <div
-                    className="fixed w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-2xl z-[100] overflow-hidden"
+                    className="fixed w-64 bg-white border border-gray-200 rounded-lg shadow-2xl z-[100] overflow-hidden"
                     style={{
                       pointerEvents: "auto",
                       top: `${rect.bottom + 8}px`,
@@ -2382,8 +2384,8 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                   >
                     {csvData.length > 0 ? (
                       <>
-                        <div className="px-4 py-2 bg-gray-700 border-b border-gray-600">
-                          <p className="text-xs text-gray-300 font-semibold">
+                        <div className="px-4 py-2 bg-gray-50 border-b border-gray-200">
+                          <p className="text-xs text-gray-600 font-semibold">
                             Upload Options ({csvData.length} records)
                           </p>
                         </div>
@@ -2396,42 +2398,42 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                               setShowUploadMenu(false);
                               // Small delay to ensure menu closes before credit check
                               await new Promise((resolve) =>
-                                setTimeout(resolve, 50)
+                                setTimeout(resolve, 50),
                               );
                               await checkCreditsAndExecute(
                                 "uploadToBlockChain",
                                 csvData.length,
-                                handleUploadBatchToBlockchain
+                                handleUploadBatchToBlockchain,
                               );
                             } catch (error) {
                               console.error(
                                 "Error in upload batch click:",
-                                error
+                                error,
                               );
                               const errorMessage =
                                 error?.message ||
                                 error?.toString() ||
                                 "Unknown error";
                               showToast.error(
-                                `Failed to initiate upload: ${errorMessage}`
+                                `Failed to initiate upload: ${errorMessage}`,
                               );
                             }
                           }}
-                          className="w-full px-4 py-3 text-left hover:bg-gray-700 transition-colors flex items-start gap-3 border-b border-gray-700 cursor-pointer"
+                          className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors flex items-start gap-3 border-b border-gray-100 cursor-pointer"
                           type="button"
                           style={{ pointerEvents: "auto" }}
                         >
                           <CloudUpload
                             size={18}
-                            className="text-green-400 mt-0.5 flex-shrink-0"
+                            className="text-green-500 mt-0.5 flex-shrink-0"
                           />
                           <div>
-                            <p className="text-white font-medium text-sm">
+                            <p className="text-[#2A1B5D] font-medium text-sm">
                               Upload as Batch (
                               {CREDIT_COSTS.uploadToBlockChain * csvData.length}{" "}
                               credits)
                             </p>
-                            <p className="text-gray-400 text-xs mt-0.5">
+                            <p className="text-gray-500 text-xs mt-0.5">
                               Upload {csvData.length} PDFs as a single batch
                               with Merkle tree
                             </p>
@@ -2448,14 +2450,14 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                             setShowUploadMenu(false);
                             // Small delay to ensure menu closes before credit check
                             await new Promise((resolve) =>
-                              setTimeout(resolve, 50)
+                              setTimeout(resolve, 50),
                             );
                             await checkCreditsAndExecute(
                               "uploadToBlockChain",
                               1,
                               () => {
                                 handleUploadToBlockchain();
-                              }
+                              },
                             );
                           } catch (error) {
                             console.error("Error in upload click:", error);
@@ -2464,24 +2466,24 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                               error?.toString() ||
                               "Unknown error";
                             showToast.error(
-                              `Failed to initiate upload: ${errorMessage}`
+                              `Failed to initiate upload: ${errorMessage}`,
                             );
                           }
                         }}
-                        className="w-full px-4 py-3 text-left hover:bg-gray-700 transition-colors flex items-start gap-3 cursor-pointer"
+                        className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors flex items-start gap-3 cursor-pointer"
                         type="button"
                         style={{ pointerEvents: "auto" }}
                       >
                         <CloudUpload
                           size={18}
-                          className="text-green-400 mt-0.5 flex-shrink-0"
+                          className="text-green-500 mt-0.5 flex-shrink-0"
                         />
                         <div>
-                          <p className="text-white font-medium text-sm">
+                          <p className="text-[#2A1B5D] font-medium text-sm">
                             Upload to Blockchain (
                             {CREDIT_COSTS.uploadToBlockChain} credits)
                           </p>
-                          <p className="text-gray-400 text-xs mt-0.5">
+                          <p className="text-gray-500 text-xs mt-0.5">
                             Upload PDF directly to IPFS and blockchain
                           </p>
                         </div>
@@ -2499,7 +2501,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
         <div className="relative">
           <button
             onClick={() => setShowExportMenu(!showExportMenu)}
-            className="p-2 bg-blue-600 hover:bg-blue-700 rounded flex items-center gap-2 cursor-pointer"
+            className="p-2 bg-[#3834A8] hover:bg-[#2A1B5D] rounded flex items-center gap-2 cursor-pointer text-white"
             title="Export PDF Options"
             style={{ pointerEvents: "auto" }}
           >
@@ -2517,13 +2519,13 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
 
               {/* Dropdown Menu */}
               <div
-                className="absolute right-0 mt-2 w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-2xl z-50 overflow-hidden"
+                className="absolute right-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-2xl z-50 overflow-hidden"
                 style={{ pointerEvents: "auto" }}
               >
                 {csvData.length > 0 ? (
                   <>
-                    <div className="px-4 py-2 bg-gray-700 border-b border-gray-600">
-                      <p className="text-xs text-gray-300 font-semibold">
+                    <div className="px-4 py-2 bg-gray-50 border-b border-gray-200">
+                      <p className="text-xs text-gray-600 font-semibold">
                         Export Options ({csvData.length} records)
                       </p>
                     </div>
@@ -2536,36 +2538,36 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                           await checkCreditsAndExecute(
                             "generatePDF",
                             csvData.length,
-                            handleExportAllPDFs
+                            handleExportAllPDFs,
                           );
                         } catch (error) {
                           console.error(
                             "Error in export all PDFs click:",
-                            error
+                            error,
                           );
                           const errorMessage =
                             error?.message ||
                             error?.toString() ||
                             "Unknown error";
                           showToast.error(
-                            `Failed to initiate export: ${errorMessage}`
+                            `Failed to initiate export: ${errorMessage}`,
                           );
                         }
                       }}
-                      className="w-full px-4 py-3 text-left hover:bg-gray-700 transition-colors flex items-start gap-3 border-b border-gray-700 cursor-pointer"
+                      className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors flex items-start gap-3 border-b border-gray-100 cursor-pointer"
                       type="button"
                       style={{ pointerEvents: "auto" }}
                     >
                       <Download
                         size={18}
-                        className="text-green-400 mt-0.5 flex-shrink-0"
+                        className="text-green-500 mt-0.5 flex-shrink-0"
                       />
                       <div>
-                        <p className="text-white font-medium text-sm">
+                        <p className="text-[#2A1B5D] font-medium text-sm">
                           Separate Files (
                           {CREDIT_COSTS.generatePDF * csvData.length} credits)
                         </p>
-                        <p className="text-gray-400 text-xs mt-0.5">
+                        <p className="text-gray-500 text-xs mt-0.5">
                           {csvData.length} individual PDF files
                         </p>
                       </div>
@@ -2579,36 +2581,36 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                           await checkCreditsAndExecute(
                             "generatePDF",
                             csvData.length,
-                            handleExportAllAsSinglePDF
+                            handleExportAllAsSinglePDF,
                           );
                         } catch (error) {
                           console.error(
                             "Error in export single PDF click:",
-                            error
+                            error,
                           );
                           const errorMessage =
                             error?.message ||
                             error?.toString() ||
                             "Unknown error";
                           showToast.error(
-                            `Failed to initiate export: ${errorMessage}`
+                            `Failed to initiate export: ${errorMessage}`,
                           );
                         }
                       }}
-                      className="w-full px-4 py-3 text-left hover:bg-gray-700 transition-colors flex items-start gap-3 cursor-pointer"
+                      className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors flex items-start gap-3 cursor-pointer"
                       type="button"
                       style={{ pointerEvents: "auto" }}
                     >
                       <Download
                         size={18}
-                        className="text-purple-400 mt-0.5 flex-shrink-0"
+                        className="text-[#3834A8] mt-0.5 flex-shrink-0"
                       />
                       <div>
-                        <p className="text-white font-medium text-sm">
+                        <p className="text-[#2A1B5D] font-medium text-sm">
                           Single File (
                           {CREDIT_COSTS.generatePDF * csvData.length} credits)
                         </p>
-                        <p className="text-gray-400 text-xs mt-0.5">
+                        <p className="text-gray-500 text-xs mt-0.5">
                           1 PDF with {csvData.length} pages
                         </p>
                       </div>
@@ -2631,23 +2633,23 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                           error?.toString() ||
                           "Unknown error";
                         showToast.error(
-                          `Failed to initiate export: ${errorMessage}`
+                          `Failed to initiate export: ${errorMessage}`,
                         );
                       }
                     }}
-                    className="w-full px-4 py-3 text-left hover:bg-gray-700 transition-colors flex items-start gap-3 cursor-pointer"
+                    className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors flex items-start gap-3 cursor-pointer"
                     type="button"
                     style={{ pointerEvents: "auto" }}
                   >
                     <Download
                       size={18}
-                      className="text-blue-400 mt-0.5 flex-shrink-0"
+                      className="text-[#3834A8] mt-0.5 flex-shrink-0"
                     />
                     <div>
-                      <p className="text-white font-medium text-sm">
+                      <p className="text-[#2A1B5D] font-medium text-sm">
                         Export Template ({CREDIT_COSTS.generatePDF} credits)
                       </p>
-                      <p className="text-gray-400 text-xs mt-0.5">
+                      <p className="text-gray-500 text-xs mt-0.5">
                         Download current design as PDF
                       </p>
                     </div>
@@ -2662,7 +2664,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
       <div className="flex-1 flex overflow-hidden">
         {/* Main Canvas Area - Full Screen */}
         <div
-          className="konva-canvas-container flex-1 flex items-center justify-center bg-gray-700 p-4 overflow-auto relative"
+          className="konva-canvas-container flex-1 flex items-center justify-center bg-gray-200 p-4 overflow-auto relative"
           onDragOver={handleStageDragOver}
           onDrop={handleStageDropField}
           onWheel={(e) => {
@@ -2850,7 +2852,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                           // Replace {{fieldName}} pattern with actual value
                           displayText = displayText.replace(
                             new RegExp(`\\{\\{${el.dataField}\\}\\}`, "g"),
-                            String(actualValue)
+                            String(actualValue),
                           );
                           // If the text is just the placeholder pattern, replace the whole thing
                           const trimmedText = displayText.trim();
@@ -2864,7 +2866,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                           // If value is missing, show placeholder with indicator
                           displayText = displayText.replace(
                             new RegExp(`\\{\\{${el.dataField}\\}\\}`, "g"),
-                            `[${el.dataField} - missing]`
+                            `[${el.dataField} - missing]`,
                           );
                         }
                       } else {
@@ -2894,11 +2896,11 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                                 new RegExp(
                                   String(actualValue).replace(
                                     /[.*+?^${}()|[\]\\]/g,
-                                    "\\$&"
+                                    "\\$&",
                                   ),
-                                  "g"
+                                  "g",
                                 ),
-                                `{{${el.dataField}}}`
+                                `{{${el.dataField}}}`,
                               );
                             }
                           }
@@ -2919,7 +2921,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                       displayText = displayText.toLowerCase();
                     } else if (el.textTransform === "capitalize") {
                       displayText = displayText.replace(/\b\w/g, (l) =>
-                        l.toUpperCase()
+                        l.toUpperCase(),
                       );
                     }
 
@@ -2989,7 +2991,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                           // Set minimum width based on text node, accounting for scale
                           const minWidth = Math.max(
                             textNode.width() || 200,
-                            100
+                            100,
                           );
                           textarea.style.width = minWidth * scale + "px";
                           textarea.style.minHeight =
@@ -3050,7 +3052,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                             textarea.parentNode.removeChild(textarea);
                             window.removeEventListener(
                               "click",
-                              handleOutsideClick
+                              handleOutsideClick,
                             );
 
                             // Update text content but maintain position
@@ -3098,7 +3100,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                             if (isTextareaRemoved) return;
                             window.addEventListener(
                               "click",
-                              handleOutsideClick
+                              handleOutsideClick,
                             );
                           }, 100);
                         }}
@@ -3265,21 +3267,21 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
 
         {/* CSV Fields Panel - Floating when CSV is loaded */}
         {showCsvFieldsPanel && csvFields.length > 0 && (
-          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-gray-800 border-2 border-blue-500 rounded-lg shadow-2xl p-4 z-50 max-w-2xl">
+          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-white border-2 border-[#3834A8] rounded-lg shadow-2xl p-4 z-50 max-w-2xl">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-lg font-bold flex items-center gap-2">
-                <Database className="w-5 h-5 text-blue-400" />
+              <h3 className="text-lg font-bold flex items-center gap-2 text-[#2A1B5D]">
+                <Database className="w-5 h-5 text-[#3834A8]" />
                 CSV Fields ({csvData.length} records)
               </h3>
               <button
                 onClick={() => setShowCsvFieldsPanel(false)}
-                className="text-gray-400 hover:text-white p-1 rounded hover:bg-gray-700"
+                className="text-gray-500 hover:text-gray-700 p-1 rounded hover:bg-gray-100"
                 title="Close Panel"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <p className="text-sm text-gray-400 mb-3">
+            <p className="text-sm text-gray-600 mb-3">
               Drag fields onto the canvas to create dynamic text elements
             </p>
             <div className="flex flex-wrap gap-2">
@@ -3294,7 +3296,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                     ${
                       draggedField === field
                         ? "bg-green-600 text-white opacity-50"
-                        : "bg-blue-600 hover:bg-blue-700 text-white hover:scale-105"
+                        : "bg-[#3834A8] hover:bg-[#2A1B5D] text-white hover:scale-105"
                     }
                   `}
                   title={`Drag "${field}" to canvas to create text element`}
@@ -3316,22 +3318,22 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
 
         {/* Properties Panel - Collapsible */}
         {showPropertiesPanel && (
-          <div className="w-80 bg-gray-900 p-4 border-l border-gray-700 overflow-y-auto">
+          <div className="w-80 bg-white p-4 border-l border-gray-200 overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold">Properties</h3>
+              <h3 className="text-lg font-bold text-[#2A1B5D]">Properties</h3>
               <button
                 onClick={() => setShowPropertiesPanel(false)}
-                className="p-1 hover:bg-gray-700 rounded"
+                className="p-1 hover:bg-gray-100 rounded"
                 title="Hide Properties Panel"
               >
-                <X size={18} className="text-gray-400" />
+                <X size={18} className="text-gray-500" />
               </button>
             </div>
             {selectedId && getSelectedElement() ? (
               <div className="space-y-4">
                 {/* Fill Color */}
                 <div>
-                  <label className="text-sm text-gray-400 block mb-1">
+                  <label className="text-sm text-gray-600 block mb-1">
                     Fill Color
                   </label>
                   <div className="flex gap-2 mb-2">
@@ -3345,7 +3347,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                       onChange={(e) =>
                         updateSelectedElement("fill", e.target.value)
                       }
-                      className="flex-1 h-10 p-1 bg-gray-700 border border-gray-600 rounded cursor-pointer"
+                      className="flex-1 h-10 p-1 bg-gray-100 border border-gray-300 rounded cursor-pointer"
                     />
                     <button
                       onClick={() =>
@@ -3353,8 +3355,8 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                       }
                       className={`px-3 py-2 rounded border text-sm transition-colors ${
                         getSelectedElement().fill === "transparent"
-                          ? "bg-blue-600 border-blue-500 text-white"
-                          : "bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600"
+                          ? "bg-[#3834A8] border-[#3834A8] text-white"
+                          : "bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200"
                       }`}
                       title="No Fill (Transparent) - Only border will be visible"
                     >
@@ -3362,7 +3364,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                     </button>
                   </div>
                   {getSelectedElement().fill === "transparent" ? (
-                    <div className="flex items-center gap-2 px-2 py-1 bg-blue-500/20 border border-blue-500/30 rounded text-xs text-blue-300">
+                    <div className="flex items-center gap-2 px-2 py-1 bg-[#3834A8]/10 border border-[#3834A8]/30 rounded text-xs text-[#3834A8]">
                       <span>✓</span>
                       <span>Only border will be visible</span>
                     </div>
@@ -3378,12 +3380,12 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                   getSelectedElement().type === "circle" ||
                   getSelectedElement().type === "image") && (
                   <div>
-                    <label className="text-sm text-gray-400 block mb-1">
+                    <label className="text-sm text-gray-600 block mb-1">
                       Opacity:{" "}
                       {Math.round(
                         (getSelectedElement()?.opacity !== undefined
                           ? getSelectedElement().opacity
-                          : 1) * 100
+                          : 1) * 100,
                       )}
                       %
                     </label>
@@ -3403,7 +3405,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                           return prevElements.map((el) =>
                             el.id === selectedId
                               ? { ...el, opacity: newValue }
-                              : el
+                              : el,
                           );
                         });
                       }}
@@ -3431,7 +3433,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                   getSelectedElement().type === "circle") && (
                   <>
                     <div>
-                      <label className="text-sm text-gray-400 block mb-1">
+                      <label className="text-sm text-gray-600 block mb-1">
                         Border Color
                       </label>
                       <input
@@ -3440,11 +3442,11 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                         onChange={(e) =>
                           updateSelectedElement("stroke", e.target.value)
                         }
-                        className="w-full h-10 p-1 bg-gray-700 border border-gray-600 rounded cursor-pointer"
+                        className="w-full h-10 p-1 bg-gray-100 border border-gray-300 rounded cursor-pointer"
                       />
                     </div>
                     <div>
-                      <label className="text-sm text-gray-400 block mb-1">
+                      <label className="text-sm text-gray-600 block mb-1">
                         Border Width
                       </label>
                       <input
@@ -3454,23 +3456,23 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                         onChange={(e) =>
                           updateSelectedElement(
                             "strokeWidth",
-                            parseInt(e.target.value, 10)
+                            parseInt(e.target.value, 10),
                           )
                         }
-                        className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white"
+                        className="w-full p-2 bg-gray-100 border border-gray-300 rounded text-gray-800"
                       />
                     </div>
 
                     {/* Border Dash Array (Dashed Border) */}
                     <div>
-                      <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
+                      <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
                         <input
                           type="checkbox"
                           checked={getSelectedElement().dashEnabled || false}
                           onChange={(e) =>
                             updateSelectedElement(
                               "dashEnabled",
-                              e.target.checked
+                              e.target.checked,
                             )
                           }
                           className="w-4 h-4"
@@ -3531,7 +3533,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                     {/* Corner Radius for Rectangles */}
                     {getSelectedElement().type === "rect" && (
                       <div>
-                        <label className="text-sm text-gray-400 block mb-1">
+                        <label className="text-sm text-gray-600 block mb-1">
                           Corner Radius:{" "}
                           {getSelectedElement().cornerRadius || 0}px
                         </label>
@@ -3544,7 +3546,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                           onChange={(e) =>
                             updateSelectedElement(
                               "cornerRadius",
-                              parseInt(e.target.value, 10)
+                              parseInt(e.target.value, 10),
                             )
                           }
                           className="w-full"
@@ -3558,7 +3560,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                 {getSelectedElement().type === "text" && (
                   <>
                     <div>
-                      <label className="text-sm text-gray-400 block mb-1">
+                      <label className="text-sm text-gray-600 block mb-1">
                         Font Size
                       </label>
                       <input
@@ -3567,16 +3569,16 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                         onChange={(e) =>
                           updateSelectedElement(
                             "fontSize",
-                            parseInt(e.target.value, 10)
+                            parseInt(e.target.value, 10),
                           )
                         }
-                        className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white"
+                        className="w-full p-2 bg-gray-100 border border-gray-300 rounded text-gray-800"
                       />
                     </div>
 
                     {/* Font Family */}
                     <div>
-                      <label className="text-sm text-gray-400 block mb-1">
+                      <label className="text-sm text-gray-600 block mb-1">
                         Font Family
                       </label>
                       <select
@@ -3584,7 +3586,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                         onChange={(e) =>
                           updateSelectedElement("fontFamily", e.target.value)
                         }
-                        className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white"
+                        className="w-full p-2 bg-gray-100 border border-gray-300 rounded text-gray-800"
                       >
                         <option value="Arial">Arial</option>
                         <option value="Arial Black">Arial Black</option>
@@ -3608,7 +3610,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
 
                     {/* Font Weight */}
                     <div>
-                      <label className="text-sm text-gray-400 block mb-1">
+                      <label className="text-sm text-gray-600 block mb-1">
                         Font Weight
                       </label>
                       <select
@@ -3616,7 +3618,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                         onChange={(e) =>
                           updateSelectedElement("fontWeight", e.target.value)
                         }
-                        className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white"
+                        className="w-full p-2 bg-gray-100 border border-gray-300 rounded text-gray-800"
                       >
                         <option value="normal">Normal</option>
                         <option value="100">Thin (100)</option>
@@ -3633,7 +3635,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
 
                     {/* Line Height */}
                     <div>
-                      <label className="text-sm text-gray-400 block mb-1">
+                      <label className="text-sm text-gray-600 block mb-1">
                         Line Height: {getSelectedElement().lineHeight || 1.2}
                       </label>
                       <input
@@ -3645,7 +3647,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                         onChange={(e) =>
                           updateSelectedElement(
                             "lineHeight",
-                            parseFloat(e.target.value)
+                            parseFloat(e.target.value),
                           )
                         }
                         className="w-full"
@@ -3654,7 +3656,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
 
                     {/* Letter Spacing */}
                     <div>
-                      <label className="text-sm text-gray-400 block mb-1">
+                      <label className="text-sm text-gray-600 block mb-1">
                         Letter Spacing:{" "}
                         {getSelectedElement().letterSpacing || 0}px
                       </label>
@@ -3667,7 +3669,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                         onChange={(e) =>
                           updateSelectedElement(
                             "letterSpacing",
-                            parseFloat(e.target.value)
+                            parseFloat(e.target.value),
                           )
                         }
                         className="w-full"
@@ -3676,7 +3678,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
 
                     {/* Text Transform */}
                     <div>
-                      <label className="text-sm text-gray-400 block mb-1">
+                      <label className="text-sm text-gray-600 block mb-1">
                         Text Transform
                       </label>
                       <select
@@ -3684,7 +3686,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                         onChange={(e) =>
                           updateSelectedElement("textTransform", e.target.value)
                         }
-                        className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white"
+                        className="w-full p-2 bg-gray-100 border border-gray-300 rounded text-gray-800"
                       >
                         <option value="none">None</option>
                         <option value="uppercase">UPPERCASE</option>
@@ -3695,7 +3697,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
 
                     {/* Text Formatting Buttons */}
                     <div>
-                      <label className="text-sm text-gray-400 block mb-2">
+                      <label className="text-sm text-gray-600 block mb-2">
                         Text Style
                       </label>
                       <div className="flex gap-2">
@@ -3705,13 +3707,13 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                               getSelectedElement().fontStyle || "normal";
                             updateSelectedElement(
                               "fontStyle",
-                              current === "bold" ? "normal" : "bold"
+                              current === "bold" ? "normal" : "bold",
                             );
                           }}
                           className={`flex-1 p-2 rounded border ${
                             getSelectedElement().fontStyle === "bold"
-                              ? "bg-blue-600 border-blue-500"
-                              : "bg-gray-700 border-gray-600 hover:bg-gray-600"
+                              ? "bg-[#3834A8] border-[#3834A8] text-white"
+                              : "bg-gray-100 border-gray-300 hover:bg-gray-200 text-gray-700"
                           }`}
                           title="Bold"
                         >
@@ -3723,13 +3725,13 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                               getSelectedElement().textDecoration || "";
                             updateSelectedElement(
                               "textDecoration",
-                              current === "italic" ? "" : "italic"
+                              current === "italic" ? "" : "italic",
                             );
                           }}
                           className={`flex-1 p-2 rounded border ${
                             getSelectedElement().textDecoration === "italic"
-                              ? "bg-blue-600 border-blue-500"
-                              : "bg-gray-700 border-gray-600 hover:bg-gray-600"
+                              ? "bg-[#3834A8] border-[#3834A8] text-white"
+                              : "bg-gray-100 border-gray-300 hover:bg-gray-200 text-gray-700"
                           }`}
                           title="Italic"
                         >
@@ -3741,13 +3743,13 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                               getSelectedElement().textDecoration || "";
                             updateSelectedElement(
                               "textDecoration",
-                              current === "underline" ? "" : "underline"
+                              current === "underline" ? "" : "underline",
                             );
                           }}
                           className={`flex-1 p-2 rounded border ${
                             getSelectedElement().textDecoration === "underline"
-                              ? "bg-blue-600 border-blue-500"
-                              : "bg-gray-700 border-gray-600 hover:bg-gray-600"
+                              ? "bg-[#3834A8] border-[#3834A8] text-white"
+                              : "bg-gray-100 border-gray-300 hover:bg-gray-200 text-gray-700"
                           }`}
                           title="Underline"
                         >
@@ -3758,7 +3760,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
 
                     {/* Text Alignment */}
                     <div>
-                      <label className="text-sm text-gray-400 block mb-2">
+                      <label className="text-sm text-gray-600 block mb-2">
                         Text Alignment
                       </label>
                       <div className="flex gap-2">
@@ -3766,8 +3768,8 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                           onClick={() => updateSelectedElement("align", "left")}
                           className={`flex-1 p-2 rounded border ${
                             getSelectedElement().align === "left"
-                              ? "bg-blue-600 border-blue-500"
-                              : "bg-gray-700 border-gray-600 hover:bg-gray-600"
+                              ? "bg-[#3834A8] border-[#3834A8] text-white"
+                              : "bg-gray-100 border-gray-300 hover:bg-gray-200 text-gray-700"
                           }`}
                           title="Align Left"
                         >
@@ -3779,8 +3781,8 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                           }
                           className={`flex-1 p-2 rounded border ${
                             getSelectedElement().align === "center"
-                              ? "bg-blue-600 border-blue-500"
-                              : "bg-gray-700 border-gray-600 hover:bg-gray-600"
+                              ? "bg-[#3834A8] border-[#3834A8] text-white"
+                              : "bg-gray-100 border-gray-300 hover:bg-gray-200 text-gray-700"
                           }`}
                           title="Align Center"
                         >
@@ -3792,8 +3794,8 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                           }
                           className={`flex-1 p-2 rounded border ${
                             getSelectedElement().align === "right"
-                              ? "bg-blue-600 border-blue-500"
-                              : "bg-gray-700 border-gray-600 hover:bg-gray-600"
+                              ? "bg-[#3834A8] border-[#3834A8] text-white"
+                              : "bg-gray-100 border-gray-300 hover:bg-gray-200 text-gray-700"
                           }`}
                           title="Align Right"
                         >
@@ -3803,8 +3805,8 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                     </div>
 
                     {/* Dynamic Field Checkbox */}
-                    <div className="border-t border-gray-700 pt-3 mt-3">
-                      <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
+                    <div className="border-t border-gray-200 pt-3 mt-3">
+                      <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
                         <input
                           type="checkbox"
                           checked={getSelectedElement().isDynamic || false}
@@ -3820,7 +3822,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                     {/* Data Field Input - only show if isDynamic is true */}
                     {getSelectedElement().isDynamic && (
                       <div>
-                        <label className="text-sm text-gray-400 block mb-1">
+                        <label className="text-sm text-gray-600 block mb-1">
                           CSV Field Name
                         </label>
                         <input
@@ -3830,7 +3832,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                             updateSelectedElement("dataField", e.target.value)
                           }
                           placeholder="e.g., name, email, course"
-                          className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white placeholder-gray-500"
+                          className="w-full p-2 bg-gray-100 border border-gray-300 rounded text-gray-800 placeholder-gray-500"
                         />
                         <p className="text-xs text-gray-500 mt-1">
                           Enter the exact column name from your CSV
@@ -3839,12 +3841,12 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                     )}
 
                     <div>
-                      <label className="text-sm text-gray-400 block mb-1">
+                      <label className="text-sm text-gray-600 block mb-1">
                         Text Opacity:{" "}
                         {Math.round(
                           (getSelectedElement().opacity !== undefined
                             ? getSelectedElement().opacity
-                            : 1) * 100
+                            : 1) * 100,
                         )}
                         %
                       </label>
@@ -3861,7 +3863,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                         onChange={(e) =>
                           updateSelectedElement(
                             "opacity",
-                            parseFloat(e.target.value)
+                            parseFloat(e.target.value),
                           )
                         }
                         className="w-full"
@@ -3869,8 +3871,8 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                     </div>
 
                     {/* Text Shadow */}
-                    <div className="border-t border-gray-700 pt-3 mt-3">
-                      <label className="text-sm text-gray-400 block mb-2">
+                    <div className="border-t border-gray-200 pt-3 mt-3">
+                      <label className="text-sm text-gray-600 block mb-2">
                         Text Shadow
                       </label>
                       <div className="space-y-2">
@@ -3883,12 +3885,12 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                             onChange={(e) =>
                               updateSelectedElement(
                                 "shadowEnabled",
-                                e.target.checked
+                                e.target.checked,
                               )
                             }
                             className="w-4 h-4"
                           />
-                          <span className="text-sm text-gray-300">
+                          <span className="text-sm text-gray-700">
                             Enable Shadow
                           </span>
                         </div>
@@ -3906,10 +3908,10 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                                 onChange={(e) =>
                                   updateSelectedElement(
                                     "shadowColor",
-                                    e.target.value
+                                    e.target.value,
                                   )
                                 }
-                                className="w-full h-8 p-1 bg-gray-700 border border-gray-600 rounded cursor-pointer"
+                                className="w-full h-8 p-1 bg-gray-100 border border-gray-300 rounded cursor-pointer"
                               />
                             </div>
                             <div>
@@ -3925,7 +3927,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                                 onChange={(e) =>
                                   updateSelectedElement(
                                     "shadowBlur",
-                                    parseInt(e.target.value, 10)
+                                    parseInt(e.target.value, 10),
                                   )
                                 }
                                 className="w-full"
@@ -3948,7 +3950,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                                   onChange={(e) =>
                                     updateSelectedElement(
                                       "shadowOffsetX",
-                                      parseInt(e.target.value, 10)
+                                      parseInt(e.target.value, 10),
                                     )
                                   }
                                   className="w-full"
@@ -3970,7 +3972,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                                   onChange={(e) =>
                                     updateSelectedElement(
                                       "shadowOffsetY",
-                                      parseInt(e.target.value, 10)
+                                      parseInt(e.target.value, 10),
                                     )
                                   }
                                   className="w-full"
@@ -3985,8 +3987,8 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                 )}
 
                 {/* Position Controls - Available for all elements */}
-                <div className="border-t border-gray-700 pt-3 mt-3">
-                  <label className="text-sm text-gray-400 block mb-2 font-semibold">
+                <div className="border-t border-gray-200 pt-3 mt-3">
+                  <label className="text-sm text-gray-600 block mb-2 font-semibold">
                     Position
                   </label>
                   <div className="grid grid-cols-2 gap-2">
@@ -4000,10 +4002,10 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                         onChange={(e) =>
                           updateSelectedElement(
                             "x",
-                            parseInt(e.target.value, 10)
+                            parseInt(e.target.value, 10),
                           )
                         }
-                        className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white text-sm"
+                        className="w-full p-2 bg-gray-100 border border-gray-300 rounded text-gray-800 text-sm"
                       />
                     </div>
                     <div>
@@ -4016,10 +4018,10 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                         onChange={(e) =>
                           updateSelectedElement(
                             "y",
-                            parseInt(e.target.value, 10)
+                            parseInt(e.target.value, 10),
                           )
                         }
-                        className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white text-sm"
+                        className="w-full p-2 bg-gray-100 border border-gray-300 rounded text-gray-800 text-sm"
                       />
                     </div>
                   </div>
@@ -4029,8 +4031,8 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                 {(getSelectedElement().type === "rect" ||
                   getSelectedElement().type === "image" ||
                   getSelectedElement().type === "text") && (
-                  <div className="border-t border-gray-700 pt-3 mt-3">
-                    <label className="text-sm text-gray-400 block mb-2 font-semibold">
+                  <div className="border-t border-gray-200 pt-3 mt-3">
+                    <label className="text-sm text-gray-600 block mb-2 font-semibold">
                       Size
                     </label>
                     <div className="grid grid-cols-2 gap-2">
@@ -4044,10 +4046,10 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                           onChange={(e) =>
                             updateSelectedElement(
                               "width",
-                              parseInt(e.target.value, 10)
+                              parseInt(e.target.value, 10),
                             )
                           }
-                          className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white text-sm"
+                          className="w-full p-2 bg-gray-100 border border-gray-300 rounded text-gray-800 text-sm"
                         />
                       </div>
                       <div>
@@ -4060,10 +4062,10 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                           onChange={(e) =>
                             updateSelectedElement(
                               "height",
-                              parseInt(e.target.value, 10)
+                              parseInt(e.target.value, 10),
                             )
                           }
-                          className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white text-sm"
+                          className="w-full p-2 bg-gray-100 border border-gray-300 rounded text-gray-800 text-sm"
                         />
                       </div>
                     </div>
@@ -4072,8 +4074,8 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
 
                 {/* Radius for circle */}
                 {getSelectedElement().type === "circle" && (
-                  <div className="border-t border-gray-700 pt-3 mt-3">
-                    <label className="text-sm text-gray-400 block mb-1">
+                  <div className="border-t border-gray-200 pt-3 mt-3">
+                    <label className="text-sm text-gray-600 block mb-1">
                       Radius
                     </label>
                     <input
@@ -4082,17 +4084,17 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                       onChange={(e) =>
                         updateSelectedElement(
                           "radius",
-                          parseInt(e.target.value, 10)
+                          parseInt(e.target.value, 10),
                         )
                       }
-                      className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white"
+                      className="w-full p-2 bg-gray-100 border border-gray-300 rounded text-gray-800"
                     />
                   </div>
                 )}
 
                 {/* Transform Controls */}
-                <div className="border-t border-gray-700 pt-3 mt-3">
-                  <label className="text-sm text-gray-400 block mb-2 font-semibold">
+                <div className="border-t border-gray-200 pt-3 mt-3">
+                  <label className="text-sm text-gray-600 block mb-2 font-semibold">
                     Transform
                   </label>
                   <div className="space-y-2">
@@ -4110,7 +4112,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                         onChange={(e) =>
                           updateSelectedElement(
                             "rotation",
-                            parseInt(e.target.value, 10)
+                            parseInt(e.target.value, 10),
                           )
                         }
                         className="w-full"
@@ -4131,7 +4133,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                           onChange={(e) =>
                             updateSelectedElement(
                               "scaleX",
-                              parseFloat(e.target.value)
+                              parseFloat(e.target.value),
                             )
                           }
                           className="w-full"
@@ -4151,7 +4153,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                           onChange={(e) =>
                             updateSelectedElement(
                               "scaleY",
-                              parseFloat(e.target.value)
+                              parseFloat(e.target.value),
                             )
                           }
                           className="w-full"
@@ -4172,7 +4174,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                           onChange={(e) =>
                             updateSelectedElement(
                               "skewX",
-                              parseInt(e.target.value, 10)
+                              parseInt(e.target.value, 10),
                             )
                           }
                           className="w-full"
@@ -4191,7 +4193,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                           onChange={(e) =>
                             updateSelectedElement(
                               "skewY",
-                              parseInt(e.target.value, 10)
+                              parseInt(e.target.value, 10),
                             )
                           }
                           className="w-full"
@@ -4211,10 +4213,10 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
         {!showPropertiesPanel && (
           <button
             onClick={() => setShowPropertiesPanel(true)}
-            className="fixed right-4 top-1/2 transform -translate-y-1/2 bg-gray-900 hover:bg-gray-800 border border-gray-700 rounded-l-lg p-2 z-10 shadow-lg"
+            className="fixed right-4 top-1/2 transform -translate-y-1/2 bg-white hover:bg-gray-50 border border-gray-200 rounded-l-lg p-2 z-10 shadow-lg"
             title="Show Properties Panel"
           >
-            <span className="text-gray-400 text-sm">▶</span>
+            <span className="text-gray-500 text-sm">▶</span>
           </button>
         )}
       </div>
@@ -4308,7 +4310,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                         await checkCreditsAndExecute(
                           "generatePDF",
                           csvData.length,
-                          handleExportAllPDFs
+                          handleExportAllPDFs,
                         );
                       }}
                       className="flex items-center gap-2 px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all text-sm font-medium justify-center"
@@ -4323,7 +4325,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                         await checkCreditsAndExecute(
                           "generatePDF",
                           csvData.length,
-                          handleExportAllAsSinglePDF
+                          handleExportAllAsSinglePDF,
                         );
                       }}
                       className="flex items-center gap-2 px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-all text-sm font-medium justify-center"
@@ -4342,7 +4344,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                       closePreview();
                     });
                   }}
-                  className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all text-sm font-medium justify-center"
+                  className="flex items-center gap-2 px-6 py-2.5 bg-[#3834A8] hover:bg-[#2A1B5D] text-white rounded-lg transition-all text-sm font-medium justify-center"
                 >
                   <Download size={18} />
                   Download Current ({CREDIT_COSTS.generatePDF} credits)
@@ -4355,34 +4357,36 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
 
       {/* CSV Upload Modal */}
       {showCsvModal && (
-        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-800 border border-gray-700 rounded-2xl shadow-2xl max-w-2xl w-full">
-            <div className="flex items-center justify-between p-4 border-b border-gray-700">
-              <h2 className="text-xl font-bold text-white">CSV Data Loaded</h2>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white border border-gray-200 rounded-2xl shadow-2xl max-w-2xl w-full">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              <h2 className="text-xl font-bold text-[#2A1B5D]">
+                CSV Data Loaded
+              </h2>
               <button
                 onClick={() => setShowCsvModal(false)}
-                className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
               >
-                <X size={24} className="text-gray-400 hover:text-white" />
+                <X size={24} className="text-gray-500 hover:text-gray-700" />
               </button>
             </div>
 
             <div className="p-6">
-              <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 mb-4">
-                <p className="text-blue-300 text-sm">
+              <div className="bg-[#3834A8]/10 border border-[#3834A8]/30 rounded-xl p-4 mb-4">
+                <p className="text-[#3834A8] text-sm">
                   <strong>{csvData.length} records</strong> loaded from CSV
                 </p>
-                <p className="text-gray-400 text-xs mt-2">
+                <p className="text-gray-600 text-xs mt-2">
                   Available fields:{" "}
                   {csvData.length > 0 && Object.keys(csvData[0]).join(", ")}
                 </p>
               </div>
 
-              <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4 mb-4">
-                <p className="text-yellow-300 text-sm font-semibold mb-2">
+              <div className="bg-yellow-50 border border-yellow-300 rounded-xl p-4 mb-4">
+                <p className="text-yellow-700 text-sm font-semibold mb-2">
                   📋 How to use dynamic fields:
                 </p>
-                <ol className="text-gray-300 text-xs space-y-1 ml-4 list-decimal">
+                <ol className="text-gray-700 text-xs space-y-1 ml-4 list-decimal">
                   <li>Select a text element on the canvas</li>
                   <li>
                     Check "Dynamic Field (from CSV)" in the properties panel
@@ -4395,9 +4399,9 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                 </ol>
               </div>
 
-              <div className="max-h-60 overflow-auto bg-gray-900 rounded-lg p-3">
+              <div className="max-h-60 overflow-auto bg-gray-50 rounded-lg p-3 border border-gray-200">
                 <table className="w-full text-xs">
-                  <thead className="text-gray-400 border-b border-gray-700">
+                  <thead className="text-gray-600 border-b border-gray-300">
                     <tr>
                       {csvData.length > 0 &&
                         Object.keys(csvData[0]).map((key) => (
@@ -4407,9 +4411,9 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                         ))}
                     </tr>
                   </thead>
-                  <tbody className="text-gray-300">
+                  <tbody className="text-gray-700">
                     {csvData.slice(0, 5).map((row, index) => (
-                      <tr key={index} className="border-b border-gray-800">
+                      <tr key={index} className="border-b border-gray-200">
                         {Object.values(row).map((value, i) => (
                           <td key={i} className="p-2">
                             {value}
@@ -4427,16 +4431,16 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
               </div>
             </div>
 
-            <div className="flex items-center justify-between p-4 border-t border-gray-700">
+            <div className="flex items-center justify-between p-4 border-t border-gray-200">
               <button
                 onClick={() => setShowCsvModal(false)}
-                className="px-6 py-2.5 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-all"
+                className="px-6 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-all"
               >
                 Close
               </button>
               <button
                 onClick={handlePreviewBatch}
-                className="flex items-center gap-2 px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-all"
+                className="flex items-center gap-2 px-6 py-2.5 bg-[#3834A8] hover:bg-[#2A1B5D] text-white rounded-lg transition-all"
               >
                 <Eye size={18} />
                 Preview Samples
@@ -4448,14 +4452,14 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
 
       {/* Batch Preview Before Generate Modal */}
       {showBatchPreviewBeforeGenerate && (
-        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-800 border border-gray-700 rounded-2xl shadow-2xl w-full h-full max-w-[95vw] max-h-[95vh] flex flex-col">
-            <div className="flex items-center justify-between p-4 border-b border-gray-700">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white border border-gray-200 rounded-2xl shadow-2xl w-full h-full max-w-[95vw] max-h-[95vh] flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200">
               <div>
-                <h2 className="text-xl font-bold text-white">
+                <h2 className="text-xl font-bold text-[#2A1B5D]">
                   Preview Certificate Design
                 </h2>
-                <p className="text-sm text-gray-400">
+                <p className="text-sm text-gray-600">
                   Showing {previewSamples.length} sample
                   {previewSamples.length > 1 ? "s" : ""} from {csvData.length}{" "}
                   total records
@@ -4467,20 +4471,20 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                   setPreviewSamples([]);
                   setShowCsvModal(true); // Go back to CSV modal
                 }}
-                className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
               >
-                <X size={24} className="text-gray-400 hover:text-white" />
+                <X size={24} className="text-gray-500 hover:text-gray-700" />
               </button>
             </div>
 
             <div className="flex-1 overflow-hidden p-4">
               <div className="h-full overflow-y-auto space-y-4">
                 {/* Info Banner */}
-                <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4">
-                  <p className="text-blue-300 text-sm font-semibold mb-2">
+                <div className="bg-[#3834A8]/10 border border-[#3834A8]/30 rounded-xl p-4">
+                  <p className="text-[#3834A8] text-sm font-semibold mb-2">
                     📋 Preview Mode
                   </p>
-                  <p className="text-gray-300 text-sm">
+                  <p className="text-gray-600 text-sm">
                     Review how your design looks with real CSV data. If
                     everything looks good, click{" "}
                     <strong>
@@ -4489,7 +4493,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                     below.
                   </p>
                   {previewSamples.length < csvData.length && (
-                    <p className="text-gray-400 text-xs mt-2">
+                    <p className="text-gray-500 text-xs mt-2">
                       💡 Showing first {previewSamples.length} samples. All{" "}
                       {csvData.length} will be generated.
                     </p>
@@ -4501,24 +4505,24 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                   {previewSamples.map((sample, index) => (
                     <div
                       key={index}
-                      className="bg-gray-900 border border-gray-700 rounded-lg p-4 hover:border-gray-600 transition-colors"
+                      className="bg-white border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-colors shadow-sm"
                     >
                       <div className="flex items-center gap-3 mb-3">
-                        <div className="p-2 bg-purple-500/20 rounded-lg">
-                          <FileText size={20} className="text-purple-400" />
+                        <div className="p-2 bg-[#3834A8]/10 rounded-lg">
+                          <FileText size={20} className="text-[#3834A8]" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-white font-medium truncate">
+                          <p className="text-[#2A1B5D] font-medium truncate">
                             {sample.recipient?.name ||
                               sample.recipient?.fullname ||
                               `Recipient ${sample.recipientNumber}`}
                           </p>
-                          <p className="text-xs text-gray-400">
+                          <p className="text-xs text-gray-500">
                             Sample #{sample.recipientNumber}
                           </p>
                         </div>
                       </div>
-                      <div className="relative bg-white rounded-lg overflow-hidden">
+                      <div className="relative bg-white rounded-lg overflow-hidden border border-gray-200">
                         <img
                           src={sample.dataURL}
                           alt={`Certificate preview ${index + 1}`}
@@ -4526,12 +4530,12 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                         />
                       </div>
                       {/* Show some data fields */}
-                      <div className="mt-3 p-2 bg-gray-800 rounded text-xs">
-                        <p className="text-gray-400 mb-1">CSV Data:</p>
+                      <div className="mt-3 p-2 bg-gray-50 rounded text-xs border border-gray-200">
+                        <p className="text-gray-500 mb-1">CSV Data:</p>
                         {Object.entries(sample.recipient)
                           .slice(0, 3)
                           .map(([key, value]) => (
-                            <p key={key} className="text-gray-300">
+                            <p key={key} className="text-gray-700">
                               <span className="text-gray-500">{key}:</span>{" "}
                               {value}
                             </p>
@@ -4550,14 +4554,14 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
             </div>
 
             {/* Action Footer */}
-            <div className="flex items-center justify-between p-4 border-t border-gray-700 bg-gray-900">
+            <div className="flex items-center justify-between p-4 border-t border-gray-200 bg-gray-50">
               <button
                 onClick={() => {
                   setShowBatchPreviewBeforeGenerate(false);
                   setPreviewSamples([]);
                   setShowCsvModal(true);
                 }}
-                className="px-6 py-2.5 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-all"
+                className="px-6 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-all"
               >
                 ← Back to Design
               </button>
@@ -4567,7 +4571,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                     setShowBatchPreviewBeforeGenerate(false);
                     setPreviewSamples([]);
                   }}
-                  className="px-6 py-2.5 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-all"
+                  className="px-6 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-all"
                 >
                   Cancel
                 </button>
@@ -4590,29 +4594,29 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
 
       {/* Batch Preview Modal */}
       {showBatchPreview && (
-        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-800 border border-gray-700 rounded-2xl shadow-2xl w-full h-full max-w-[95vw] max-h-[95vh] flex flex-col">
-            <div className="flex items-center justify-between p-4 border-b border-gray-700">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white border border-gray-200 rounded-2xl shadow-2xl w-full h-full max-w-[95vw] max-h-[95vh] flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200">
               <div>
-                <h2 className="text-xl font-bold text-white">
+                <h2 className="text-xl font-bold text-[#2A1B5D]">
                   Batch Certificates Generated
                 </h2>
-                <p className="text-sm text-gray-400">
+                <p className="text-sm text-gray-600">
                   {batchPreviews.length} certificates ready to download
                 </p>
               </div>
               <button
                 onClick={closeBatchPreview}
-                className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
               >
-                <X size={24} className="text-gray-400 hover:text-white" />
+                <X size={24} className="text-gray-500 hover:text-gray-700" />
               </button>
             </div>
 
             <div className="flex-1 overflow-hidden p-4">
               <div className="h-full overflow-y-auto space-y-3">
-                <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4 mb-4">
-                  <p className="text-green-300 text-sm">
+                <div className="bg-green-50 border border-green-300 rounded-xl p-4 mb-4">
+                  <p className="text-green-700 text-sm">
                     <strong>{batchPreviews.length} certificates</strong>{" "}
                     generated successfully and ready to download
                   </p>
@@ -4621,19 +4625,19 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                   {batchPreviews.map((preview, index) => (
                     <div
                       key={index}
-                      className="bg-gray-900 border border-gray-700 rounded-lg p-4 hover:border-gray-600 transition-colors"
+                      className="bg-white border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-colors shadow-sm"
                     >
                       <div className="flex items-center gap-3 mb-3">
-                        <div className="p-2 bg-blue-500/20 rounded-lg">
-                          <FileText size={20} className="text-blue-400" />
+                        <div className="p-2 bg-[#3834A8]/10 rounded-lg">
+                          <FileText size={20} className="text-[#3834A8]" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-white font-medium truncate">
+                          <p className="text-[#2A1B5D] font-medium truncate">
                             {preview.recipient?.name ||
                               preview.recipient?.fullname ||
                               "Recipient"}
                           </p>
-                          <p className="text-xs text-gray-400 truncate">
+                          <p className="text-xs text-gray-500 truncate">
                             {preview.filename}
                           </p>
                         </div>
@@ -4641,13 +4645,13 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                       <img
                         src={preview.dataURL}
                         alt={`Certificate ${index + 1}`}
-                        className="w-full h-32 object-contain bg-white rounded mb-3"
+                        className="w-full h-32 object-contain bg-gray-50 rounded mb-3 border border-gray-200"
                       />
                       <button
                         onClick={() =>
                           downloadBatchPDF(preview.pdf, preview.filename)
                         }
-                        className="w-full flex items-center justify-center gap-2 p-2 bg-green-500/20 hover:bg-green-500/30 text-green-400 rounded-lg transition-colors"
+                        className="w-full flex items-center justify-center gap-2 p-2 bg-green-50 hover:bg-green-100 text-green-600 rounded-lg transition-colors border border-green-200"
                       >
                         <Download size={16} />
                         Download
@@ -4658,16 +4662,16 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
               </div>
             </div>
 
-            <div className="flex items-center justify-between p-4 border-t border-gray-700">
+            <div className="flex items-center justify-between p-4 border-t border-gray-200">
               <button
                 onClick={closeBatchPreview}
-                className="px-6 py-2.5 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-all"
+                className="px-6 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-all"
               >
                 Close
               </button>
               <button
                 onClick={downloadAllBatchPDFs}
-                className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all"
+                className="flex items-center gap-2 px-6 py-2.5 bg-[#3834A8] hover:bg-[#2A1B5D] text-white rounded-lg transition-all"
               >
                 <Download size={18} />
                 Download All ({batchPreviews.length})
@@ -4680,14 +4684,14 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
       {/* Emoji Picker Modal */}
       {showEmojiPicker && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-800 border border-gray-700 rounded-2xl shadow-2xl max-w-md w-full">
-            <div className="flex items-center justify-between p-4 border-b border-gray-700">
-              <h2 className="text-xl font-bold text-white">Select Emoji</h2>
+          <div className="bg-white border border-gray-200 rounded-2xl shadow-2xl max-w-md w-full">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              <h2 className="text-xl font-bold text-[#2A1B5D]">Select Emoji</h2>
               <button
                 onClick={() => setShowEmojiPicker(false)}
-                className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
               >
-                <X size={24} className="text-gray-400 hover:text-white" />
+                <X size={24} className="text-gray-500 hover:text-gray-700" />
               </button>
             </div>
 
@@ -4938,7 +4942,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                   <button
                     key={emoji}
                     onClick={() => handleAddEmoji(emoji)}
-                    className="text-3xl p-2 hover:bg-gray-700 rounded-lg transition-colors"
+                    className="text-3xl p-2 hover:bg-gray-100 rounded-lg transition-colors"
                     title={`Add ${emoji}`}
                   >
                     {emoji}

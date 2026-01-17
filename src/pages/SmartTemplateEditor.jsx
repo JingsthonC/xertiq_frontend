@@ -61,29 +61,29 @@ const SmartTemplateEditor = () => {
         const pdfs = pdfGenerator.generateBatchCertificates(
           template,
           dataSource.data,
-          true
+          true,
         );
         pdfGenerator.downloadBatchPDFs(
           pdfs,
           dataSource.data,
-          `certificate_{{name}}_{{index}}.pdf`
+          `certificate_{{name}}_{{index}}.pdf`,
         );
       } else {
         const pdf = pdfGenerator.generateBatchCertificates(
           template,
           dataSource.data,
-          false
+          false,
         );
         pdfGenerator.downloadPDF(pdf, `certificates_batch_${Date.now()}.pdf`);
       }
 
       showToast.success(
-        `Successfully generated ${dataSource.data.length} certificate(s)!`
+        `Successfully generated ${dataSource.data.length} certificate(s)!`,
       );
     } catch (error) {
       console.error("Error generating PDFs:", error);
       showToast.error(
-        "Failed to generate PDFs. Please check your template and data."
+        "Failed to generate PDFs. Please check your template and data.",
       );
     } finally {
       setIsGenerating(false);
@@ -92,7 +92,7 @@ const SmartTemplateEditor = () => {
 
   if (isExt) {
     return (
-      <div className="h-full bg-gradient-to-br from-[#0a0e27] via-[#1a1347] to-[#0f0f23] text-white overflow-hidden flex flex-col">
+      <div className="h-full bg-gradient-to-br from-[#f7fafc] to-[#e6f2ff] text-gray-800 overflow-hidden flex flex-col">
         <NavigationHeader title="Smart Template Editor" showBack={true} />
         <div className="flex-1 overflow-y-auto p-4">
           <TemplateBasedEditor onSave={handleSave} />
@@ -102,7 +102,7 @@ const SmartTemplateEditor = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0a0e27] via-[#1a1347] to-[#0f0f23]">
+    <div className="min-h-screen bg-gradient-to-br from-[#f7fafc] to-[#e6f2ff]">
       <Header />
       <NavigationHeader title="Smart Template Editor" showBack={true} />
 
@@ -111,14 +111,14 @@ const SmartTemplateEditor = () => {
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center gap-3 mb-4">
-              <div className="bg-gradient-to-r from-purple-500 to-blue-500 p-3 rounded-xl">
+              <div className="bg-gradient-to-r from-[#3834A8] to-[#2A1B5D] p-3 rounded-xl shadow-lg">
                 <Wand2 className="text-white" size={32} />
               </div>
               <div>
-                <h1 className="text-4xl font-bold text-white mb-2">
+                <h1 className="text-4xl font-bold text-[#2A1B5D] mb-2">
                   Smart Template Editor
                 </h1>
-                <p className="text-gray-300">
+                <p className="text-gray-600">
                   Upload a template (PDF, Word, or Image) and data source (CSV
                   or Excel) for intelligent field positioning
                 </p>
@@ -136,21 +136,21 @@ const SmartTemplateEditor = () => {
 
           {/* Preview & Generate Section */}
           {template && dataSource && (
-            <div className="mt-8 bg-white/5 border border-white/10 rounded-2xl p-6">
-              <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-                <Eye className="text-blue-400" size={24} />
+            <div className="mt-8 bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+              <h3 className="text-xl font-semibold text-[#2A1B5D] mb-4 flex items-center gap-2">
+                <Eye className="text-[#3834A8]" size={24} />
                 Preview & Generate
               </h3>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Preview */}
-                <div className="bg-white/5 rounded-xl p-4">
+                <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
                   <div className="flex items-center justify-between mb-4">
-                    <h4 className="text-white font-medium">Preview</h4>
+                    <h4 className="text-[#2A1B5D] font-medium">Preview</h4>
                     <button
                       onClick={handleGeneratePreview}
                       disabled={isGenerating}
-                      className="px-4 py-2 bg-brand-primary hover:bg-brand-primaryDark text-white rounded-lg transition-colors disabled:opacity-50 flex items-center gap-2"
+                      className="px-4 py-2 bg-[#3834A8] hover:bg-[#2A1B5D] text-white rounded-lg transition-colors disabled:opacity-50 flex items-center gap-2"
                     >
                       <Eye size={16} />
                       Generate Preview
@@ -158,7 +158,7 @@ const SmartTemplateEditor = () => {
                   </div>
 
                   {previewUrl ? (
-                    <div className="bg-white rounded-lg p-2">
+                    <div className="bg-white rounded-lg p-2 border border-gray-200">
                       <iframe
                         src={previewUrl}
                         className="w-full h-[400px] rounded"
@@ -166,10 +166,10 @@ const SmartTemplateEditor = () => {
                       />
                     </div>
                   ) : (
-                    <div className="bg-white/5 border-2 border-dashed border-white/20 rounded-xl h-[400px] flex items-center justify-center">
+                    <div className="bg-white border-2 border-dashed border-gray-300 rounded-xl h-[400px] flex items-center justify-center">
                       <div className="text-center">
-                        <Eye size={48} className="text-gray-500 mx-auto mb-4" />
-                        <p className="text-gray-400">
+                        <Eye size={48} className="text-gray-300 mx-auto mb-4" />
+                        <p className="text-gray-500">
                           Click "Generate Preview" to see your certificate
                         </p>
                       </div>
@@ -178,11 +178,13 @@ const SmartTemplateEditor = () => {
                 </div>
 
                 {/* Generate Options */}
-                <div className="bg-white/5 rounded-xl p-4">
-                  <h4 className="text-white font-medium mb-4">Generate PDFs</h4>
+                <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                  <h4 className="text-[#2A1B5D] font-medium mb-4">
+                    Generate PDFs
+                  </h4>
                   <div className="space-y-3">
-                    <div className="bg-blue-500/10 border border-blue-400/40 rounded-lg p-3">
-                      <p className="text-sm text-blue-400">
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                      <p className="text-sm text-blue-700">
                         Ready to generate {dataSource.totalRows} certificate(s)
                       </p>
                     </div>
@@ -191,7 +193,7 @@ const SmartTemplateEditor = () => {
                       <button
                         onClick={() => handleGeneratePDFs(false)}
                         disabled={isGenerating}
-                        className="flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-500 hover:opacity-90 text-white rounded-lg transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-500 hover:opacity-90 text-white rounded-lg transition-opacity disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
                       >
                         <Download size={18} />
                         <span>
@@ -202,7 +204,7 @@ const SmartTemplateEditor = () => {
                       <button
                         onClick={() => handleGeneratePDFs(true)}
                         disabled={isGenerating}
-                        className="flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white rounded-lg transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-[#3834A8] to-[#2A1B5D] hover:opacity-90 text-white rounded-lg transition-opacity disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
                       >
                         <FileText size={18} />
                         <span>
@@ -211,7 +213,7 @@ const SmartTemplateEditor = () => {
                       </button>
                     </div>
 
-                    <p className="text-xs text-gray-400 text-center">
+                    <p className="text-xs text-gray-500 text-center">
                       Single PDF combines all certificates. Separate files
                       creates individual PDFs.
                     </p>

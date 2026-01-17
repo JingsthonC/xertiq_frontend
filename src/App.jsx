@@ -26,6 +26,10 @@ import IssuerDashboard from "./pages/IssuerDashboard";
 import SuperAdminDashboard from "./pages/SuperAdminDashboard";
 import LoadingSpinner from "./components/LoadingSpinner";
 import EmbeddableVerify from "./components/EmbeddableVerify";
+import LandingPage from "./pages/LandingPage";
+import IntegrationGuide from "./pages/IntegrationGuide";
+import TestWidget from "./pages/TestWidget";
+import IframeExamples from "./pages/IframeExamples";
 
 // Detect if running as Chrome extension
 const isExtension = () => {
@@ -108,7 +112,8 @@ const RootRedirect = () => {
       <Navigate to={isSuperAdmin ? "/super-admin" : "/dashboard"} replace />
     );
   }
-  return <Navigate to="/login" replace />;
+  // Show landing page for unauthenticated users
+  return <LandingPage />;
 };
 
 function App() {
@@ -172,6 +177,18 @@ function App() {
     {
       path: "/verify",
       element: <Verify />, // Public route - no authentication required
+    },
+    {
+      path: "/integration-guide",
+      element: <IntegrationGuide />, // Public route - documentation
+    },
+    {
+      path: "/test-widget",
+      element: <TestWidget />, // Public route - testing page
+    },
+    {
+      path: "/iframe-examples",
+      element: <IframeExamples />, // Public route - iframe examples
     },
     {
       path: "/embed/verify",
