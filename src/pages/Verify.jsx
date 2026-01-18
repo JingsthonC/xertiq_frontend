@@ -22,6 +22,7 @@ import {
   EyeOff,
 } from "lucide-react";
 import apiService from "../services/api";
+import xertiqLogo from "../assets/xertiq_logo.png";
 
 const Verify = () => {
   const [verificationData, setVerificationData] = useState(null);
@@ -101,8 +102,12 @@ const Verify = () => {
           <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12">
             {/* Hero Header */}
             <div className="text-center mb-16 space-y-6">
-              <div className="inline-flex items-center justify-center w-28 h-28 bg-gradient-to-br from-[#3834A8] to-[#2A1B5D] rounded-3xl shadow-2xl shadow-[#3834A8]/50 transform hover:scale-110 hover:rotate-3 transition-all duration-500">
-                <Shield size={56} className="text-gray-800" />
+              <div className="inline-flex items-center justify-center w-28 h-28 bg-white rounded-3xl shadow-2xl shadow-[#3834A8]/30 transform hover:scale-110 hover:rotate-3 transition-all duration-500 p-3">
+                <img
+                  src={xertiqLogo}
+                  alt="XertiQ"
+                  className="w-full h-full object-contain"
+                />
               </div>
               <div>
                 <h1 className="text-6xl sm:text-7xl lg:text-8xl font-black mb-4">

@@ -26,6 +26,11 @@
     theme: "light",
   };
 
+  // Asset URLs (hosted on CDN)
+  const assets = {
+    logo: "https://xertiq-frontend.vercel.app/xertiq_logo.png",
+  };
+
   // Widget state
   let config = { ...defaultConfig };
   let containerElement = null;
@@ -101,13 +106,18 @@
       .xertiq-widget-icon {
         width: 64px;
         height: 64px;
-        background: #2d3748;
+        background: transparent;
         border-radius: 1rem;
         display: inline-flex;
         align-items: center;
-        justify-center;
+        justify-content: center;
         margin-bottom: 1rem;
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      }
+
+      .xertiq-widget-icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
       }
 
       .xertiq-widget-icon svg {
@@ -927,7 +937,7 @@
       .xertiq-widget-powered-by {
         display: inline-flex;
         align-items: center;
-        justify-center;
+        justify-content: center;
         gap: 0.5rem;
         background: rgba(255, 255, 255, 0.8);
         backdrop-filter: blur(4px);
@@ -936,6 +946,12 @@
         box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
         border: 1px solid rgba(74, 85, 104, 0.3);
         margin-bottom: 0.5rem;
+      }
+
+      .xertiq-widget-powered-by img {
+        width: 20px;
+        height: 20px;
+        object-fit: contain;
       }
 
       .xertiq-widget-powered-label {
@@ -1058,7 +1074,7 @@
     html += `
       <div class="xertiq-widget-header">
         <div class="xertiq-widget-icon">
-          ${icons.shield}
+          <img src="${assets.logo}" alt="XertiQ" />
         </div>
         <h1 class="xertiq-widget-title">Document Verification</h1>
         <p class="xertiq-widget-subtitle">Verify blockchain-secured documents instantly</p>
@@ -1621,7 +1637,7 @@
     html += `
       <div class="xertiq-widget-footer">
         <div class="xertiq-widget-powered-by">
-          ${icons.shield}
+          <img src="${assets.logo}" alt="XertiQ" />
           <span class="xertiq-widget-powered-label">Powered by:</span>
           <a href="https://xertiq.com" target="_blank" rel="noopener noreferrer" class="xertiq-widget-brand-link">
             XertiQ

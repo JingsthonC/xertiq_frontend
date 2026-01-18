@@ -34,6 +34,11 @@
     maxWidth: "800px",
   };
 
+  // Asset URLs (hosted on CDN)
+  const assets = {
+    logo: "https://xertiq-frontend.vercel.app/xertiq_logo.png",
+  };
+
   // Widget state
   let config = { ...defaultConfig };
   let containerElement = null;
@@ -62,13 +67,16 @@
     .xertiq-widget-icon {
       width: 56px;
       height: 56px;
-      background: linear-gradient(135deg, #4A70A9, #3A5A89);
-      border-radius: 12px;
       margin: 0 auto 16px;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 4px 8px rgba(74, 112, 169, 0.3);
+    }
+
+    .xertiq-widget-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
     }
 
     .xertiq-widget-title {
@@ -452,7 +460,7 @@
         headers: {
           "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -536,8 +544,8 @@
               university.logo
                 ? `
               <img src="${university.logo}" alt="${
-                    university.name || "University"
-                  }" class="xertiq-widget-logo" />
+                university.name || "University"
+              }" class="xertiq-widget-logo" />
             `
                 : ""
             }
@@ -645,7 +653,7 @@
     return `
       <div class="xertiq-widget-container">
         <div class="xertiq-widget-header">
-          <div class="xertiq-widget-icon">${icons.shield}</div>
+          <div class="xertiq-widget-icon"><img src="${assets.logo}" alt="XertiQ" /></div>
           <div class="xertiq-widget-title">Document Verification</div>
           <div class="xertiq-widget-subtitle">Verify blockchain-secured documents</div>
         </div>
@@ -656,7 +664,7 @@
 
         <div class="xertiq-widget-branding">
           <div class="xertiq-widget-badge">
-            <span class="xertiq-widget-badge-icon">${icons.shieldSmall}</span>
+            <img src="${assets.logo}" alt="XertiQ" style="width: 16px; height: 16px; object-fit: contain;" />
             <span class="xertiq-widget-badge-text">Powered by:</span>
             <a href="https://xertiq.com" target="_blank" rel="noopener noreferrer" class="xertiq-widget-badge-link">
               XertiQ
@@ -753,7 +761,7 @@
 
     if (!containerElement) {
       console.error(
-        `XertiQ Widget: Container element "${containerId}" not found`
+        `XertiQ Widget: Container element "${containerId}" not found`,
       );
       return;
     }

@@ -227,6 +227,7 @@ import {
 } from "lucide-react";
 import apiService from "../services/api";
 import useWalletStore from "../store/wallet";
+import xertiqLogo from "../assets/xertiq_logo.png";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -245,7 +246,7 @@ const Login = () => {
     try {
       const response = await apiService.login(
         formData.email,
-        formData.password
+        formData.password,
       );
 
       if (response.success && response.token && response.user) {
@@ -260,7 +261,7 @@ const Login = () => {
       console.error("Login failed:", error);
       setError(
         error.response?.data?.message ||
-          "Login failed. Please check your credentials and try again."
+          "Login failed. Please check your credentials and try again.",
       );
     } finally {
       setIsLoading(false);
@@ -270,22 +271,23 @@ const Login = () => {
   return (
     <div className="min-h-screen flex flex-col lg:flex-row">
       {/* Left Side - Blockchain Network Background */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#2A1B5D] via-[#3834A8] to-[#1F1449] relative overflow-hidden items-center justify-center order-1">
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#3D2D7A] via-[#4A48C4] to-[#352668] relative overflow-hidden items-center justify-center order-1">
         {/* XERTIQ Logo at top */}
-        <div className="absolute top-8 left-1/2 -translate-x-1/2 z-20 flex items-center space-x-3">
-          <div className="w-14 h-14 bg-white rounded-lg flex items-center justify-center shadow-lg">
-            <span className="text-3xl font-bold text-[#2A1B5D]">X</span>
-          </div>
-          <h1 className="text-4xl font-bold text-white tracking-wide">
-            XERTIQ
-          </h1>
+        <div className="absolute top-8 left-1/2 -translate-x-1/2 z--1 flex justify-start space-x-3">
+          {/* <div className="w-24 h-24 bg-white rounded-xl flex items-center justify-center shadow-xl p-2"> */}
+          <img
+            src={xertiqLogo}
+            alt="XertiQ"
+            className="w-full h-full object-contain"
+          />
+          {/* </div> */}
         </div>
 
         {/* Blockchain Network Visualization */}
         <div className="relative w-full h-full">
           {/* Shield Badges with 3D effect - matching the reference image */}
           <div
-            className="absolute top-[12%] left-1/2 -translate-x-1/2 w-32 h-36 animate-float"
+            className="absolute top-[20%] left-1/2 -translate-x-1/2 w-32 h-36 animate-float"
             style={{ animationDuration: "4s" }}
           >
             <div className="relative w-full h-full drop-shadow-2xl">
