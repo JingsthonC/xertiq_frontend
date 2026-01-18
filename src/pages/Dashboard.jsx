@@ -280,7 +280,7 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#f7fafc] to-[#e6f2ff]">
+    <div className="min-h-screen bg-primary-50">
       <Header />
       <NavigationHeader title="Dashboard" showBack={false} />
 

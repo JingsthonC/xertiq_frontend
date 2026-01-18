@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import useWalletStore from "../store/wallet";
+import favico from "/icons/xertiq_favico.png";
 
 const Header = () => {
   const { user, userRole, setUserRole, logout, credits } = useWalletStore();
@@ -25,15 +26,15 @@ const Header = () => {
   const isSuperAdmin = normalizedRole === "SUPER_ADMIN";
 
   return (
-    <header className="bg-white border-b border-gray-200 p-4 sticky top-0 z-50 overflow-visible shadow-sm">
+    <header className="bg-primary-50 border-b border-gray-200 p-4 sticky top-0 z-50 overflow-visible shadow-sm">
       <div className="flex items-center justify-between relative overflow-visible">
         {/* Logo and Title */}
         <div className="flex items-center space-x-4">
-          <div className="w-10 h-10 bg-gradient-to-r from-[#3834A8] to-[#2A1B5D] rounded-2xl flex items-center justify-center shadow-lg">
-            <Shield size={20} className="text-white" />
+          <div className="w-10 h-10 rounded-2xl flex items-center justify-center shadow-lg">
+            <img src={favico} alt="XertiQ" className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-[#2A1B5D]">XertiQ Wallet</h1>
+            <h1 className="text-xl font-bold text-[#2A1B5D]">XertiQ</h1>
             <div className="flex items-center space-x-2">
               <div
                 className={`w-2 h-2 rounded-full ${
