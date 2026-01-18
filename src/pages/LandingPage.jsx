@@ -16,6 +16,8 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { useState } from "react";
+import xertiqLogo from "../assets/xertiq_logo.png";
+import xertiqJumbotron from "../assets/xertiq_jumbotron.png";
 
 const LandingPage = () => {
   const [activeFaq, setActiveFaq] = useState(null);
@@ -127,27 +129,27 @@ const LandingPage = () => {
 
   const testimonials = [
     {
-      name: "Maria Santos",
-      role: "Registrar • University of Manila",
-      initials: "MS",
+      name: "Alex Johnson",
+      role: "HR Manager",
+      initials: "AJ",
       quote:
-        "XertiQ transformed how we issue and verify diplomas. No more fake certificates slipping through.",
+        "The verification process is incredibly fast and reliable. It has streamlined our credential checking workflow.",
       rating: 5,
     },
     {
-      name: "John Cruz",
-      role: "HR Director • Tech Innovations Inc",
-      initials: "JC",
+      name: "Sarah Chen",
+      role: "Training Coordinator",
+      initials: "SC",
       quote:
-        "Verifying job applicant credentials is now instant. XertiQ saved us countless hours.",
+        "Easy to use and integrate. The blockchain verification gives us confidence in document authenticity.",
       rating: 5,
     },
     {
-      name: "Dr. Ana Reyes",
-      role: "Training Director • Medical Institute",
-      initials: "AR",
+      name: "Michael Torres",
+      role: "IT Administrator",
+      initials: "MT",
       quote:
-        "Our certification program needed blockchain verification. XertiQ made it effortless to implement.",
+        "Setup was straightforward and the support team was helpful. Great solution for certificate management.",
       rating: 5,
     },
   ];
@@ -172,8 +174,7 @@ const LandingPage = () => {
             href="#"
             className="flex items-center gap-3 text-2xl font-bold text-[#2d3748] no-underline"
           >
-            <Shield size={32} />
-            <span>XertiQ</span>
+            <img src={xertiqLogo} alt="XertiQ" className="h-10 w-auto" />
           </a>
           <div className="hidden md:flex gap-8">
             <button
@@ -211,9 +212,16 @@ const LandingPage = () => {
       </nav>
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-[#667eea] to-[#764ba2] text-white py-24 px-5 text-center">
+      <section
+        className="bg-gradient-to-br from-[#667eea] to-[#764ba2] text-white py-24 px-5 text-center relative overflow-hidden"
+        style={{
+          backgroundImage: `linear-gradient(rgba(102, 126, 234, 0.85), rgba(118, 75, 162, 0.85)), url(${xertiqJumbotron})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
         <h1 className="text-5xl md:text-6xl font-bold mb-6 animate-[fadeInUp_0.8s]">
-          🛡️ Blockchain-Secured Document Verification
+          Blockchain-Secured Document Verification
         </h1>
         <p className="text-xl md:text-2xl mb-8 opacity-95 animate-[fadeInUp_0.8s_0.2s_both]">
           Embed verification widgets on any website - just like HubSpot forms
@@ -304,10 +312,10 @@ const LandingPage = () => {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-4xl md:text-5xl font-bold mb-4 text-[#2d3748]">
-              Trusted by Organizations Worldwide
+              What Our Users Say
             </h2>
             <p className="text-xl text-[#4a5568]">
-              Hear from institutions who trust XertiQ
+              Feedback from our community
             </p>
           </div>
 
@@ -572,12 +580,16 @@ const LandingPage = () => {
         <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-10 mb-10">
           <div>
             <h3 className="text-xl font-semibold mb-5 flex items-center gap-2">
-              <Shield size={24} />
+              <img
+                src={xertiqLogo}
+                alt="XertiQ"
+                className="h-8 w-auto brightness-0 invert"
+              />
               XertiQ
             </h3>
             <p className="text-gray-300 leading-relaxed">
-              Blockchain-secured document verification platform. Trusted by
-              institutions worldwide.
+              Blockchain-secured document verification platform for secure
+              credential management.
             </p>
           </div>
           <div>

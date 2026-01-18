@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { ArrowLeft, Shield, Code, Copy, CheckCircle } from "lucide-react";
 import { useState } from "react";
+import xertiqLogo from "../assets/xertiq_logo.png";
 
 const IntegrationGuide = () => {
   const [activeTab, setActiveTab] = useState("javascript");
@@ -68,8 +69,12 @@ const IntegrationGuide = () => {
             Back to Home
           </Link>
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-gradient-to-br from-[#667eea] to-[#764ba2] rounded-2xl flex items-center justify-center">
-              <Shield size={32} className="text-white" />
+            <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-md border border-gray-100 p-2">
+              <img
+                src={xertiqLogo}
+                alt="XertiQ"
+                className="w-full h-full object-contain"
+              />
             </div>
             <div>
               <h1 className="text-3xl font-bold text-[#2d3748]">

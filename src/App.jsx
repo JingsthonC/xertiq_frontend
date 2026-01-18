@@ -128,7 +128,7 @@ function App() {
       try {
         // Check for stored authentication
         const storedAuth = await chromeService.getStorage(
-          "xertiq-wallet-storage"
+          "xertiq-wallet-storage",
         );
 
         if (storedAuth?.state?.token && storedAuth?.state?.user) {

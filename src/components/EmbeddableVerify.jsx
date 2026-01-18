@@ -13,6 +13,7 @@ import {
   GraduationCap,
 } from "lucide-react";
 import apiService from "../services/api";
+import xertiqLogo from "../assets/xertiq_logo.png";
 
 /**
  * Embeddable Verification Widget
@@ -83,8 +84,12 @@ const EmbeddableVerify = () => {
       <div className="max-w-3xl mx-auto">
         {/* Compact Header */}
         <div className="text-center mb-4">
-          <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 bg-dark rounded-xl mb-3 shadow-md">
-            <Shield size={24} className="text-lightest sm:w-7 sm:h-7" />
+          <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 bg-white rounded-xl mb-3 shadow-md p-2">
+            <img
+              src={xertiqLogo}
+              alt="XertiQ"
+              className="w-full h-full object-contain"
+            />
           </div>
           <h1 className="text-xl sm:text-2xl font-bold text-dark mb-1">
             Document Verification
@@ -202,7 +207,7 @@ const EmbeddableVerify = () => {
                         <p className="text-xs text-dark mb-1">Issued</p>
                         <p className="text-sm font-semibold text-gray-800">
                           {new Date(
-                            verificationData.holder.dateIssued
+                            verificationData.holder.dateIssued,
                           ).toLocaleDateString()}
                         </p>
                       </div>
@@ -294,7 +299,11 @@ const EmbeddableVerify = () => {
         {/* Powered by XertiQ - Always Visible */}
         <div className="mt-6 text-center py-3">
           <div className="inline-flex items-center justify-center space-x-2 bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 shadow-sm border border-light">
-            <Shield size={14} className="text-dark" />
+            <img
+              src={xertiqLogo}
+              alt="XertiQ"
+              className="w-4 h-4 object-contain"
+            />
             <span className="text-xs font-medium text-dark">Powered by:</span>
             <a
               href="https://xertiq.com"
