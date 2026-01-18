@@ -146,7 +146,7 @@ const NavigationHeader = ({ title, showBack = true }) => {
                       {index > 0 && <span className="text-gray-500">/</span>}
                       <button
                         onClick={() => navigate(crumb.path)}
-                        className="flex items-center space-x-1 text-gray-400 hover:text-white transition-colors"
+                        className="flex items-center space-x-1 text-primary-600 hover:text-primary-400 hover:shadow-lg transition-colors"
                       >
                         <crumb.icon size={12} />
                         <span className="truncate max-w-20">{crumb.name}</span>
@@ -156,8 +156,8 @@ const NavigationHeader = ({ title, showBack = true }) => {
                 </div>
               ) : (
                 <div className="flex items-center space-x-2">
-                  <Home size={14} className="text-[#00E5FF]" />
-                  <h1 className="text-sm font-semibold text-white truncate">
+                  <Home size={14} className="text-primary-600" />
+                  <h1 className="text-sm font-semibold text-primary-600 truncate">
                     {getPageTitle()}
                   </h1>
                 </div>
@@ -217,8 +217,8 @@ const NavigationHeader = ({ title, showBack = true }) => {
                         location.pathname === item.path
                           ? "bg-[#3834A8]/20 border border-[#00E5FF]/30 text-[#00E5FF]"
                           : item.highlight
-                          ? "bg-gradient-to-r from-green-500/20 to-brand-primary/20 border border-green-400/30 text-green-300 hover:from-green-500/30 hover:to-brand-primary/30"
-                          : "text-gray-300 hover:bg-white/10 hover:text-white"
+                            ? "bg-gradient-to-r from-green-500/20 to-brand-primary/20 border border-green-400/30 text-green-300 hover:from-green-500/30 hover:to-brand-primary/30"
+                            : "text-gray-300 hover:bg-white/10 hover:text-white"
                       }`}
                     >
                       <div
@@ -226,8 +226,8 @@ const NavigationHeader = ({ title, showBack = true }) => {
                           location.pathname === item.path
                             ? "bg-[#3834A8]/30"
                             : item.highlight
-                            ? "bg-green-500/30"
-                            : "bg-white/10"
+                              ? "bg-green-500/30"
+                              : "bg-white/10"
                         }`}
                       >
                         <item.icon size={16} />
