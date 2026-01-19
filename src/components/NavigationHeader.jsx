@@ -9,6 +9,7 @@ import {
   Upload,
   CheckCircle,
   Coins,
+  Key,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import useWalletStore from "../store/wallet";
@@ -92,6 +93,12 @@ const NavigationHeader = ({ title, showBack = true }) => {
       name: "Batch Upload",
       path: "/batch-upload",
       icon: Upload,
+      visible: normalizedRole === "ISSUER" && !isSuperAdmin,
+    },
+    {
+      name: "Key Management",
+      path: "/key-management",
+      icon: Key,
       visible: normalizedRole === "ISSUER" && !isSuperAdmin,
     },
     {

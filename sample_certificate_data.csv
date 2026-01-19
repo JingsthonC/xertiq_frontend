@@ -1,4 +1,4 @@
-name,email,birthday,course,date,supervisor,hours,certificateId
-Jingsthon Castillo,castillojingsthon@gmail.com,18-Oct-90,Web Development Fundamentals,October 16 2025,Dr. Sarah Johnson,240,CERT-2025-001
-Zarah Castillo,zarapoc@gmail.com,27-Jun-91,Advanced Data Science,October 16 2025,Dr. Sarah Johnson,240,CERT-2025-002
-John Zedric Castillo,castillojohnzerick@gmai.com,27-Jun-18,Advanced Data Science,October 16 2025,Dr. Sarah Johnson,240,CERT-2025-003
+name,email,birthday,course,date,supervisor,hours,certificateId,holder_number,gender
+Jingsthon Castillo,castillojingsthon@gmail.com,18-Oct-90,Web Development Fundamentals,October 16 2025,Dr. Sarah Johnson,240,CERT-2025-001,SN-2026-01,male
+Zarah Castillo,zarapoc@gmail.com,27-Jun-91,Advanced Data Science,October 16 2025,Dr. Sarah Johnson,240,CERT-2025-002,SN-2026-02,female
+,,,,,,,,,

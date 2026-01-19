@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import apiService from "../services/api";
 import xertiqLogo from "../assets/xertiq_logo.png";
+import { createDocTypeBadge } from "../utils/documentTypeConfig";
 
 const Verify = () => {
   const [verificationData, setVerificationData] = useState(null);
@@ -39,13 +40,14 @@ const Verify = () => {
     const urlParams = new URLSearchParams(window.location.search);
     const docId = urlParams.get("doc");
     const hash = urlParams.get("hash");
+    const key = urlParams.get("key");
 
     if (docId || hash) {
-      handleVerification(docId || hash);
+      handleVerification(docId || hash, key);
     }
   }, []);
 
-  const handleVerification = async (query) => {
+  const handleVerification = async (query, accessKey = null) => {
     if (!query) {
       setError("Please enter a document ID or hash");
       return;
@@ -55,7 +57,7 @@ const Verify = () => {
     setError("");
 
     try {
-      const data = await apiService.verifyDocument(query);
+      const data = await apiService.verifyDocument(query, accessKey);
 
       if (data.valid) {
         setVerificationData(data);
@@ -64,7 +66,15 @@ const Verify = () => {
       }
     } catch (err) {
       console.error("Verification failed:", err);
-      setError("Failed to verify document. Please try again.");
+
+      // Check for access denied error
+      if (err.response?.status === 403) {
+        setError("Access Denied - Invalid or missing verification key");
+      } else if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else {
+        setError("Failed to verify document. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -589,9 +599,23 @@ const Verify = () => {
                             <p className="text-xs font-semibold text-[#3834A8] uppercase tracking-wide mb-2">
                               Document Type
                             </p>
-                            <p className="text-lg font-bold text-[#2A1B5D] capitalize">
-                              {verificationData.document.docType}
-                            </p>
+                            <div className="flex items-center gap-2">
+                              <span className="text-2xl">
+                                {
+                                  createDocTypeBadge(
+                                    verificationData.document.docType,
+                                  ).icon
+                                }
+                              </span>
+                              <p className="text-lg font-bold text-[#2A1B5D]">
+                                {
+                                  createDocTypeBadge(
+                                    verificationData.document.docType,
+                                    false,
+                                  ).label
+                                }
+                              </p>
+                            </div>
                           </div>
                         )}
 
@@ -1250,95 +1274,6 @@ const Verify = () => {
                               )}
                             </div>
                           )}
-
-                          {/* Holder Verify URL */}
-                          {verificationData.access.holderVerifyUrl && (
-                            <div className="sm:col-span-2 bg-gradient-to-r from-cyan-50 to-blue-50 border border-cyan-200 rounded-xl p-4 transition-all">
-                              <div className="flex items-center justify-between mb-3">
-                                <div className="flex items-center space-x-3">
-                                  <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-lg flex items-center justify-center">
-                                    <Shield size={20} className="text-white" />
-                                  </div>
-                                  <div>
-                                    <p className="font-semibold text-cyan-700">
-                                      Holder Verification URL
-                                    </p>
-                                    <p className="text-xs text-gray-500">
-                                      Share this link to verify this document
-                                    </p>
-                                  </div>
-                                </div>
-                                <button
-                                  onClick={() =>
-                                    copyToClipboard(
-                                      verificationData.access.holderVerifyUrl,
-                                    )
-                                  }
-                                  className="p-2 hover:bg-cyan-100 rounded-lg transition-colors"
-                                >
-                                  {copied ? (
-                                    <Check
-                                      size={18}
-                                      className="text-green-600"
-                                    />
-                                  ) : (
-                                    <Copy size={18} className="text-cyan-600" />
-                                  )}
-                                </button>
-                              </div>
-                              <div className="bg-white/60 rounded-lg p-3">
-                                <p className="text-sm font-mono text-[#2A1B5D] break-all">
-                                  {verificationData.access.holderVerifyUrl}
-                                </p>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* API Verify URL */}
-                          {verificationData.access.apiVerifyUrl && (
-                            <div className="sm:col-span-2 bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-xl p-4 transition-all">
-                              <div className="flex items-center justify-between mb-3">
-                                <div className="flex items-center space-x-3">
-                                  <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-indigo-500 rounded-lg flex items-center justify-center">
-                                    <Zap size={20} className="text-white" />
-                                  </div>
-                                  <div>
-                                    <p className="font-semibold text-purple-700">
-                                      API Verification Endpoint
-                                    </p>
-                                    <p className="text-xs text-gray-500">
-                                      For programmatic verification
-                                    </p>
-                                  </div>
-                                </div>
-                                <button
-                                  onClick={() =>
-                                    copyToClipboard(
-                                      verificationData.access.apiVerifyUrl,
-                                    )
-                                  }
-                                  className="p-2 hover:bg-purple-100 rounded-lg transition-colors"
-                                >
-                                  {copied ? (
-                                    <Check
-                                      size={18}
-                                      className="text-green-600"
-                                    />
-                                  ) : (
-                                    <Copy
-                                      size={18}
-                                      className="text-purple-600"
-                                    />
-                                  )}
-                                </button>
-                              </div>
-                              <div className="bg-white/60 rounded-lg p-3">
-                                <p className="text-sm font-mono text-[#2A1B5D] break-all">
-                                  {verificationData.access.apiVerifyUrl}
-                                </p>
-                              </div>
-                            </div>
-                          )}
                         </div>
                       </div>
                     )}
@@ -1703,121 +1638,6 @@ const Verify = () => {
                               {verificationData.batch.merkleRoot}
                             </p>
                           </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Blockchain Information */}
-                  {verificationData.verification && (
-                    <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-lg">
-                      <h3 className="text-xl font-bold text-[#2A1B5D] mb-4 flex items-center space-x-2">
-                        <Hash size={24} className="text-[#3834A8]" />
-                        <span>Blockchain Information</span>
-                      </h3>
-                      <div className="space-y-4">
-                        {verificationData.verification.blockchain_network && (
-                          <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-                            <p className="text-sm font-semibold text-[#3834A8] mb-1">
-                              Network
-                            </p>
-                            <p className="text-base font-medium text-[#2A1B5D]">
-                              {verificationData.verification.blockchain_network}
-                            </p>
-                          </div>
-                        )}
-
-                        {/* Document Hash */}
-                        {(verificationData.document?.hash ||
-                          verificationData.verification?.document_hash) && (
-                          <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-                            <div className="flex items-center justify-between mb-2">
-                              <p className="text-sm font-semibold text-[#3834A8]">
-                                Document Hash
-                              </p>
-                              <button
-                                onClick={() =>
-                                  copyToClipboard(
-                                    verificationData.document?.hash ||
-                                      verificationData.verification
-                                        ?.document_hash,
-                                  )
-                                }
-                                className="p-1.5 hover:bg-white rounded-lg transition-colors"
-                              >
-                                {copied ? (
-                                  <Check size={16} className="text-green-600" />
-                                ) : (
-                                  <Copy size={16} className="text-[#3834A8]" />
-                                )}
-                              </button>
-                            </div>
-                            <p className="text-sm font-mono text-[#2A1B5D] break-all">
-                              {verificationData.document?.hash ||
-                                verificationData.verification?.document_hash}
-                            </p>
-                          </div>
-                        )}
-
-                        {/* Transaction Signature/Hash */}
-                        {(verificationData.verification
-                          ?.transaction_signature ||
-                          verificationData.batch?.transactionSignature ||
-                          verificationData.document?.transactionHash ||
-                          verificationData.technical?.txSig) && (
-                          <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-                            <div className="flex items-center justify-between mb-2">
-                              <p className="text-sm font-semibold text-[#3834A8]">
-                                Transaction Signature
-                              </p>
-                              <button
-                                onClick={() =>
-                                  copyToClipboard(
-                                    verificationData.verification
-                                      ?.transaction_signature ||
-                                      verificationData.batch
-                                        ?.transactionSignature ||
-                                      verificationData.document
-                                        ?.transactionHash ||
-                                      verificationData.technical?.txSig,
-                                  )
-                                }
-                                className="p-1.5 hover:bg-white rounded-lg transition-colors"
-                              >
-                                {copied ? (
-                                  <Check size={16} className="text-green-600" />
-                                ) : (
-                                  <Copy size={16} className="text-[#3834A8]" />
-                                )}
-                              </button>
-                            </div>
-                            <p className="text-sm font-mono text-[#2A1B5D] break-all">
-                              {verificationData.verification
-                                ?.transaction_signature ||
-                                verificationData.batch?.transactionSignature ||
-                                verificationData.document?.transactionHash ||
-                                verificationData.technical?.txSig}
-                            </p>
-                          </div>
-                        )}
-
-                        {/* Blockchain Explorer Link */}
-                        {(verificationData.verification?.explorer_url ||
-                          verificationData.batch?.explorerUrl ||
-                          verificationData.access?.blockchainExplorer) && (
-                          <a
-                            href={
-                              verificationData.verification?.explorer_url ||
-                              verificationData.batch?.explorerUrl ||
-                              verificationData.access?.blockchainExplorer
-                            }
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center space-x-2 bg-gradient-to-r from-[#3834A8] to-[#2A1B5D] hover:from-[#2A1B5D] hover:to-[#3834A8] text-white rounded-xl px-6 py-3 font-semibold transition-all shadow-lg"
-                          >
-                            <ExternalLink size={18} />
-                            <span>View on Blockchain Explorer</span>
-                          </a>
                         )}
                       </div>
                     </div>

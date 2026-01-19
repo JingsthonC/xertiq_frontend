@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 import {
   Upload,
@@ -17,6 +17,7 @@ import {
 import apiService from "../services/api";
 import Header from "../components/Header";
 import NavigationHeader from "../components/NavigationHeader";
+import BatchProgressModal from "../components/BatchProgressModal";
 
 // Detect if running as Chrome extension
 const isExtension = () => {
@@ -36,6 +37,62 @@ const BatchUpload = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadResult, setUploadResult] = useState(null);
   const [error, setError] = useState("");
+  const [sessionId, setSessionId] = useState(null);
+  const [showProgress, setShowProgress] = useState(false);
+  const [selectedDocType, setSelectedDocType] = useState("DIPLOMA");
+  const [documentTypes, setDocumentTypes] = useState([]);
+  const [requiredFields, setRequiredFields] = useState([]);
+
+  // Fetch document types on mount
+  useEffect(() => {
+    fetchDocumentTypes();
+  }, []);
+
+  const fetchDocumentTypes = async () => {
+    try {
+      const response = await apiService.getDocumentTypes();
+      setDocumentTypes(response.documentTypes || []);
+
+      // Set initial required fields
+      if (response.documentTypes && response.documentTypes.length > 0) {
+        const selected = response.documentTypes.find(
+          (t) => t.value === selectedDocType,
+        );
+        if (selected) {
+          setRequiredFields(selected.requiredFields || []);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch document types:", error);
+    }
+  };
+
+  const handleDocTypeChange = (docType) => {
+    setSelectedDocType(docType);
+    const selected = documentTypes.find((t) => t.value === docType);
+    if (selected) {
+      setRequiredFields(selected.requiredFields || []);
+    }
+  };
+
+  const downloadSampleCsv = async () => {
+    try {
+      const csvContent = await apiService.downloadSampleCsv(selectedDocType);
+      // Trigger download
+      const blob = new Blob([csvContent], { type: "text/csv" });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `sample_${selectedDocType.toLowerCase()}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error("Failed to download sample CSV:", error);
+      setError("Failed to download sample CSV");
+    }
+  };
 
   // Dropzone for PDF files
   const onDropPdf = useCallback(
@@ -231,9 +288,13 @@ const BatchUpload = () => {
 
     setIsUploading(true);
     setError("");
+    setUploadResult(null);
 
     try {
       const formData = new FormData();
+
+      // Add document type
+      formData.append("docType", selectedDocType);
 
       // Add PDF certificate files
       pdfFiles.forEach((fileData) => {
@@ -243,12 +304,21 @@ const BatchUpload = () => {
       // Add CSV metadata file
       formData.append("metadata", csvFile.file);
 
+      // Get session ID from backend
       const response = await apiService.createBatch(formData);
-      setUploadResult(response);
-      setPdfFiles([]);
-      setCsvFile(null);
-      setCsvData([]);
-      setComparison(null);
+
+      // Backend now returns sessionId immediately
+      if (response.sessionId) {
+        setSessionId(response.sessionId);
+        setShowProgress(true);
+      } else {
+        // Fallback for old response format
+        setUploadResult(response);
+        setPdfFiles([]);
+        setCsvFile(null);
+        setCsvData([]);
+        setComparison(null);
+      }
     } catch (err) {
       console.error("Batch upload failed:", err);
       setError(
@@ -257,6 +327,37 @@ const BatchUpload = () => {
     } finally {
       setIsUploading(false);
     }
+  };
+
+  const handleProgressComplete = (progressData) => {
+    // Progress data contains: { status, totalDocuments, successfulDocuments, failedDocuments, documents, finalResult }
+    // The finalResult contains the actual batch result from backend
+    console.log("Progress complete:", progressData);
+
+    if (progressData.finalResult) {
+      // Use the final result from backend which has the proper structure
+      setUploadResult(progressData.finalResult);
+    } else {
+      // Fallback: construct from progress data
+      setUploadResult({
+        batchId: progressData.batchId || "N/A",
+        documentCount: progressData.successfulDocuments || 0,
+        totalDocuments: progressData.totalDocuments || 0,
+        failedDocuments: progressData.failedDocuments || 0,
+        documents: progressData.documents || [],
+      });
+    }
+
+    setShowProgress(false);
+    setPdfFiles([]);
+    setCsvFile(null);
+    setCsvData([]);
+    setComparison(null);
+  };
+
+  const handleProgressClose = () => {
+    setShowProgress(false);
+    setSessionId(null);
   };
 
   const isExt = isExtension();
@@ -533,6 +634,56 @@ const BatchUpload = () => {
               verification
             </p>
 
+            {/* Document Type Selector */}
+            <div className="bg-white border border-gray-200 rounded-2xl p-6 mb-6 shadow-sm">
+              <h3 className="text-xl font-bold text-[#2A1B5D] mb-4">
+                Step 1: Select Document Type
+              </h3>
+
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-4">
+                {documentTypes.map((type) => (
+                  <button
+                    key={type.value}
+                    onClick={() => handleDocTypeChange(type.value)}
+                    className={`p-4 rounded-xl border-2 transition-all ${
+                      selectedDocType === type.value
+                        ? "border-[#3834A8] bg-[#3834A8]/10 shadow-md"
+                        : "border-gray-200 bg-white hover:border-[#3834A8]/50 hover:shadow-sm"
+                    }`}
+                  >
+                    <div className="text-3xl mb-2">{type.icon}</div>
+                    <div className="text-sm font-semibold text-[#2A1B5D] mb-1">
+                      {type.label}
+                    </div>
+                    <div className="text-xs text-gray-500">{type.category}</div>
+                  </button>
+                ))}
+              </div>
+
+              {selectedDocType && (
+                <div className="p-4 bg-[#00b8d4]/10 border border-[#00b8d4]/30 rounded-xl">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold text-[#00b8d4] mb-2">
+                        Required Fields: {requiredFields.join(", ")}
+                      </p>
+                      <p className="text-xs text-gray-600">
+                        Your CSV must include these fields along with the
+                        filename column.
+                      </p>
+                    </div>
+                    <button
+                      onClick={downloadSampleCsv}
+                      className="ml-4 px-4 py-2 bg-[#00b8d4]/20 hover:bg-[#00b8d4]/30 border border-[#00b8d4]/30 rounded-lg text-[#00b8d4] text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap"
+                    >
+                      <Download size={16} />
+                      Sample CSV
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* CSV Format Information */}
             <div className="bg-[#3834A8]/10 border border-[#3834A8]/30 rounded-xl p-4">
               <h4 className="text-[#3834A8] font-semibold mb-2">
@@ -567,92 +718,94 @@ const BatchUpload = () => {
           </div>
 
           {/* Upload Result */}
-          {uploadResult && (
-            <div className="mb-8 bg-green-50 border border-green-300 rounded-2xl p-6 shadow-md">
-              <div className="flex items-center space-x-3 mb-4">
-                <CheckCircle size={24} className="text-green-500" />
-                <h3 className="text-xl font-bold text-[#2A1B5D]">
-                  Batch Upload Successful!
-                </h3>
-              </div>
+          {uploadResult &&
+            uploadResult.batchId &&
+            uploadResult.batchId !== "N/A" && (
+              <div className="mb-8 bg-green-50 border border-green-300 rounded-2xl p-6 shadow-md">
+                <div className="flex items-center space-x-3 mb-4">
+                  <CheckCircle size={24} className="text-green-500" />
+                  <h3 className="text-xl font-bold text-[#2A1B5D]">
+                    Batch Upload Successful!
+                  </h3>
+                </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div className="bg-white rounded-xl p-4 border border-gray-200">
-                  <p className="text-sm text-gray-500">Batch ID</p>
-                  <p className="text-[#2A1B5D] font-mono text-sm">
-                    {uploadResult.batchId}
-                  </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <div className="bg-white rounded-xl p-4 border border-gray-200">
+                    <p className="text-sm text-gray-500">Batch ID</p>
+                    <p className="text-[#2A1B5D] font-mono text-sm">
+                      {uploadResult.batchId}
+                    </p>
+                  </div>
+                  <div className="bg-white rounded-xl p-4 border border-gray-200">
+                    <p className="text-sm text-gray-500">Documents Processed</p>
+                    <p className="text-[#2A1B5D] font-bold text-xl">
+                      {uploadResult.documentCount}
+                    </p>
+                  </div>
+                  <div className="bg-white rounded-xl p-4 border border-gray-200">
+                    <p className="text-sm text-gray-500">Merkle Root</p>
+                    <p className="text-[#2A1B5D] font-mono text-xs break-all">
+                      {uploadResult.merkleRoot}
+                    </p>
+                  </div>
+                  <div className="bg-white rounded-xl p-4 border border-gray-200">
+                    <p className="text-sm text-gray-500">Blockchain Network</p>
+                    <p className="text-[#2A1B5D]">
+                      {uploadResult.verification?.blockchain_network}
+                    </p>
+                  </div>
                 </div>
-                <div className="bg-white rounded-xl p-4 border border-gray-200">
-                  <p className="text-sm text-gray-500">Documents Processed</p>
-                  <p className="text-[#2A1B5D] font-bold text-xl">
-                    {uploadResult.documentCount}
-                  </p>
-                </div>
-                <div className="bg-white rounded-xl p-4 border border-gray-200">
-                  <p className="text-sm text-gray-500">Merkle Root</p>
-                  <p className="text-[#2A1B5D] font-mono text-xs break-all">
-                    {uploadResult.merkleRoot}
-                  </p>
-                </div>
-                <div className="bg-white rounded-xl p-4 border border-gray-200">
-                  <p className="text-sm text-gray-500">Blockchain Network</p>
-                  <p className="text-[#2A1B5D]">
-                    {uploadResult.verification?.blockchain_network}
-                  </p>
-                </div>
-              </div>
 
-              {uploadResult.explorerUrl && (
-                <a
-                  href={uploadResult.explorerUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center space-x-2 bg-[#3834A8] hover:bg-[#2A1B5D] rounded-lg px-4 py-2 text-white transition-colors"
-                >
-                  <ExternalLink size={16} />
-                  <span>View on Solana Explorer</span>
-                </a>
-              )}
+                {uploadResult.explorerUrl && (
+                  <a
+                    href={uploadResult.explorerUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center space-x-2 bg-[#3834A8] hover:bg-[#2A1B5D] rounded-lg px-4 py-2 text-white transition-colors"
+                  >
+                    <ExternalLink size={16} />
+                    <span>View on Solana Explorer</span>
+                  </a>
+                )}
 
-              {/* Documents List */}
-              <div className="mt-6">
-                <h4 className="text-lg font-semibold text-[#2A1B5D] mb-3">
-                  Processed Documents
-                </h4>
-                <div className="grid gap-3 max-h-60 overflow-y-auto">
-                  {uploadResult.documents?.map((doc, index) => (
-                    <div
-                      key={index}
-                      className="bg-white rounded-lg p-3 flex items-center justify-between border border-gray-200"
-                    >
-                      <div>
-                        <p className="text-[#2A1B5D] font-medium">
-                          {doc.filename}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          {doc.student_name}
-                        </p>
+                {/* Documents List */}
+                <div className="mt-6">
+                  <h4 className="text-lg font-semibold text-[#2A1B5D] mb-3">
+                    Processed Documents
+                  </h4>
+                  <div className="grid gap-3 max-h-60 overflow-y-auto">
+                    {uploadResult.documents?.map((doc, index) => (
+                      <div
+                        key={index}
+                        className="bg-white rounded-lg p-3 flex items-center justify-between border border-gray-200"
+                      >
+                        <div>
+                          <p className="text-[#2A1B5D] font-medium">
+                            {doc.filename}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            {doc.student_name}
+                          </p>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          {doc.docId && (
+                            <a
+                              href={`${window.location.origin}/verify?doc=${doc.docId}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[#3834A8] hover:text-[#2A1B5D] text-sm"
+                            >
+                              Verify
+                            </a>
+                          )}
+                          <CheckCircle size={16} className="text-green-500" />
+                        </div>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        {doc.id && (
-                          <a
-                            href={`${window.location.origin}/verify?doc=${doc.id}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-[#3834A8] hover:text-[#2A1B5D] text-sm"
-                          >
-                            Verify
-                          </a>
-                        )}
-                        <CheckCircle size={16} className="text-green-500" />
-                      </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
           {/* Error Display */}
           {error && (
@@ -965,6 +1118,15 @@ const BatchUpload = () => {
             </div>
           )}
         </div>
+
+        {/* Progress Modal */}
+        {showProgress && sessionId && (
+          <BatchProgressModal
+            sessionId={sessionId}
+            onClose={handleProgressClose}
+            onComplete={handleProgressComplete}
+          />
+        )}
       </div>
     </div>
   );
