@@ -13,6 +13,8 @@ import {
   FolderOpen,
   Plus,
   Eye,
+  Copy,
+  CheckCircle,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import useWalletStore from "../store/wallet";
@@ -44,6 +46,7 @@ const IssuerDashboard = () => {
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState(null);
   const [previewDoc, setPreviewDoc] = useState(null); // { title, pdfUrl, docId }
+  const [copiedText, setCopiedText] = useState(null);
 
   // Quick actions for issuers
   const quickActions = [
@@ -162,6 +165,24 @@ const IssuerDashboard = () => {
         "PDF not available for this document. The document may not have been uploaded to IPFS yet.",
       );
     }
+  };
+
+  const copyToClipboard = (text, id) => {
+    navigator.clipboard.writeText(text);
+    setCopiedText(id);
+    showToast.success("Copied to clipboard!");
+    setTimeout(() => setCopiedText(null), 2000);
+  };
+
+  const getVerifyUrl = (doc) => {
+    // Issuer uses their own user ID as the access key
+    // This allows them to view documents they issued
+    // Holder keys remain private and are not exposed
+    if (user?.id) {
+      return `${window.location.origin}/verify?doc=${doc.docId || doc.id}&key=${user.id}`;
+    }
+    // Fallback to URL without key (limited access)
+    return `${window.location.origin}/verify?doc=${doc.docId || doc.id}`;
   };
 
   return (

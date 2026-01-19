@@ -1,10 +1,10 @@
 import axios from "axios";
 
 // Default to Render backend URL if VITE_API_BASE_URL is not set
-const API_BASE_URL = 
-  import.meta.env.VITE_API_BASE_URL || 
-  (import.meta.env.PROD 
-    ? "https://xertiq-backend.onrender.com/api" 
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  (import.meta.env.PROD
+    ? "https://xertiq-backend.onrender.com/api"
     : "http://localhost:3000/api");
 
 // Credit cost constants
@@ -44,7 +44,7 @@ class ApiService {
         }
         return config;
       },
-      (error) => Promise.reject(error)
+      (error) => Promise.reject(error),
     );
 
     // Add response interceptor for error handling
@@ -63,7 +63,7 @@ class ApiService {
           }
         }
         return Promise.reject(error);
-      }
+      },
     );
   }
 
@@ -150,7 +150,7 @@ class ApiService {
 
   async verifyPayMongoPaymentStatus(checkoutId) {
     const response = await this.api.get(
-      `/payments/paymongo/status/${checkoutId}`
+      `/payments/paymongo/status/${checkoutId}`,
     );
     return response.data;
   }
@@ -199,7 +199,7 @@ class ApiService {
 
   async revokeCertificate(certificateId) {
     const response = await this.api.post(
-      `/certificates/${certificateId}/revoke`
+      `/certificates/${certificateId}/revoke`,
     );
     return response.data;
   }
@@ -224,9 +224,30 @@ class ApiService {
     return response.data;
   }
 
+  // Document type operations
+  async getDocumentTypes() {
+    const response = await this.api.get("/batch/document-types");
+    // API returns { success: true, documentTypes: [...] }
+    return response.data.documentTypes || response.data;
+  }
+
+  async downloadSampleCsv(docType) {
+    const response = await this.api.get(
+      `/batch/document-types/${docType}/sample-csv`,
+      {
+        responseType: "text",
+      },
+    );
+    return response.data;
+  }
+
   // Verification
-  async verifyDocument(hash) {
-    const response = await this.api.get(`/verify?doc=${hash}`);
+  async verifyDocument(hash, accessKey = null) {
+    const params = new URLSearchParams({ doc: hash });
+    if (accessKey) {
+      params.append("key", accessKey);
+    }
+    const response = await this.api.get(`/verify?${params.toString()}`);
     return response.data;
   }
 
@@ -311,7 +332,7 @@ class ApiService {
       `/templates/${templateId}/visibility`,
       {
         isPublic,
-      }
+      },
     );
     return response.data;
   }
@@ -359,6 +380,24 @@ class ApiService {
 
   async getHolderStats() {
     const response = await this.api.get("/holder/stats");
+    return response.data;
+  }
+
+  // Holder key management
+  async getDocumentKeys(docId) {
+    const response = await this.api.get(`/holder/documents/${docId}/keys`);
+    return response.data;
+  }
+
+  async generateDocumentKey(docId) {
+    const response = await this.api.post(`/holder/documents/${docId}/keys`);
+    return response.data;
+  }
+
+  async deleteDocumentKey(docId, key) {
+    const response = await this.api.delete(`/holder/documents/${docId}/keys`, {
+      data: { key },
+    });
     return response.data;
   }
 
@@ -437,17 +476,23 @@ class ApiService {
 
   async getSuperAdminUserActivity(userId, params = {}) {
     const { page = 1, limit = 50, action, resource } = params;
-    const response = await this.api.get(`/super-admin/users/${userId}/activity`, {
-      params: { page, limit, action, resource },
-    });
+    const response = await this.api.get(
+      `/super-admin/users/${userId}/activity`,
+      {
+        params: { page, limit, action, resource },
+      },
+    );
     return response.data;
   }
 
   async updateSuperAdminUserCredits(userId, credits, reason) {
-    const response = await this.api.patch(`/super-admin/users/${userId}/credits`, {
-      credits,
-      reason,
-    });
+    const response = await this.api.patch(
+      `/super-admin/users/${userId}/credits`,
+      {
+        credits,
+        reason,
+      },
+    );
     return response.data;
   }
 

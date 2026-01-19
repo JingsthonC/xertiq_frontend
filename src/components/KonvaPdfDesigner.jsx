@@ -54,6 +54,7 @@ import CreditConfirmationModal from "./CreditConfirmationModal";
 import { CREDIT_COSTS } from "../services/api";
 import apiService from "../services/api";
 import konvaPdfGenerator from "../services/konvaPdfGenerator";
+import { createDocTypeBadge } from "../utils/documentTypeConfig";
 
 // Define initial canvas dimensions
 const STAGE_WIDTH = 1000;
@@ -113,12 +114,18 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [showUploadMenu, setShowUploadMenu] = useState(false);
 
+  // Document type states
+  const [selectedDocType, setSelectedDocType] = useState("CERTIFICATE");
+  const [documentTypes, setDocumentTypes] = useState([]);
+  const [showDocTypeSelector, setShowDocTypeSelector] = useState(false);
+
   const stageRef = useRef(null);
   const transformerRef = useRef(null);
   const layerRef = useRef(null);
   const fileUploadRef = useRef(null);
   const csvUploadRef = useRef(null);
   const uploadMenuButtonRef = useRef(null);
+  const docTypeSelectorButtonRef = useRef(null); // Add ref for doc type button
   const isLoadingTemplate = useRef(false); // Track if we're loading a template
   const lastSyncedElements = useRef(null); // Track last synced elements to prevent loops
   const isProgrammaticTransform = useRef(false); // Track if transform is programmatic (flip, etc.)
@@ -552,6 +559,26 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedId, selectedIds, elements, copiedElements, history, historyStep]); // Include history for undo/redo
+
+  // Fetch document types on mount
+  useEffect(() => {
+    const fetchDocumentTypes = async () => {
+      try {
+        const types = await apiService.getDocumentTypes();
+        // Ensure we have an array
+        if (Array.isArray(types)) {
+          setDocumentTypes(types);
+        } else {
+          console.warn("Document types response is not an array:", types);
+          setDocumentTypes([]);
+        }
+      } catch (error) {
+        console.error("Failed to fetch document types:", error);
+        setDocumentTypes([]); // Set empty array on error
+      }
+    };
+    fetchDocumentTypes();
+  }, []);
 
   /**
    * Saves the current state of elements to the history stack.
@@ -1546,6 +1573,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
       const formData = new FormData();
       formData.append("certificates", pdfFile);
       formData.append("metadata", csvFile);
+      formData.append("docType", selectedDocType); // Add document type
 
       // Upload via batch API (which goes through Merkle tree pipeline + blockchain)
       const response = await apiService.createBatch(formData);
@@ -1591,11 +1619,11 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
       return;
     }
 
-    const confirmUpload = window.confirm(
-      `This will upload ${csvData.length} PDF files to blockchain as a batch. Continue?`,
-    );
+    // const confirmUpload = window.confirm(
+    //   `This will upload ${csvData.length} PDF files to blockchain as a batch. Continue?`,
+    // );
 
-    if (!confirmUpload) return;
+    // if (!confirmUpload) return;
 
     const stage = stageRef.current;
     if (!stage) {
@@ -1673,6 +1701,7 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
         formData.append("certificates", file);
       });
       formData.append("metadata", csvFile);
+      formData.append("docType", selectedDocType); // Add document type
 
       // Upload via batch API
       const response = await apiService.createBatch(formData);
@@ -2175,6 +2204,93 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
             </span>
           )}
         </button>
+
+        {/* Document Type Selector */}
+        <div className="relative">
+          <button
+            onClick={() => setShowDocTypeSelector(!showDocTypeSelector)}
+            className="p-2 rounded bg-[#3834A8] hover:bg-[#2A1B5D] text-white flex items-center gap-2 text-sm"
+            title="Select document type"
+            ref={docTypeSelectorButtonRef}
+            style={{ pointerEvents: "auto", position: "relative", zIndex: 101 }}
+            type="button"
+          >
+            <FileText size={18} />
+            {(() => {
+              const badge = createDocTypeBadge(selectedDocType, true);
+              return (
+                <span className="inline-flex items-center gap-1">
+                  <span>{badge.icon}</span>
+                  <span className="text-xs">{badge.label}</span>
+                </span>
+              );
+            })()}
+          </button>
+
+          {showDocTypeSelector && (
+            <>
+              <div
+                className="fixed inset-0"
+                onClick={() => setShowDocTypeSelector(false)}
+                style={{ pointerEvents: "auto", zIndex: 99 }}
+              />
+              {(() => {
+                const button = docTypeSelectorButtonRef.current;
+                if (!button) return null;
+                const rect = button.getBoundingClientRect();
+                const dropdownContent = (
+                  <div
+                    className="fixed bg-white border border-gray-200 rounded-lg shadow-xl w-72 max-h-[400px] overflow-y-auto"
+                    style={{
+                      pointerEvents: "auto",
+                      zIndex: 100,
+                      top: `${rect.bottom + 8}px`,
+                      left: `${rect.right - 288}px`, // 288px = w-72 (align right edge)
+                    }}
+                  >
+                    <div className="p-2 border-b border-gray-200 bg-gray-50">
+                      <p className="text-xs font-semibold text-gray-600">
+                        Select Document Type
+                      </p>
+                    </div>
+                    <div className="p-2 space-y-1">
+                      {Array.isArray(documentTypes) && documentTypes.length > 0 ? (
+                        documentTypes.map((type) => {
+                          const badge = createDocTypeBadge(type.value, false);
+                          return (
+                            <button
+                              key={type.value}
+                              onClick={() => {
+                                setSelectedDocType(type.value);
+                                setShowDocTypeSelector(false);
+                                showToast.success(
+                                  `Document type set to ${type.label}`,
+                                );
+                              }}
+                              className={`w-full px-3 py-2 text-left rounded-lg transition-colors flex items-center gap-2 text-sm ${
+                                selectedDocType === type.value
+                                  ? "bg-[#3834A8] text-white"
+                                  : "hover:bg-gray-100 text-gray-700"
+                              }`}
+                            >
+                              <span>{badge.icon}</span>
+                              <span className="truncate">{badge.label}</span>
+                            </button>
+                          );
+                        })
+                      ) : (
+                        <div className="px-3 py-2 text-xs text-gray-500 text-center">
+                          Loading document types...
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+                return createPortal(dropdownContent, document.body);
+              })()}
+            </>
+          )}
+        </div>
         {csvData.length > 0 && (
           <button
             onClick={() => setShowCsvFieldsPanel(!showCsvFieldsPanel)}
@@ -2375,11 +2491,12 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                 const rect = button.getBoundingClientRect();
                 const dropdownContent = (
                   <div
-                    className="fixed w-64 bg-white border border-gray-200 rounded-lg shadow-2xl z-[100] overflow-hidden"
+                    className="fixed w-64 bg-white border border-gray-200 rounded-lg shadow-2xl overflow-hidden"
                     style={{
                       pointerEvents: "auto",
+                      zIndex: 100,
                       top: `${rect.bottom + 8}px`,
-                      right: `${window.innerWidth - rect.right}px`,
+                      left: `${rect.right - 256}px`, // 256px = w-64 (align right edge)
                     }}
                   >
                     {csvData.length > 0 ? (

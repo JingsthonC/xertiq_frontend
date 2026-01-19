@@ -23,6 +23,7 @@ import PaymentSuccess from "./pages/PaymentSuccess";
 import SmartTemplateEditor from "./pages/SmartTemplateEditor";
 import HolderDashboard from "./pages/HolderDashboard";
 import IssuerDashboard from "./pages/IssuerDashboard";
+import KeyManagement from "./pages/KeyManagement";
 import SuperAdminDashboard from "./pages/SuperAdminDashboard";
 import LoadingSpinner from "./components/LoadingSpinner";
 import EmbeddableVerify from "./components/EmbeddableVerify";
@@ -267,6 +268,14 @@ function App() {
       element: (
         <ProtectedRoute allowedRoles={["ISSUER"]}>
           <IssuerDashboard />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/key-management",
+      element: (
+        <ProtectedRoute allowedRoles={["ISSUER"]}>
+          <KeyManagement />
         </ProtectedRoute>
       ),
     },
