@@ -2254,7 +2254,8 @@ const KonvaPdfDesigner = ({ template: initialTemplate, onTemplateChange }) => {
                       </p>
                     </div>
                     <div className="p-2 space-y-1">
-                      {Array.isArray(documentTypes) && documentTypes.length > 0 ? (
+                      {Array.isArray(documentTypes) &&
+                      documentTypes.length > 0 ? (
                         documentTypes.map((type) => {
                           const badge = createDocTypeBadge(type.value, false);
                           return (

@@ -3,13 +3,14 @@
  * Standalone embeddable widget matching Verify.jsx exactly
  *
  * Usage - Auto-init:
- * <div id="xertiq-verify-widget" data-doc="YOUR_DOC_ID"></div>
+ * <div id="xertiq-verify-widget" data-doc="YOUR_DOC_ID" data-key="YOUR_ACCESS_KEY"></div>
  * <script src="https://xertiq-frontend.vercel.app/embed-widget.js"></script>
  *
  * Usage - Programmatic:
  * XertiQWidget.init({
  *   container: 'my-widget-container',
- *   docId: 'cert_certificate_Name_123_abc'
+ *   docId: 'cert_certificate_Name_123_abc',
+ *   accessKey: 'your_access_key_here'
  * });
  */
 
@@ -38,6 +39,7 @@
   let loading = false;
   let error = "";
   let searchQuery = "";
+  let accessKey = "";
   let copied = false;
   let showDocumentPreview = false;
   let showBatchTransaction = false;
@@ -1006,7 +1008,7 @@
   };
 
   // Verify document
-  const verifyDocument = async (query) => {
+  const verifyDocument = async (query, key = null) => {
     if (!query) {
       error = "Please enter a document ID or hash";
       render();
@@ -1018,11 +1020,22 @@
     render();
 
     try {
-      const response = await fetch(
-        `${config.apiUrl}/verify?doc=${encodeURIComponent(query)}`,
-      );
+      // Build URL with key parameter if provided
+      let url = `${config.apiUrl}/verify?doc=${encodeURIComponent(query)}`;
+      const verificationKey = key || accessKey || config.accessKey;
+      if (verificationKey) {
+        url += `&key=${encodeURIComponent(verificationKey)}`;
+      }
+
+      const response = await fetch(url);
 
       if (!response.ok) {
+        // Check for access denied error
+        if (response.status === 403) {
+          throw new Error(
+            "Access Denied - Invalid or missing verification key",
+          );
+        }
         throw new Error("Failed to verify document");
       }
 
@@ -1037,7 +1050,7 @@
       }
     } catch (err) {
       console.error("Verification failed:", err);
-      error = "Failed to verify document. Please try again.";
+      error = err.message || "Failed to verify document. Please try again.";
       verificationData = null;
     } finally {
       loading = false;
@@ -1049,8 +1062,9 @@
   const handleSubmit = (e) => {
     e.preventDefault();
     const input = document.getElementById("xertiq-search-input");
+    const keyInput = document.getElementById("xertiq-key-input");
     if (input) {
-      verifyDocument(input.value);
+      verifyDocument(input.value, keyInput ? keyInput.value : null);
     }
   };
 
@@ -1095,6 +1109,17 @@
                 placeholder="Enter document ID or verification hash..."
                 ${loading ? "disabled" : ""}
                 value="${searchQuery}"
+              />
+            </div>
+            <label class="xertiq-widget-form-label" style="margin-top: 1rem;">Verification Key (if required)</label>
+            <div class="xertiq-widget-input-group">
+              <input
+                type="text"
+                class="xertiq-widget-input"
+                id="xertiq-key-input"
+                placeholder="Enter verification key (optional)..."
+                ${loading ? "disabled" : ""}
+                value="${accessKey}"
               />
               <button
                 type="submit"
@@ -1663,6 +1688,13 @@
         searchQuery = e.target.value;
       });
     }
+
+    const keyInput = document.getElementById("xertiq-key-input");
+    if (keyInput) {
+      keyInput.addEventListener("input", (e) => {
+        accessKey = e.target.value;
+      });
+    }
   };
 
   // Public API
@@ -1686,12 +1718,21 @@
     // Inject styles
     injectStyles();
 
-    // Check for data-doc attribute for auto-verification
+    // Check for data-doc and data-key attributes for auto-verification
     const autoDoc = containerElement.getAttribute("data-doc");
+    const autoKey = containerElement.getAttribute("data-key");
+
+    // Store the key in state if provided via config or data attribute
+    if (autoKey) {
+      accessKey = autoKey;
+    } else if (config.accessKey) {
+      accessKey = config.accessKey;
+    }
+
     if (autoDoc) {
-      verifyDocument(autoDoc);
+      verifyDocument(autoDoc, autoKey);
     } else if (config.docId) {
-      verifyDocument(config.docId);
+      verifyDocument(config.docId, config.accessKey);
     } else {
       render();
     }
