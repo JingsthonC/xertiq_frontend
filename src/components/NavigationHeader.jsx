@@ -63,6 +63,9 @@ const NavigationHeader = ({ title, showBack = true }) => {
       case "/verify":
         breadcrumbs.push({ name: "Verify", path: "/verify", icon: Shield });
         break;
+      case "/api-keys":
+        breadcrumbs.push({ name: "API Keys", path: "/api-keys", icon: Key });
+        break;
     }
 
     return breadcrumbs;
@@ -76,13 +79,6 @@ const NavigationHeader = ({ title, showBack = true }) => {
       visible: true,
     },
     {
-      name:
-        normalizedRole === "ISSUER" ? "Issue Certificates" : "Verify Document",
-      path: normalizedRole === "ISSUER" ? "/batch-upload" : "/verify",
-      icon: normalizedRole === "ISSUER" ? Upload : Shield,
-      visible: !isSuperAdmin,
-    },
-    {
       name: "Super Admin",
       path: "/super-admin",
       icon: Crown,
@@ -90,7 +86,7 @@ const NavigationHeader = ({ title, showBack = true }) => {
       highlight: true,
     },
     {
-      name: "Batch Upload",
+      name: "Issue Certificates",
       path: "/batch-upload",
       icon: Upload,
       visible: normalizedRole === "ISSUER" && !isSuperAdmin,
@@ -102,10 +98,17 @@ const NavigationHeader = ({ title, showBack = true }) => {
       visible: normalizedRole === "ISSUER" && !isSuperAdmin,
     },
     {
+      name: "API Keys",
+      path: "/api-keys",
+      icon: Key,
+      visible: normalizedRole === "ISSUER" && !isSuperAdmin,
+      highlight: true,
+    },
+    {
       name: "Verify Document",
       path: "/verify",
       icon: Shield,
-      visible: true,
+      visible: !isSuperAdmin,
     },
     {
       name: "Buy Credits",

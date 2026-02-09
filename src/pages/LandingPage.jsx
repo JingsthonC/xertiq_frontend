@@ -24,37 +24,37 @@ const LandingPage = () => {
 
   const features = [
     {
-      icon: <Shield size={40} className="text-[#667eea]" />,
+      icon: <Shield size={40} className="text-[#3B82F6]" />,
       title: "Blockchain Secured",
       description:
         "Powered by Solana blockchain for immutable, tamper-proof verification of credentials.",
     },
     {
-      icon: <Zap size={40} className="text-[#667eea]" />,
+      icon: <Zap size={40} className="text-[#3B82F6]" />,
       title: "Lightning Fast",
       description:
         "Instant verification with no delays. Optimized for performance and speed.",
     },
     {
-      icon: <Globe size={40} className="text-[#667eea]" />,
+      icon: <Globe size={40} className="text-[#3B82F6]" />,
       title: "Easy Integration",
       description:
         "Simple embed on any website. Works with WordPress, Shopify, React, and more.",
     },
     {
-      icon: <Smartphone size={40} className="text-[#667eea]" />,
+      icon: <Smartphone size={40} className="text-[#3B82F6]" />,
       title: "Mobile Responsive",
       description:
         "Perfect experience across all devices - desktop, tablet, and mobile.",
     },
     {
-      icon: <QrCode size={40} className="text-[#667eea]" />,
+      icon: <QrCode size={40} className="text-[#3B82F6]" />,
       title: "QR Code Support",
       description:
         "Quick verification through QR code scanning for instant document authentication.",
     },
     {
-      icon: <EyeOff size={40} className="text-[#667eea]" />,
+      icon: <EyeOff size={40} className="text-[#3B82F6]" />,
       title: "Holder Privacy Control",
       description:
         "Document holders can show or hide credentials, maintaining full privacy control.",
@@ -179,32 +179,32 @@ const LandingPage = () => {
           <div className="hidden md:flex gap-8">
             <button
               onClick={() => scrollToSection("features")}
-              className="text-[#4a5568] font-medium hover:text-[#667eea] transition-colors cursor-pointer bg-transparent border-0"
+              className="text-[#4a5568] font-medium hover:text-[#3B82F6] transition-colors cursor-pointer bg-transparent border-0"
             >
               Features
             </button>
             <button
               onClick={() => scrollToSection("demo")}
-              className="text-[#4a5568] font-medium hover:text-[#667eea] transition-colors cursor-pointer bg-transparent border-0"
+              className="text-[#4a5568] font-medium hover:text-[#3B82F6] transition-colors cursor-pointer bg-transparent border-0"
             >
               Live Demo
             </button>
             <button
               onClick={() => scrollToSection("how-it-works")}
-              className="text-[#4a5568] font-medium hover:text-[#667eea] transition-colors cursor-pointer bg-transparent border-0"
+              className="text-[#4a5568] font-medium hover:text-[#3B82F6] transition-colors cursor-pointer bg-transparent border-0"
             >
               How It Works
             </button>
             <button
               onClick={() => scrollToSection("docs")}
-              className="text-[#4a5568] font-medium hover:text-[#667eea] transition-colors cursor-pointer bg-transparent border-0"
+              className="text-[#4a5568] font-medium hover:text-[#3B82F6] transition-colors cursor-pointer bg-transparent border-0"
             >
               Docs
             </button>
           </div>
           <Link
             to="/login"
-            className="bg-[#667eea] text-white px-6 py-2 rounded-full font-semibold hover:bg-[#5568d3] transition-all no-underline"
+            className="bg-[#3B82F6] text-white px-6 py-2 rounded-full font-semibold hover:bg-[#2563EB] transition-all no-underline"
           >
             Sign In
           </Link>
@@ -213,7 +213,7 @@ const LandingPage = () => {
 
       {/* Hero Section */}
       <section
-        className="bg-gradient-to-br from-[#667eea] to-[#764ba2] text-white py-24 px-5 text-center relative overflow-hidden"
+        className="bg-gradient-to-br from-[#3B82F6] to-[#8B5CF6] text-white py-24 px-5 text-center relative overflow-hidden"
         style={{
           backgroundImage: `linear-gradient(rgba(102, 126, 234, 0.85), rgba(118, 75, 162, 0.85)), url(${xertiqJumbotron})`,
           backgroundSize: "cover",
@@ -229,13 +229,13 @@ const LandingPage = () => {
         <div className="flex gap-5 justify-center flex-wrap animate-[fadeInUp_0.8s_0.4s_both]">
           <button
             onClick={() => scrollToSection("demo")}
-            className="bg-white text-[#667eea] px-8 py-4 rounded-full font-semibold text-base transition-all hover:-translate-y-0.5 hover:shadow-2xl border-0 cursor-pointer"
+            className="bg-white text-[#3B82F6] px-8 py-4 rounded-full font-semibold text-base transition-all hover:-translate-y-0.5 hover:shadow-2xl border-0 cursor-pointer"
           >
             Try Live Demo
           </button>
           <Link
             to="/register"
-            className="bg-transparent text-white px-8 py-4 rounded-full font-semibold text-base transition-all hover:bg-white hover:text-[#667eea] border-2 border-white no-underline"
+            className="bg-transparent text-white px-8 py-4 rounded-full font-semibold text-base transition-all hover:bg-white hover:text-[#3B82F6] border-2 border-white no-underline"
           >
             Get Started
           </Link>
@@ -279,25 +279,25 @@ const LandingPage = () => {
             ))}
           </div>
 
-          <div className="mt-16 bg-gradient-to-br from-[#667eea]/10 to-[#764ba2]/10 rounded-2xl p-8 border border-[#667eea]/20">
+          <div className="mt-16 bg-gradient-to-br from-[#3B82F6]/10 to-[#8B5CF6]/10 rounded-2xl p-8 border border-[#3B82F6]/20">
             <h3 className="text-2xl font-bold text-[#2d3748] mb-6 text-center">
               Built with Security, Transparency, and Scale in Mind
             </h3>
             <div className="grid md:grid-cols-3 gap-8">
               <div className="text-center">
-                <div className="text-3xl font-bold text-[#667eea] mb-2">
+                <div className="text-3xl font-bold text-[#3B82F6] mb-2">
                   100%
                 </div>
                 <p className="text-[#4a5568]">Tamper-Proof Records</p>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-[#667eea] mb-2">
+                <div className="text-3xl font-bold text-[#3B82F6] mb-2">
                   &lt;2s
                 </div>
                 <p className="text-[#4a5568]">Average Verification Time</p>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-[#667eea] mb-2">
+                <div className="text-3xl font-bold text-[#3B82F6] mb-2">
                   24/7
                 </div>
                 <p className="text-[#4a5568]">Blockchain Availability</p>
@@ -333,7 +333,7 @@ const LandingPage = () => {
                   "{testimonial.quote}"
                 </p>
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-[#667eea] to-[#764ba2] rounded-full flex items-center justify-center text-white font-bold">
+                  <div className="w-12 h-12 bg-gradient-to-br from-[#3B82F6] to-[#8B5CF6] rounded-full flex items-center justify-center text-white font-bold">
                     {testimonial.initials}
                   </div>
                   <div>
@@ -378,7 +378,7 @@ const LandingPage = () => {
                   </span>
                   <ChevronDown
                     size={20}
-                    className={`text-[#667eea] flex-shrink-0 transition-transform ${
+                    className={`text-[#3B82F6] flex-shrink-0 transition-transform ${
                       activeFaq === index ? "rotate-180" : ""
                     }`}
                   />
@@ -394,7 +394,7 @@ const LandingPage = () => {
             ))}
           </div>
 
-          <div className="mt-12 text-center bg-gradient-to-br from-[#667eea]/10 to-[#764ba2]/10 rounded-2xl p-8 border border-[#667eea]/20">
+          <div className="mt-12 text-center bg-gradient-to-br from-[#3B82F6]/10 to-[#8B5CF6]/10 rounded-2xl p-8 border border-[#3B82F6]/20">
             <h3 className="text-xl font-bold text-[#2d3748] mb-2">
               Still have questions?
             </h3>
@@ -403,7 +403,7 @@ const LandingPage = () => {
             </p>
             <a
               href="mailto:support@xertiq.com"
-              className="inline-block bg-[#667eea] text-white px-8 py-3 rounded-full font-semibold hover:bg-[#5568d3] transition-all no-underline"
+              className="inline-block bg-[#3B82F6] text-white px-8 py-3 rounded-full font-semibold hover:bg-[#2563EB] transition-all no-underline"
             >
               Contact Support
             </a>
@@ -425,9 +425,9 @@ const LandingPage = () => {
             <input
               type="email"
               placeholder="Enter your email"
-              className="flex-1 px-4 py-3 rounded-lg border-2 border-[#e2e8f0] focus:border-[#667eea] focus:outline-none"
+              className="flex-1 px-4 py-3 rounded-lg border-2 border-[#e2e8f0] focus:border-[#3B82F6] focus:outline-none"
             />
-            <button className="bg-[#667eea] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#5568d3] transition-all whitespace-nowrap">
+            <button className="bg-[#3B82F6] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#2563EB] transition-all whitespace-nowrap">
               Subscribe
             </button>
           </div>
@@ -488,13 +488,13 @@ const LandingPage = () => {
             <div className="flex justify-center gap-5 flex-wrap">
               <Link
                 to="/verify"
-                className="bg-[#667eea] text-white px-8 py-4 rounded-full font-semibold text-base transition-all hover:-translate-y-0.5 hover:shadow-xl no-underline"
+                className="bg-[#3B82F6] text-white px-8 py-4 rounded-full font-semibold text-base transition-all hover:-translate-y-0.5 hover:shadow-xl no-underline"
               >
                 🔍 Verify Document
               </Link>
               <Link
                 to="/register"
-                className="bg-white text-[#667eea] px-8 py-4 rounded-full font-semibold text-base transition-all hover:-translate-y-0.5 hover:shadow-xl border-2 border-[#667eea] no-underline"
+                className="bg-white text-[#3B82F6] px-8 py-4 rounded-full font-semibold text-base transition-all hover:-translate-y-0.5 hover:shadow-xl border-2 border-[#3B82F6] no-underline"
               >
                 Get Started Free
               </Link>
@@ -536,7 +536,7 @@ const LandingPage = () => {
               </p>
               <Link
                 to="/integration-guide"
-                className="inline-block bg-[#667eea] text-white px-6 py-3 rounded-full font-semibold transition-all hover:-translate-y-0.5 hover:shadow-xl no-underline"
+                className="inline-block bg-[#3B82F6] text-white px-6 py-3 rounded-full font-semibold transition-all hover:-translate-y-0.5 hover:shadow-xl no-underline"
               >
                 View Full Demo
               </Link>
@@ -551,7 +551,7 @@ const LandingPage = () => {
               </p>
               <Link
                 to="/test-widget"
-                className="inline-block bg-[#667eea] text-white px-6 py-3 rounded-full font-semibold transition-all hover:-translate-y-0.5 hover:shadow-xl no-underline"
+                className="inline-block bg-[#3B82F6] text-white px-6 py-3 rounded-full font-semibold transition-all hover:-translate-y-0.5 hover:shadow-xl no-underline"
               >
                 Test Widget
               </Link>
@@ -566,7 +566,7 @@ const LandingPage = () => {
               </p>
               <Link
                 to="/iframe-examples"
-                className="inline-block bg-[#667eea] text-white px-6 py-3 rounded-full font-semibold transition-all hover:-translate-y-0.5 hover:shadow-xl no-underline"
+                className="inline-block bg-[#3B82F6] text-white px-6 py-3 rounded-full font-semibold transition-all hover:-translate-y-0.5 hover:shadow-xl no-underline"
               >
                 iframe Tests
               </Link>

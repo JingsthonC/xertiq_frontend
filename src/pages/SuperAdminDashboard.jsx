@@ -306,11 +306,11 @@ const SuperAdminDashboard = () => {
 
   if (user?.role !== "SUPER_ADMIN") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#0a0e27] via-[#1a1347] to-[#0f0f23] flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 flex items-center justify-center">
         <div className="text-center">
           <Crown size={64} className="text-red-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-white mb-2">Access Denied</h2>
-          <p className="text-gray-400">
+          <h2 className="text-2xl font-bold text-[#1E40AF] mb-2">Access Denied</h2>
+          <p className="text-slate-500">
             Super admin privileges required
           </p>
         </div>
@@ -352,7 +352,7 @@ const SuperAdminDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0a0e27] via-[#1a1347] to-[#0f0f23]">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50">
       <Header />
       <NavigationHeader title="Super Admin Dashboard" showBack={true} />
 
@@ -360,17 +360,17 @@ const SuperAdminDashboard = () => {
         <div className="max-w-7xl mx-auto">
           {/* Header with Crown Icon */}
           <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl shadow-lg">
+            <div className="p-3 bg-gradient-to-br from-[#3B82F6] to-[#8B5CF6] rounded-xl shadow-lg">
               <Crown size={24} className="text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">Super Admin Dashboard</h1>
-              <p className="text-gray-400 text-sm">Complete platform control & analytics</p>
+              <h1 className="text-2xl font-bold text-[#1E40AF]">Super Admin Dashboard</h1>
+              <p className="text-slate-500 text-sm">Complete platform control & analytics</p>
             </div>
           </div>
 
           {/* Tabs */}
-          <div className="flex space-x-2 mb-8 border-b border-white/10 overflow-x-auto">
+          <div className="flex space-x-2 mb-8 border-b border-slate-200 overflow-x-auto">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
@@ -381,8 +381,8 @@ const SuperAdminDashboard = () => {
                 }}
                 className={`px-6 py-3 flex items-center space-x-2 border-b-2 transition-all duration-300 ease-in-out whitespace-nowrap ${
                   activeTab === tab.id
-                    ? "border-yellow-400 text-yellow-400"
-                    : "border-transparent text-gray-400 hover:text-white hover:border-white/20"
+                    ? "border-[#3B82F6] text-[#3B82F6]"
+                    : "border-transparent text-slate-500 hover:text-[#1E40AF] hover:border-[#3B82F6]"
                 }`}
               >
                 <tab.icon size={18} />
@@ -402,74 +402,74 @@ const SuperAdminDashboard = () => {
                 <div className="space-y-6 animate-in fade-in duration-300">
                   {/* Key Metrics Grid */}
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6">
+                    <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-6">
                       <div className="flex items-center justify-between mb-4">
-                        <Users className="text-blue-400" size={32} />
+                        <Users className="text-[#3B82F6]" size={32} />
                         <div className="text-right">
-                          <p className="text-3xl font-bold text-white">
+                          <p className="text-3xl font-bold text-[#1E40AF]">
                             {stats.users.total}
                           </p>
-                          <p className="text-xs text-gray-400">Total Users</p>
+                          <p className="text-xs text-slate-500">Total Users</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2 text-sm">
-                        <Building2 className="text-purple-400" size={16} />
-                        <span className="text-gray-400">{stats.users.issuers} Issuers</span>
-                        <span className="text-gray-600">•</span>
+                        <Building2 className="text-[#8B5CF6]" size={16} />
+                        <span className="text-slate-500">{stats.users.issuers} Issuers</span>
+                        <span className="text-slate-400">•</span>
                         <Shield className="text-green-400" size={16} />
-                        <span className="text-gray-400">{stats.users.holders} Holders</span>
+                        <span className="text-slate-500">{stats.users.holders} Holders</span>
                       </div>
                     </div>
 
-                    <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6">
+                    <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-6">
                       <div className="flex items-center justify-between mb-4">
                         <FileText className="text-green-400" size={32} />
                         <div className="text-right">
-                          <p className="text-3xl font-bold text-white">
+                          <p className="text-3xl font-bold text-[#1E40AF]">
                             {stats.documents.total}
                           </p>
-                          <p className="text-xs text-gray-400">Authenticated Files</p>
+                          <p className="text-xs text-slate-500">Authenticated Files</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2 text-sm">
-                        <Database className="text-blue-400" size={16} />
-                        <span className="text-gray-400">{stats.documents.batches} Batches</span>
+                        <Database className="text-[#3B82F6]" size={16} />
+                        <span className="text-slate-500">{stats.documents.batches} Batches</span>
                       </div>
                     </div>
 
-                    <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6">
+                    <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-6">
                       <div className="flex items-center justify-between mb-4">
-                        <Coins className="text-yellow-400" size={32} />
+                        <Coins className="text-[#8B5CF6]" size={32} />
                         <div className="text-right">
-                          <p className="text-3xl font-bold text-white">
+                          <p className="text-3xl font-bold text-[#1E40AF]">
                             {stats.credits.totalInWallets.toLocaleString()}
                           </p>
-                          <p className="text-xs text-gray-400">Total Credits in Wallets</p>
+                          <p className="text-xs text-slate-500">Total Credits in Wallets</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-4 text-sm">
                         <div>
                           <span className="text-green-400">+{stats.credits.totalPurchased.toLocaleString()}</span>
-                          <p className="text-xs text-gray-500">Purchased</p>
+                          <p className="text-xs text-slate-400">Purchased</p>
                         </div>
                         <div>
                           <span className="text-red-400">-{stats.credits.totalUsed.toLocaleString()}</span>
-                          <p className="text-xs text-gray-500">Used</p>
+                          <p className="text-xs text-slate-400">Used</p>
                         </div>
                       </div>
                     </div>
 
-                    <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6">
+                    <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-6">
                       <div className="flex items-center justify-between mb-4">
-                        <Activity className="text-purple-400" size={32} />
+                        <Activity className="text-[#8B5CF6]" size={32} />
                         <div className="text-right">
-                          <p className="text-3xl font-bold text-white">
+                          <p className="text-3xl font-bold text-[#1E40AF]">
                             {stats.transactions.total}
                           </p>
-                          <p className="text-xs text-gray-400">Total Transactions</p>
+                          <p className="text-xs text-slate-500">Total Transactions</p>
                         </div>
                       </div>
-                      <div className="text-sm text-gray-400">
+                      <div className="text-sm text-slate-500">
                         Platform activity
                       </div>
                     </div>
@@ -477,135 +477,135 @@ const SuperAdminDashboard = () => {
 
                   {/* Growth Charts Section */}
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6">
-                      <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                    <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-6">
+                      <h3 className="text-xl font-bold text-[#1E40AF] mb-4 flex items-center gap-2">
                         <TrendingUp className="text-green-400" size={20} />
                         User Growth (6 Months)
                       </h3>
                       {analytics.userGrowth && analytics.userGrowth.length > 0 ? (
                         <div className="space-y-2">
                           {analytics.userGrowth.map((month, idx) => (
-                            <div key={idx} className="flex items-center justify-between p-2 bg-white/5 rounded">
-                              <span className="text-gray-400 text-sm">
+                            <div key={idx} className="flex items-center justify-between p-2 bg-slate-50 rounded">
+                              <span className="text-slate-500 text-sm">
                                 {new Date(month.month).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
                               </span>
                               <div className="flex items-center gap-4">
-                                <span className="text-white font-semibold">+{month.new_users}</span>
-                                <span className="text-gray-500 text-xs">Total: {month.total_users}</span>
+                                <span className="text-[#1E40AF] font-semibold">+{month.new_users}</span>
+                                <span className="text-slate-400 text-xs">Total: {month.total_users}</span>
                               </div>
                             </div>
                           ))}
                         </div>
                       ) : (
-                        <p className="text-gray-400 text-sm">No growth data available</p>
+                        <p className="text-slate-500 text-sm">No growth data available</p>
                       )}
                     </div>
 
-                    <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6">
-                      <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                        <FileText className="text-blue-400" size={20} />
+                    <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-6">
+                      <h3 className="text-xl font-bold text-[#1E40AF] mb-4 flex items-center gap-2">
+                        <FileText className="text-[#3B82F6]" size={20} />
                         Document Growth (6 Months)
                       </h3>
                       {analytics.documentGrowth && analytics.documentGrowth.length > 0 ? (
                         <div className="space-y-2">
                           {analytics.documentGrowth.map((month, idx) => (
-                            <div key={idx} className="flex items-center justify-between p-2 bg-white/5 rounded">
-                              <span className="text-gray-400 text-sm">
+                            <div key={idx} className="flex items-center justify-between p-2 bg-slate-50 rounded">
+                              <span className="text-slate-500 text-sm">
                                 {new Date(month.month).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
                               </span>
-                              <span className="text-white font-semibold">+{month.new_documents}</span>
+                              <span className="text-[#1E40AF] font-semibold">+{month.new_documents}</span>
                             </div>
                           ))}
                         </div>
                       ) : (
-                        <p className="text-gray-400 text-sm">No growth data available</p>
+                        <p className="text-slate-500 text-sm">No growth data available</p>
                       )}
                     </div>
                   </div>
 
                   {/* Top Performers */}
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6">
-                      <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                        <Award className="text-yellow-400" size={20} />
+                    <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-6">
+                      <h3 className="text-xl font-bold text-[#1E40AF] mb-4 flex items-center gap-2">
+                        <Award className="text-[#8B5CF6]" size={20} />
                         Top Issuers
                       </h3>
                       {analytics.topIssuers && Array.isArray(analytics.topIssuers) && analytics.topIssuers.length > 0 ? (
                         <div className="space-y-3">
                           {analytics.topIssuers.slice(0, 5).map((issuer, idx) => (
-                            <div key={issuer.id} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                            <div key={issuer.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                               <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                                <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-[#1E40AF] font-bold text-sm">
                                   {idx + 1}
                                 </div>
                                 <div>
-                                  <p className="text-white font-medium">{issuer.email}</p>
-                                  <p className="text-gray-400 text-xs">@{issuer.username}</p>
+                                  <p className="text-[#1E40AF] font-medium">{issuer.email}</p>
+                                  <p className="text-slate-500 text-xs">@{issuer.username}</p>
                                 </div>
                               </div>
                               <div className="text-right">
-                                <p className="text-white font-bold">{issuer.documentsIssued}</p>
-                                <p className="text-gray-400 text-xs">documents</p>
+                                <p className="text-[#1E40AF] font-bold">{issuer.documentsIssued}</p>
+                                <p className="text-slate-500 text-xs">documents</p>
                               </div>
                             </div>
                           ))}
                         </div>
                       ) : (
-                        <p className="text-gray-400 text-sm">No issuer data available</p>
+                        <p className="text-slate-500 text-sm">No issuer data available</p>
                       )}
                     </div>
 
-                    <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6">
-                      <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                        <Activity className="text-purple-400" size={20} />
+                    <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-6">
+                      <h3 className="text-xl font-bold text-[#1E40AF] mb-4 flex items-center gap-2">
+                        <Activity className="text-[#8B5CF6]" size={20} />
                         Top Features by Usage
                       </h3>
                       {analytics.topFeatures && analytics.topFeatures.length > 0 ? (
                         <div className="space-y-3">
                           {analytics.topFeatures.map((feature, idx) => (
-                            <div key={idx} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                            <div key={idx} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                               <div>
-                                <p className="text-white font-medium capitalize">{feature.feature || 'Unknown'}</p>
-                                <p className="text-gray-400 text-xs">{feature._count} transactions</p>
+                                <p className="text-[#1E40AF] font-medium capitalize">{feature.feature || 'Unknown'}</p>
+                                <p className="text-slate-500 text-xs">{feature._count} transactions</p>
                               </div>
                               <div className="text-right">
-                                <p className="text-white font-bold">{Math.abs(feature._sum?.creditsChange || 0)}</p>
-                                <p className="text-gray-400 text-xs">credits used</p>
+                                <p className="text-[#1E40AF] font-bold">{Math.abs(feature._sum?.creditsChange || 0)}</p>
+                                <p className="text-slate-500 text-xs">credits used</p>
                               </div>
                             </div>
                           ))}
                         </div>
                       ) : (
-                        <p className="text-gray-400 text-sm">No feature data available</p>
+                        <p className="text-slate-500 text-sm">No feature data available</p>
                       )}
                     </div>
                   </div>
 
                   {/* Top Users by Credits */}
                   {stats.credits.topUsers && stats.credits.topUsers.length > 0 && (
-                    <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6">
-                      <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                        <Coins className="text-yellow-400" size={20} />
+                    <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-6">
+                      <h3 className="text-xl font-bold text-[#1E40AF] mb-4 flex items-center gap-2">
+                        <Coins className="text-[#8B5CF6]" size={20} />
                         Top Users by Credits
                       </h3>
                       <div className="space-y-2">
                         {stats.credits.topUsers.map((wallet, idx) => (
                           <div
                             key={wallet.userId}
-                            className="flex items-center justify-between p-3 bg-white/5 rounded-lg"
+                            className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
                           >
                             <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                              <div className="w-8 h-8 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full flex items-center justify-center text-[#1E40AF] font-bold text-sm">
                                 {idx + 1}
                               </div>
                               <div>
-                                <p className="text-white text-sm">{wallet.user?.email || "Unknown"}</p>
-                                <p className="text-gray-400 text-xs">{wallet.user?.role || "USER"}</p>
+                                <p className="text-[#1E40AF] text-sm">{wallet.user?.email || "Unknown"}</p>
+                                <p className="text-slate-500 text-xs">{wallet.user?.role || "USER"}</p>
                               </div>
                             </div>
                             <div className="text-right">
-                              <p className="text-yellow-400 font-bold">{wallet.credits}</p>
-                              <p className="text-gray-400 text-xs">credits</p>
+                              <p className="text-[#8B5CF6] font-bold">{wallet.credits}</p>
+                              <p className="text-slate-500 text-xs">credits</p>
                             </div>
                           </div>
                         ))}
@@ -614,9 +614,9 @@ const SuperAdminDashboard = () => {
                   )}
 
                   {/* Recent Activity */}
-                  <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6">
-                    <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                      <Activity className="text-blue-400" size={20} />
+                  <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-6">
+                    <h3 className="text-xl font-bold text-[#1E40AF] mb-4 flex items-center gap-2">
+                      <Activity className="text-[#3B82F6]" size={20} />
                       Recent Platform Activity
                     </h3>
                     <div className="space-y-2">
@@ -624,11 +624,11 @@ const SuperAdminDashboard = () => {
                         stats.recentActivity.slice(0, 10).map((log, idx) => (
                           <div
                             key={idx}
-                            className="flex items-center justify-between p-3 bg-white/5 rounded-lg"
+                            className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
                           >
                             <div>
-                              <p className="text-white text-sm">{log.action}</p>
-                            <p className="text-gray-400 text-xs">
+                              <p className="text-[#1E40AF] text-sm">{log.action}</p>
+                            <p className="text-slate-500 text-xs">
                               {log.user?.email || "System"} •{" "}
                               {new Date(log.createdAt).toLocaleString()}
                             </p>
@@ -636,7 +636,7 @@ const SuperAdminDashboard = () => {
                         </div>
                       ))
                       ) : (
-                        <p className="text-gray-400 text-sm">No recent activity</p>
+                        <p className="text-slate-500 text-sm">No recent activity</p>
                       )}
                     </div>
                   </div>
@@ -647,47 +647,47 @@ const SuperAdminDashboard = () => {
               {activeTab === "revenue" && revenue && (
                 <div className="space-y-6 animate-in fade-in duration-300">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6">
+                    <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-6">
                       <div className="flex items-center justify-between mb-4">
                         <DollarSign className="text-green-400" size={32} />
                         <div className="text-right">
-                          <p className="text-3xl font-bold text-white">
+                          <p className="text-3xl font-bold text-[#1E40AF]">
                             {revenue.purchases.totalCredits.toLocaleString()}
                           </p>
-                          <p className="text-xs text-gray-400">Total Credits Purchased</p>
+                          <p className="text-xs text-slate-500">Total Credits Purchased</p>
                         </div>
                       </div>
-                      <p className="text-sm text-gray-400">
+                      <p className="text-sm text-slate-500">
                         {revenue.purchases.totalTransactions} transactions
                       </p>
                     </div>
 
-                    <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6">
+                    <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-6">
                       <div className="flex items-center justify-between mb-4">
-                        <Activity className="text-blue-400" size={32} />
+                        <Activity className="text-[#3B82F6]" size={32} />
                         <div className="text-right">
-                          <p className="text-3xl font-bold text-white">
+                          <p className="text-3xl font-bold text-[#1E40AF]">
                             {revenue.usage.totalCredits.toLocaleString()}
                           </p>
-                          <p className="text-xs text-gray-400">Total Credits Used</p>
+                          <p className="text-xs text-slate-500">Total Credits Used</p>
                         </div>
                       </div>
-                      <p className="text-sm text-gray-400">
+                      <p className="text-sm text-slate-500">
                         {revenue.usage.totalTransactions} transactions
                       </p>
                     </div>
 
-                    <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6">
+                    <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-6">
                       <div className="flex items-center justify-between mb-4">
-                        <Coins className="text-yellow-400" size={32} />
+                        <Coins className="text-[#8B5CF6]" size={32} />
                         <div className="text-right">
-                          <p className="text-3xl font-bold text-white">
+                          <p className="text-3xl font-bold text-[#1E40AF]">
                             {(revenue.purchases.totalCredits - revenue.usage.totalCredits).toLocaleString()}
                           </p>
-                          <p className="text-xs text-gray-400">Net Credits</p>
+                          <p className="text-xs text-slate-500">Net Credits</p>
                         </div>
                       </div>
-                      <p className="text-sm text-gray-400">
+                      <p className="text-sm text-slate-500">
                         Remaining in system
                       </p>
                     </div>
@@ -695,71 +695,71 @@ const SuperAdminDashboard = () => {
 
                   {/* Revenue by Feature */}
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6">
-                      <h3 className="text-xl font-bold text-white mb-4">Purchases by Feature</h3>
+                    <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-6">
+                      <h3 className="text-xl font-bold text-[#1E40AF] mb-4">Purchases by Feature</h3>
                       {revenue.purchases.byFeature && revenue.purchases.byFeature.length > 0 ? (
                         <div className="space-y-3">
                           {revenue.purchases.byFeature.map((feature, idx) => (
-                            <div key={idx} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                            <div key={idx} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                               <div>
-                                <p className="text-white font-medium capitalize">{feature.feature || 'Unknown'}</p>
-                                <p className="text-gray-400 text-xs">{feature._count || 0} purchases</p>
+                                <p className="text-[#1E40AF] font-medium capitalize">{feature.feature || 'Unknown'}</p>
+                                <p className="text-slate-500 text-xs">{feature._count || 0} purchases</p>
                               </div>
-                              <p className="text-white font-bold">{feature._sum?.creditsChange || 0}</p>
+                              <p className="text-[#1E40AF] font-bold">{feature._sum?.creditsChange || 0}</p>
                             </div>
                           ))}
                         </div>
                       ) : (
-                        <p className="text-gray-400 text-sm">No purchase data by feature</p>
+                        <p className="text-slate-500 text-sm">No purchase data by feature</p>
                       )}
                     </div>
 
-                    <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6">
-                      <h3 className="text-xl font-bold text-white mb-4">Usage by Feature</h3>
+                    <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-6">
+                      <h3 className="text-xl font-bold text-[#1E40AF] mb-4">Usage by Feature</h3>
                       {revenue.usage.byFeature && revenue.usage.byFeature.length > 0 ? (
                         <div className="space-y-3">
                           {revenue.usage.byFeature.map((feature, idx) => (
-                            <div key={idx} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                            <div key={idx} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                               <div>
-                                <p className="text-white font-medium capitalize">{feature.feature || 'Unknown'}</p>
-                                <p className="text-gray-400 text-xs">{feature._count || 0} uses</p>
+                                <p className="text-[#1E40AF] font-medium capitalize">{feature.feature || 'Unknown'}</p>
+                                <p className="text-slate-500 text-xs">{feature._count || 0} uses</p>
                               </div>
-                              <p className="text-white font-bold">{Math.abs(feature._sum?.creditsChange || 0)}</p>
+                              <p className="text-[#1E40AF] font-bold">{Math.abs(feature._sum?.creditsChange || 0)}</p>
                             </div>
                           ))}
                         </div>
                       ) : (
-                        <p className="text-gray-400 text-sm">No usage data by feature</p>
+                        <p className="text-slate-500 text-sm">No usage data by feature</p>
                       )}
                     </div>
                   </div>
 
                   {/* Recent Purchases */}
-                  <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6">
-                    <h3 className="text-xl font-bold text-white mb-4">Recent Credit Purchases</h3>
+                  <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-6">
+                    <h3 className="text-xl font-bold text-[#1E40AF] mb-4">Recent Credit Purchases</h3>
                     <div className="space-y-2">
                       {revenue.recentPurchases && revenue.recentPurchases.length > 0 ? (
                         revenue.recentPurchases.map((purchase) => (
                           <div
                             key={purchase.id}
-                            className="flex items-center justify-between p-3 bg-white/5 rounded-lg"
+                            className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
                           >
                             <div>
-                              <p className="text-white text-sm">
+                              <p className="text-[#1E40AF] text-sm">
                                 {purchase.user?.email || "Unknown User"}
                               </p>
-                              <p className="text-gray-400 text-xs">
+                              <p className="text-slate-500 text-xs">
                                 {new Date(purchase.createdAt).toLocaleString()}
                               </p>
                             </div>
                             <div className="text-right">
                               <p className="text-green-400 font-bold">+{purchase.creditsChange || 0}</p>
-                              <p className="text-gray-400 text-xs">credits</p>
+                              <p className="text-slate-500 text-xs">credits</p>
                             </div>
                           </div>
                         ))
                       ) : (
-                        <p className="text-gray-400 text-sm">No recent purchases</p>
+                        <p className="text-slate-500 text-sm">No recent purchases</p>
                       )}
                     </div>
                   </div>
@@ -772,7 +772,7 @@ const SuperAdminDashboard = () => {
                   <div className="flex items-center space-x-4">
                     <div className="flex-1 relative">
                       <Search
-                        className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                        className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500"
                         size={20}
                       />
                       <input
@@ -786,7 +786,7 @@ const SuperAdminDashboard = () => {
                             users: { ...prev.users, page: 1 },
                           }));
                         }}
-                        className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-yellow-400"
+                        className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[#1E40AF] placeholder-gray-400 focus:outline-none focus:border-yellow-400"
                       />
                     </div>
                     <select
@@ -798,7 +798,7 @@ const SuperAdminDashboard = () => {
                           users: { ...prev.users, page: 1 },
                         }));
                       }}
-                      className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white"
+                      className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[#1E40AF]"
                     >
                       <option value="">All Roles</option>
                       <option value="USER">User</option>
@@ -809,9 +809,9 @@ const SuperAdminDashboard = () => {
                     </select>
                   </div>
 
-                  <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl overflow-hidden">
+                  <div className="bg-white border border-slate-200 shadow-sm rounded-2xl overflow-hidden">
                     <table className="w-full">
-                      <thead className="bg-white/5">
+                      <thead className="bg-slate-50">
                         <tr>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">
                             User
@@ -835,44 +835,44 @@ const SuperAdminDashboard = () => {
                       </thead>
                       <tbody className="divide-y divide-white/10">
                         {allUsers.map((user) => (
-                          <tr key={user.id} className="hover:bg-white/5">
+                          <tr key={user.id} className="hover:bg-slate-50">
                             <td className="px-6 py-4">
                               <div>
-                                <p className="text-white font-medium">
+                                <p className="text-[#1E40AF] font-medium">
                                   {user.email}
                                 </p>
-                                <p className="text-gray-400 text-sm">
+                                <p className="text-slate-500 text-sm">
                                   @{user.username}
                                 </p>
                               </div>
                             </td>
                             <td className="px-6 py-4">
                               <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                                user.role === "SUPER_ADMIN" ? "bg-yellow-500/20 text-yellow-400" :
-                                user.role === "ADMIN" ? "bg-purple-500/20 text-purple-400" :
-                                user.role === "ISSUER" ? "bg-blue-500/20 text-blue-400" :
+                                user.role === "SUPER_ADMIN" ? "bg-yellow-500/20 text-[#8B5CF6]" :
+                                user.role === "ADMIN" ? "bg-purple-500/20 text-[#8B5CF6]" :
+                                user.role === "ISSUER" ? "bg-blue-500/20 text-[#3B82F6]" :
                                 user.role === "VALIDATOR" ? "bg-green-500/20 text-green-400" :
-                                "bg-gray-500/20 text-gray-400"
+                                "bg-gray-500/20 text-slate-500"
                               }`}>
                                 {user.role}
                               </span>
                             </td>
                             <td className="px-6 py-4">
                               <div className="flex items-center gap-2">
-                                <span className="text-white font-semibold">
+                                <span className="text-[#1E40AF] font-semibold">
                                   {user.creditWallet?.credits || 0}
                                 </span>
                                 <button
                                   onClick={() => handleUpdateUserCredits(user.id, user.creditWallet?.credits || 0)}
-                                  className="p-1 hover:bg-white/10 rounded transition-colors"
+                                  className="p-1 hover:bg-slate-100 rounded transition-colors"
                                   title="Edit credits"
                                 >
-                                  <Edit size={14} className="text-yellow-400" />
+                                  <Edit size={14} className="text-[#8B5CF6]" />
                                 </button>
                               </div>
                             </td>
                             <td className="px-6 py-4">
-                              <div className="text-sm text-gray-400">
+                              <div className="text-sm text-slate-500">
                                 <p>{user._count.documents} docs</p>
                                 <p>{user._count.certificates} certs</p>
                                 {user._count.issuedBatches > 0 && (
@@ -880,7 +880,7 @@ const SuperAdminDashboard = () => {
                                 )}
                               </div>
                             </td>
-                            <td className="px-6 py-4 text-gray-400 text-sm">
+                            <td className="px-6 py-4 text-slate-500 text-sm">
                               {new Date(user.createdAt).toLocaleDateString()}
                             </td>
                             <td className="px-6 py-4">
@@ -889,7 +889,7 @@ const SuperAdminDashboard = () => {
                                   setSelectedUser(user);
                                   loadUserActivity(user.id);
                                 }}
-                                className="px-3 py-1.5 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg text-sm transition-colors flex items-center gap-1"
+                                className="px-3 py-1.5 bg-blue-500/20 hover:bg-blue-500/30 text-[#3B82F6] rounded-lg text-sm transition-colors flex items-center gap-1"
                               >
                                 <Activity size={14} />
                                 View Activity
@@ -911,11 +911,11 @@ const SuperAdminDashboard = () => {
                           }))
                         }
                         disabled={pagination.users.page === 1}
-                        className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white disabled:opacity-50"
+                        className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[#1E40AF] disabled:opacity-50"
                       >
                         Previous
                       </button>
-                      <span className="px-4 py-2 text-white">
+                      <span className="px-4 py-2 text-[#1E40AF]">
                         Page {pagination.users.page} of {pagination.users.pages}
                       </span>
                       <button
@@ -926,7 +926,7 @@ const SuperAdminDashboard = () => {
                           }))
                         }
                         disabled={pagination.users.page === pagination.users.pages}
-                        className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white disabled:opacity-50"
+                        className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[#1E40AF] disabled:opacity-50"
                       >
                         Next
                       </button>
@@ -941,7 +941,7 @@ const SuperAdminDashboard = () => {
                   <div className="flex items-center space-x-4">
                     <div className="flex-1 relative">
                       <Search
-                        className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                        className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500"
                         size={20}
                       />
                       <input
@@ -955,14 +955,14 @@ const SuperAdminDashboard = () => {
                             issuers: { ...prev.issuers, page: 1 },
                           }));
                         }}
-                        className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-yellow-400"
+                        className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[#1E40AF] placeholder-gray-400 focus:outline-none focus:border-yellow-400"
                       />
                     </div>
                   </div>
 
-                  <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl overflow-hidden">
+                  <div className="bg-white border border-slate-200 shadow-sm rounded-2xl overflow-hidden">
                     <table className="w-full">
-                      <thead className="bg-white/5">
+                      <thead className="bg-slate-50">
                         <tr>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">
                             Issuer
@@ -983,27 +983,27 @@ const SuperAdminDashboard = () => {
                       </thead>
                       <tbody className="divide-y divide-white/10">
                         {issuers.map((issuer) => (
-                          <tr key={issuer.id} className="hover:bg-white/5">
+                          <tr key={issuer.id} className="hover:bg-slate-50">
                             <td className="px-6 py-4">
                               <div>
-                                <p className="text-white font-medium">
+                                <p className="text-[#1E40AF] font-medium">
                                   {issuer.email}
                                 </p>
-                                <p className="text-gray-400 text-sm">
+                                <p className="text-slate-500 text-sm">
                                   @{issuer.username}
                                 </p>
                               </div>
                             </td>
-                            <td className="px-6 py-4 text-white font-semibold">
+                            <td className="px-6 py-4 text-[#1E40AF] font-semibold">
                               {issuer.documentsIssued}
                             </td>
-                            <td className="px-6 py-4 text-white">
+                            <td className="px-6 py-4 text-[#1E40AF]">
                               {issuer._count.issuedBatches}
                             </td>
-                            <td className="px-6 py-4 text-white">
+                            <td className="px-6 py-4 text-[#1E40AF]">
                               {issuer.creditWallet?.credits || 0}
                             </td>
-                            <td className="px-6 py-4 text-gray-400 text-sm">
+                            <td className="px-6 py-4 text-slate-500 text-sm">
                               {new Date(issuer.lastActivity).toLocaleDateString()}
                             </td>
                           </tr>
@@ -1022,11 +1022,11 @@ const SuperAdminDashboard = () => {
                           }))
                         }
                         disabled={pagination.issuers.page === 1}
-                        className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white disabled:opacity-50"
+                        className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[#1E40AF] disabled:opacity-50"
                       >
                         Previous
                       </button>
-                      <span className="px-4 py-2 text-white">
+                      <span className="px-4 py-2 text-[#1E40AF]">
                         Page {pagination.issuers.page} of {pagination.issuers.pages}
                       </span>
                       <button
@@ -1037,7 +1037,7 @@ const SuperAdminDashboard = () => {
                           }))
                         }
                         disabled={pagination.issuers.page === pagination.issuers.pages}
-                        className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white disabled:opacity-50"
+                        className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[#1E40AF] disabled:opacity-50"
                       >
                         Next
                       </button>
@@ -1052,7 +1052,7 @@ const SuperAdminDashboard = () => {
                   <div className="flex items-center space-x-4">
                     <div className="flex-1 relative">
                       <Search
-                        className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                        className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500"
                         size={20}
                       />
                       <input
@@ -1066,14 +1066,14 @@ const SuperAdminDashboard = () => {
                             holders: { ...prev.holders, page: 1 },
                           }));
                         }}
-                        className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-yellow-400"
+                        className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[#1E40AF] placeholder-gray-400 focus:outline-none focus:border-yellow-400"
                       />
                     </div>
                   </div>
 
-                  <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl overflow-hidden">
+                  <div className="bg-white border border-slate-200 shadow-sm rounded-2xl overflow-hidden">
                     <table className="w-full">
-                      <thead className="bg-white/5">
+                      <thead className="bg-slate-50">
                         <tr>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">
                             Holder
@@ -1094,18 +1094,18 @@ const SuperAdminDashboard = () => {
                       </thead>
                       <tbody className="divide-y divide-white/10">
                         {holders.map((holder, idx) => (
-                          <tr key={idx} className="hover:bg-white/5">
+                          <tr key={idx} className="hover:bg-slate-50">
                             <td className="px-6 py-4">
                               <div>
-                                <p className="text-white font-medium">
+                                <p className="text-[#1E40AF] font-medium">
                                   {holder.name}
                                 </p>
-                                <p className="text-gray-400 text-sm">
+                                <p className="text-slate-500 text-sm">
                                   {holder.email}
                                 </p>
                               </div>
                             </td>
-                            <td className="px-6 py-4 text-white font-semibold">
+                            <td className="px-6 py-4 text-[#1E40AF] font-semibold">
                               {holder.certificateCount}
                             </td>
                             <td className="px-6 py-4">
@@ -1115,28 +1115,28 @@ const SuperAdminDashboard = () => {
                                     {holder.issuers.slice(0, 2).map((issuer, i) => (
                                       <span
                                         key={i}
-                                        className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs"
+                                        className="px-2 py-1 bg-blue-500/20 text-[#3B82F6] rounded text-xs"
                                       >
                                         {issuer}
                                       </span>
                                     ))}
                                     {holder.issuers.length > 2 && (
-                                      <span className="px-2 py-1 bg-gray-500/20 text-gray-400 rounded text-xs">
+                                      <span className="px-2 py-1 bg-gray-500/20 text-slate-500 rounded text-xs">
                                         +{holder.issuers.length - 2}
                                       </span>
                                     )}
                                   </>
                                 ) : (
-                                  <span className="text-gray-400 text-xs">No issuers</span>
+                                  <span className="text-slate-500 text-xs">No issuers</span>
                                 )}
                               </div>
                             </td>
-                            <td className="px-6 py-4 text-gray-400 text-sm">
+                            <td className="px-6 py-4 text-slate-500 text-sm">
                               {holder.firstCertificateDate
                                 ? new Date(holder.firstCertificateDate).toLocaleDateString()
                                 : "-"}
                             </td>
-                            <td className="px-6 py-4 text-gray-400 text-sm">
+                            <td className="px-6 py-4 text-slate-500 text-sm">
                               {holder.lastCertificateDate
                                 ? new Date(holder.lastCertificateDate).toLocaleDateString()
                                 : "-"}
@@ -1157,11 +1157,11 @@ const SuperAdminDashboard = () => {
                           }))
                         }
                         disabled={pagination.holders.page === 1}
-                        className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white disabled:opacity-50"
+                        className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[#1E40AF] disabled:opacity-50"
                       >
                         Previous
                       </button>
-                      <span className="px-4 py-2 text-white">
+                      <span className="px-4 py-2 text-[#1E40AF]">
                         Page {pagination.holders.page} of {pagination.holders.pages}
                       </span>
                       <button
@@ -1172,7 +1172,7 @@ const SuperAdminDashboard = () => {
                           }))
                         }
                         disabled={pagination.holders.page === pagination.holders.pages}
-                        className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white disabled:opacity-50"
+                        className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[#1E40AF] disabled:opacity-50"
                       >
                         Next
                       </button>
@@ -1187,7 +1187,7 @@ const SuperAdminDashboard = () => {
                   <div className="flex items-center space-x-4">
                     <div className="flex-1 relative">
                       <Search
-                        className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                        className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500"
                         size={20}
                       />
                       <input
@@ -1201,14 +1201,14 @@ const SuperAdminDashboard = () => {
                             documents: { ...prev.documents, page: 1 },
                           }));
                         }}
-                        className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-yellow-400"
+                        className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[#1E40AF] placeholder-gray-400 focus:outline-none focus:border-yellow-400"
                       />
                     </div>
                   </div>
 
-                  <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl overflow-hidden">
+                  <div className="bg-white border border-slate-200 shadow-sm rounded-2xl overflow-hidden">
                     <table className="w-full">
-                      <thead className="bg-white/5">
+                      <thead className="bg-slate-50">
                         <tr>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">
                             Document
@@ -1229,31 +1229,31 @@ const SuperAdminDashboard = () => {
                       </thead>
                       <tbody className="divide-y divide-white/10">
                         {documents.map((doc) => (
-                          <tr key={doc.id} className="hover:bg-white/5">
+                          <tr key={doc.id} className="hover:bg-slate-50">
                             <td className="px-6 py-4">
                               <div>
-                                <p className="text-white font-medium">
+                                <p className="text-[#1E40AF] font-medium">
                                   {doc.title}
                                 </p>
-                                <p className="text-gray-400 text-xs">
+                                <p className="text-slate-500 text-xs">
                                   {doc.docId}
                                 </p>
                               </div>
                             </td>
                             <td className="px-6 py-4">
                               <div>
-                                <p className="text-white text-sm">
+                                <p className="text-[#1E40AF] text-sm">
                                   {doc.studentName}
                                 </p>
-                                <p className="text-gray-400 text-xs">
+                                <p className="text-slate-500 text-xs">
                                   {doc.identityEmail}
                                 </p>
                               </div>
                             </td>
-                            <td className="px-6 py-4 text-white text-sm">
+                            <td className="px-6 py-4 text-[#1E40AF] text-sm">
                               {doc.issuer}
                             </td>
-                            <td className="px-6 py-4 text-gray-400 text-sm">
+                            <td className="px-6 py-4 text-slate-500 text-sm">
                               {new Date(doc.issuedAt).toLocaleDateString()}
                             </td>
                             <td className="px-6 py-4">
@@ -1262,16 +1262,16 @@ const SuperAdminDashboard = () => {
                                   href={doc.verifyUrl}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="p-1.5 hover:bg-white/10 rounded transition-colors"
+                                  className="p-1.5 hover:bg-slate-100 rounded transition-colors"
                                   title="Verify"
                                 >
-                                  <Eye size={16} className="text-blue-400" />
+                                  <Eye size={16} className="text-[#3B82F6]" />
                                 </a>
                                 <a
                                   href={doc.explorerUrl}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="p-1.5 hover:bg-white/10 rounded transition-colors"
+                                  className="p-1.5 hover:bg-slate-100 rounded transition-colors"
                                   title="View on Explorer"
                                 >
                                   <ExternalLink size={16} className="text-green-400" />
@@ -1294,11 +1294,11 @@ const SuperAdminDashboard = () => {
                           }))
                         }
                         disabled={pagination.documents.page === 1}
-                        className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white disabled:opacity-50"
+                        className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[#1E40AF] disabled:opacity-50"
                       >
                         Previous
                       </button>
-                      <span className="px-4 py-2 text-white">
+                      <span className="px-4 py-2 text-[#1E40AF]">
                         Page {pagination.documents.page} of {pagination.documents.pages}
                       </span>
                       <button
@@ -1309,7 +1309,7 @@ const SuperAdminDashboard = () => {
                           }))
                         }
                         disabled={pagination.documents.page === pagination.documents.pages}
-                        className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white disabled:opacity-50"
+                        className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[#1E40AF] disabled:opacity-50"
                       >
                         Next
                       </button>
@@ -1322,12 +1322,12 @@ const SuperAdminDashboard = () => {
               {selectedUser && selectedUser.id && (
                 <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-4">
                   <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-white/20 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
-                    <div className="flex items-center justify-between p-6 border-b border-white/10">
+                    <div className="flex items-center justify-between p-6 border-b border-slate-200">
                       <div>
-                        <h2 className="text-2xl font-bold text-white mb-1">
+                        <h2 className="text-2xl font-bold text-[#1E40AF] mb-1">
                           Activity Logs
                         </h2>
-                        <p className="text-sm text-gray-400">
+                        <p className="text-sm text-slate-500">
                           {selectedUser.email || selectedUser.username}
                         </p>
                       </div>
@@ -1336,9 +1336,9 @@ const SuperAdminDashboard = () => {
                           setSelectedUser(null);
                           setUserActivityLogs([]);
                         }}
-                        className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                        className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
                       >
-                        <X size={24} className="text-gray-400 hover:text-white" />
+                        <X size={24} className="text-slate-500 hover:text-[#1E40AF]" />
                       </button>
                     </div>
                     <div className="flex-1 overflow-y-auto p-6">
@@ -1348,34 +1348,34 @@ const SuperAdminDashboard = () => {
                         </div>
                       ) : userActivityLogs.length === 0 ? (
                         <div className="text-center py-12">
-                          <Activity size={48} className="text-gray-600 mx-auto mb-3" />
-                          <p className="text-gray-400">No activity logs found</p>
+                          <Activity size={48} className="text-slate-400 mx-auto mb-3" />
+                          <p className="text-slate-500">No activity logs found</p>
                         </div>
                       ) : (
                         <div className="space-y-3">
                           {userActivityLogs.map((log) => (
                             <div
                               key={log.id}
-                              className="bg-white/5 border border-white/10 rounded-lg p-4"
+                              className="bg-slate-50 border border-slate-200 rounded-lg p-4"
                             >
                               <div className="flex items-start justify-between mb-2">
                                 <div className="flex-1">
-                                  <p className="text-white font-medium">{log.action}</p>
-                                  <p className="text-gray-400 text-sm mt-1">
+                                  <p className="text-[#1E40AF] font-medium">{log.action}</p>
+                                  <p className="text-slate-500 text-sm mt-1">
                                     {log.resource && (
-                                      <span className="text-blue-400">{log.resource}</span>
+                                      <span className="text-[#3B82F6]">{log.resource}</span>
                                     )}
                                     {log.resourceId && (
-                                      <span className="text-gray-500"> • ID: {log.resourceId}</span>
+                                      <span className="text-slate-400"> • ID: {log.resourceId}</span>
                                     )}
                                   </p>
                                 </div>
-                                <span className="text-gray-400 text-xs">
+                                <span className="text-slate-500 text-xs">
                                   {new Date(log.createdAt).toLocaleString()}
                                 </span>
                               </div>
                               {log.details && (
-                                <div className="mt-2 p-2 bg-white/5 rounded text-xs text-gray-400">
+                                <div className="mt-2 p-2 bg-slate-50 rounded text-xs text-slate-500">
                                   <pre className="whitespace-pre-wrap">
                                     {JSON.stringify(log.details, null, 2)}
                                   </pre>
@@ -1387,7 +1387,7 @@ const SuperAdminDashboard = () => {
                       )}
                     </div>
                       {pagination.activity.pages > 1 && (
-                      <div className="flex justify-center gap-2 p-4 border-t border-white/10">
+                      <div className="flex justify-center gap-2 p-4 border-t border-slate-200">
                         <button
                           onClick={() => {
                             setPagination((prev) => ({
@@ -1397,11 +1397,11 @@ const SuperAdminDashboard = () => {
                             setTimeout(() => loadUserActivity(selectedUser.id), 100);
                           }}
                           disabled={pagination.activity.page === 1}
-                          className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white disabled:opacity-50"
+                          className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[#1E40AF] disabled:opacity-50"
                         >
                           Previous
                         </button>
-                        <span className="px-4 py-2 text-white">
+                        <span className="px-4 py-2 text-[#1E40AF]">
                           Page {pagination.activity.page} of {pagination.activity.pages}
                         </span>
                         <button
@@ -1413,7 +1413,7 @@ const SuperAdminDashboard = () => {
                             setTimeout(() => loadUserActivity(selectedUser.id), 100);
                           }}
                           disabled={pagination.activity.page === pagination.activity.pages}
-                          className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white disabled:opacity-50"
+                          className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[#1E40AF] disabled:opacity-50"
                         >
                           Next
                         </button>
@@ -1427,8 +1427,8 @@ const SuperAdminDashboard = () => {
               {showCreditModal && selectedUser && (
                 <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-4">
                   <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-white/20 rounded-2xl shadow-2xl w-full max-w-md">
-                    <div className="flex items-center justify-between p-6 border-b border-white/10">
-                      <h2 className="text-2xl font-bold text-white">Update User Credits</h2>
+                    <div className="flex items-center justify-between p-6 border-b border-slate-200">
+                      <h2 className="text-2xl font-bold text-[#1E40AF]">Update User Credits</h2>
                       <button
                         onClick={() => {
                           setShowCreditModal(false);
@@ -1436,9 +1436,9 @@ const SuperAdminDashboard = () => {
                           setCreditEditValue("");
                           setCreditEditReason("");
                         }}
-                        className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                        className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
                       >
-                        <X size={24} className="text-gray-400 hover:text-white" />
+                        <X size={24} className="text-slate-500 hover:text-[#1E40AF]" />
                       </button>
                     </div>
                     <div className="p-6 space-y-4">
@@ -1450,7 +1450,7 @@ const SuperAdminDashboard = () => {
                           type="text"
                           value={selectedUser.currentCredits || 0}
                           disabled
-                          className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white"
+                          className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[#1E40AF]"
                         />
                       </div>
                       <div>
@@ -1462,7 +1462,7 @@ const SuperAdminDashboard = () => {
                           value={creditEditValue}
                           onChange={(e) => setCreditEditValue(e.target.value)}
                           min="0"
-                          className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-yellow-400"
+                          className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[#1E40AF] focus:outline-none focus:border-yellow-400"
                           placeholder="Enter new credit amount"
                         />
                       </div>
@@ -1474,7 +1474,7 @@ const SuperAdminDashboard = () => {
                           type="text"
                           value={creditEditReason}
                           onChange={(e) => setCreditEditReason(e.target.value)}
-                          className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-yellow-400"
+                          className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[#1E40AF] focus:outline-none focus:border-yellow-400"
                           placeholder="Reason for credit adjustment"
                         />
                       </div>
@@ -1482,7 +1482,7 @@ const SuperAdminDashboard = () => {
                         <button
                           onClick={saveUserCredits}
                           disabled={updatingCredits}
-                          className="flex-1 px-4 py-2 bg-gradient-to-r from-yellow-600 to-orange-600 text-white rounded-lg font-semibold disabled:opacity-50"
+                          className="flex-1 px-4 py-2 bg-gradient-to-r from-yellow-600 to-orange-600 text-[#1E40AF] rounded-lg font-semibold disabled:opacity-50"
                         >
                           {updatingCredits ? "Updating..." : "Update Credits"}
                         </button>
@@ -1493,7 +1493,7 @@ const SuperAdminDashboard = () => {
                             setCreditEditValue("");
                             setCreditEditReason("");
                           }}
-                          className="px-4 py-2 bg-white/5 border border-white/10 text-white rounded-lg"
+                          className="px-4 py-2 bg-slate-50 border border-slate-200 text-[#1E40AF] rounded-lg"
                         >
                           Cancel
                         </button>
@@ -1513,7 +1513,7 @@ const SuperAdminDashboard = () => {
                   ) : (
                     <div className="space-y-6">
                       <div className="flex items-center justify-between">
-                        <h2 className="text-2xl font-bold text-white">
+                        <h2 className="text-2xl font-bold text-[#1E40AF]">
                           Credit Packages Configuration
                         </h2>
                         <button
@@ -1532,7 +1532,7 @@ const SuperAdminDashboard = () => {
                             setPackages([...packages, newPackage]);
                             setEditingPackage(newPackage.id);
                           }}
-                          className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-colors flex items-center gap-2"
+                          className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-[#1E40AF] rounded-lg transition-colors flex items-center gap-2"
                         >
                           <Package size={18} />
                           Add Package
@@ -1543,21 +1543,21 @@ const SuperAdminDashboard = () => {
                         {packages.map((pkg) => (
                           <div
                             key={pkg.id}
-                            className={`bg-white/5 backdrop-blur border rounded-2xl p-6 ${
+                            className={`bg-slate-50 backdrop-blur border rounded-2xl p-6 ${
                               pkg.popular
                                 ? "border-yellow-400/50 bg-yellow-500/10"
-                                : "border-white/10"
+                                : "border-slate-200"
                             }`}
                           >
                             {pkg.popular && (
                               <div className="mb-3">
-                                <span className="px-2 py-1 bg-yellow-500/20 text-yellow-400 rounded text-xs font-semibold">
+                                <span className="px-2 py-1 bg-yellow-500/20 text-[#8B5CF6] rounded text-xs font-semibold">
                                   MOST POPULAR
                                 </span>
                               </div>
                             )}
                             <div className="flex items-center justify-between mb-4">
-                              <h3 className="text-xl font-bold text-white">
+                              <h3 className="text-xl font-bold text-[#1E40AF]">
                                 {editingPackage === pkg.id ? (
                                   <input
                                     type="text"
@@ -1571,7 +1571,7 @@ const SuperAdminDashboard = () => {
                                         )
                                       );
                                     }}
-                                    className="bg-white/10 border border-white/20 rounded px-2 py-1 text-white w-full"
+                                    className="bg-white/10 border border-white/20 rounded px-2 py-1 text-[#1E40AF] w-full"
                                   />
                                 ) : (
                                   pkg.name
@@ -1583,16 +1583,16 @@ const SuperAdminDashboard = () => {
                                     setEditingPackage(null);
                                     handleSavePackages();
                                   }}
-                                  className="px-3 py-1 bg-green-500 hover:bg-green-600 text-white rounded text-sm"
+                                  className="px-3 py-1 bg-green-500 hover:bg-green-600 text-[#1E40AF] rounded text-sm"
                                 >
                                   Save
                                 </button>
                               ) : (
                                 <button
                                   onClick={() => setEditingPackage(pkg.id)}
-                                  className="p-1.5 hover:bg-white/10 rounded transition-colors"
+                                  className="p-1.5 hover:bg-slate-100 rounded transition-colors"
                                 >
-                                  <Edit size={16} className="text-gray-400" />
+                                  <Edit size={16} className="text-slate-500" />
                                 </button>
                               )}
                             </div>
@@ -1600,7 +1600,7 @@ const SuperAdminDashboard = () => {
                             {editingPackage === pkg.id ? (
                               <div className="space-y-3">
                                 <div>
-                                  <label className="text-xs text-gray-400">
+                                  <label className="text-xs text-slate-500">
                                     Description
                                   </label>
                                   <input
@@ -1615,12 +1615,12 @@ const SuperAdminDashboard = () => {
                                         )
                                       );
                                     }}
-                                    className="mt-1 w-full bg-white/10 border border-white/20 rounded px-2 py-1 text-white text-sm"
+                                    className="mt-1 w-full bg-white/10 border border-white/20 rounded px-2 py-1 text-[#1E40AF] text-sm"
                                   />
                                 </div>
                                 <div className="grid grid-cols-2 gap-2">
                                   <div>
-                                    <label className="text-xs text-gray-400">
+                                    <label className="text-xs text-slate-500">
                                       Credits
                                     </label>
                                     <input
@@ -1635,11 +1635,11 @@ const SuperAdminDashboard = () => {
                                           )
                                         );
                                       }}
-                                      className="mt-1 w-full bg-white/10 border border-white/20 rounded px-2 py-1 text-white text-sm"
+                                      className="mt-1 w-full bg-white/10 border border-white/20 rounded px-2 py-1 text-[#1E40AF] text-sm"
                                     />
                                   </div>
                                   <div>
-                                    <label className="text-xs text-gray-400">
+                                    <label className="text-xs text-slate-500">
                                       Price (₱)
                                     </label>
                                     <input
@@ -1654,13 +1654,13 @@ const SuperAdminDashboard = () => {
                                           )
                                         );
                                       }}
-                                      className="mt-1 w-full bg-white/10 border border-white/20 rounded px-2 py-1 text-white text-sm"
+                                      className="mt-1 w-full bg-white/10 border border-white/20 rounded px-2 py-1 text-[#1E40AF] text-sm"
                                     />
                                   </div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-2">
                                   <div>
-                                    <label className="text-xs text-gray-400">
+                                    <label className="text-xs text-slate-500">
                                       Discount (%)
                                     </label>
                                     <input
@@ -1675,11 +1675,11 @@ const SuperAdminDashboard = () => {
                                           )
                                         );
                                       }}
-                                      className="mt-1 w-full bg-white/10 border border-white/20 rounded px-2 py-1 text-white text-sm"
+                                      className="mt-1 w-full bg-white/10 border border-white/20 rounded px-2 py-1 text-[#1E40AF] text-sm"
                                     />
                                   </div>
                                   <div className="flex items-end">
-                                    <label className="flex items-center gap-2 text-xs text-gray-400">
+                                    <label className="flex items-center gap-2 text-xs text-slate-500">
                                       <input
                                         type="checkbox"
                                         checked={pkg.popular || false}
@@ -1712,18 +1712,18 @@ const SuperAdminDashboard = () => {
                               </div>
                             ) : (
                               <div className="space-y-2">
-                                <p className="text-gray-400 text-sm">
+                                <p className="text-slate-500 text-sm">
                                   {pkg.description}
                                 </p>
                                 <div className="flex items-center justify-between">
                                   <div>
-                                    <p className="text-2xl font-bold text-white">
+                                    <p className="text-2xl font-bold text-[#1E40AF]">
                                       {pkg.credits}
                                     </p>
-                                    <p className="text-xs text-gray-400">credits</p>
+                                    <p className="text-xs text-slate-500">credits</p>
                                   </div>
                                   <div className="text-right">
-                                    <p className="text-xl font-bold text-yellow-400">
+                                    <p className="text-xl font-bold text-[#8B5CF6]">
                                       ₱{pkg.price}
                                     </p>
                                     {pkg.discount > 0 && (
@@ -1743,7 +1743,7 @@ const SuperAdminDashboard = () => {
                         <div className="flex justify-end">
                           <button
                             onClick={handleSavePackages}
-                            className="px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-colors font-semibold"
+                            className="px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-[#1E40AF] rounded-lg transition-colors font-semibold"
                           >
                             Save All Packages
                           </button>
@@ -1763,13 +1763,13 @@ const SuperAdminDashboard = () => {
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6 space-y-4">
-                        <h3 className="text-white text-lg font-semibold flex items-center gap-2">
-                          <Coins className="text-yellow-400" size={20} />
+                      <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-6 space-y-4">
+                        <h3 className="text-[#1E40AF] text-lg font-semibold flex items-center gap-2">
+                          <Coins className="text-[#8B5CF6]" size={20} />
                           Registration & Purchase Configuration
                         </h3>
                         <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4 mb-4">
-                          <p className="text-yellow-400 text-sm font-medium mb-2">Registration Bonus</p>
+                          <p className="text-[#8B5CF6] text-sm font-medium mb-2">Registration Bonus</p>
                           <div>
                             <label className="text-sm text-gray-300">
                               Free credits for new users
@@ -1783,10 +1783,10 @@ const SuperAdminDashboard = () => {
                                   Number(e.target.value)
                                 )
                               }
-                              className="mt-1 w-full rounded-lg bg-white/5 border border-white/10 text-white p-3"
+                              className="mt-1 w-full rounded-lg bg-slate-50 border border-slate-200 text-[#1E40AF] p-3"
                               placeholder="e.g., 100"
                             />
-                            <p className="text-xs text-gray-400 mt-1">
+                            <p className="text-xs text-slate-500 mt-1">
                               Credits automatically granted when a user registers
                             </p>
                           </div>
@@ -1808,7 +1808,7 @@ const SuperAdminDashboard = () => {
                                     Number(e.target.value)
                                   )
                                 }
-                                className="mt-1 w-full rounded-lg bg-white/5 border border-white/10 text-white p-3"
+                                className="mt-1 w-full rounded-lg bg-slate-50 border border-slate-200 text-[#1E40AF] p-3"
                                 placeholder="e.g., 1"
                               />
                             </div>
@@ -1826,32 +1826,32 @@ const SuperAdminDashboard = () => {
                                     Number(e.target.value)
                                   )
                                 }
-                                className="mt-1 w-full rounded-lg bg-white/5 border border-white/10 text-white p-3"
+                                className="mt-1 w-full rounded-lg bg-slate-50 border border-slate-200 text-[#1E40AF] p-3"
                                 placeholder="e.g., 1"
                               />
                             </div>
                           </div>
-                          <div className="mt-3 p-3 bg-white/5 rounded-lg">
+                          <div className="mt-3 p-3 bg-slate-50 rounded-lg">
                             <p className="text-sm text-gray-300">
-                              <span className="font-semibold text-white">Current Rate:</span> ₱
+                              <span className="font-semibold text-[#1E40AF]">Current Rate:</span> ₱
                               {(defaultsForm.PesoToCredits?.peso || 1) /
                                 (defaultsForm.PesoToCredits?.credits || 1)}
                               {" = 1 credit"}
                             </p>
-                            <p className="text-xs text-gray-400 mt-1">
+                            <p className="text-xs text-slate-500 mt-1">
                               Example: ₱{(defaultsForm.PesoToCredits?.peso || 1) * 100} = {(defaultsForm.PesoToCredits?.credits || 1) * 100} credits
                             </p>
                           </div>
                         </div>
                       </div>
 
-                      <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6 space-y-4">
-                        <h3 className="text-white text-lg font-semibold">
+                      <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-6 space-y-4">
+                        <h3 className="text-[#1E40AF] text-lg font-semibold">
                           Transaction Rates
                         </h3>
                         <div className="grid grid-cols-1 gap-4">
                           <div>
-                            <label className="text-sm text-gray-400">
+                            <label className="text-sm text-slate-500">
                               Generate PDF
                             </label>
                             <input
@@ -1863,11 +1863,11 @@ const SuperAdminDashboard = () => {
                                   Number(e.target.value)
                                 )
                               }
-                              className="mt-1 w-full rounded-lg bg-white/5 border border-white/10 text-white p-3"
+                              className="mt-1 w-full rounded-lg bg-slate-50 border border-slate-200 text-[#1E40AF] p-3"
                             />
                           </div>
                           <div>
-                            <label className="text-sm text-gray-400">
+                            <label className="text-sm text-slate-500">
                               Upload to Blockchain
                             </label>
                             <input
@@ -1879,11 +1879,11 @@ const SuperAdminDashboard = () => {
                                   Number(e.target.value)
                                 )
                               }
-                              className="mt-1 w-full rounded-lg bg-white/5 border border-white/10 text-white p-3"
+                              className="mt-1 w-full rounded-lg bg-slate-50 border border-slate-200 text-[#1E40AF] p-3"
                             />
                           </div>
                           <div>
-                            <label className="text-sm text-gray-400">
+                            <label className="text-sm text-slate-500">
                               Upload to IPFS
                             </label>
                             <input
@@ -1895,11 +1895,11 @@ const SuperAdminDashboard = () => {
                                   Number(e.target.value)
                                 )
                               }
-                              className="mt-1 w-full rounded-lg bg-white/5 border border-white/10 text-white p-3"
+                              className="mt-1 w-full rounded-lg bg-slate-50 border border-slate-200 text-[#1E40AF] p-3"
                             />
                           </div>
                           <div>
-                            <label className="text-sm text-gray-400">
+                            <label className="text-sm text-slate-500">
                               Validate Certificate
                             </label>
                             <input
@@ -1911,14 +1911,14 @@ const SuperAdminDashboard = () => {
                                   Number(e.target.value)
                                 )
                               }
-                              className="mt-1 w-full rounded-lg bg-white/5 border border-white/10 text-white p-3"
+                              className="mt-1 w-full rounded-lg bg-slate-50 border border-slate-200 text-[#1E40AF] p-3"
                             />
                           </div>
                         </div>
                       </div>
 
-                      <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6 space-y-4">
-                        <h3 className="text-white text-lg font-semibold">
+                      <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-6 space-y-4">
+                        <h3 className="text-[#1E40AF] text-lg font-semibold">
                           Promotions
                         </h3>
                         <div className="flex items-center space-x-3">
@@ -1943,7 +1943,7 @@ const SuperAdminDashboard = () => {
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
-                            <label className="text-sm text-gray-400">
+                            <label className="text-sm text-slate-500">
                               Bonus percent
                             </label>
                             <input
@@ -1956,11 +1956,11 @@ const SuperAdminDashboard = () => {
                                   Number(e.target.value)
                                 )
                               }
-                              className="mt-1 w-full rounded-lg bg-white/5 border border-white/10 text-white p-3"
+                              className="mt-1 w-full rounded-lg bg-slate-50 border border-slate-200 text-[#1E40AF] p-3"
                             />
                           </div>
                           <div>
-                            <label className="text-sm text-gray-400">
+                            <label className="text-sm text-slate-500">
                               Description
                             </label>
                             <input
@@ -1972,7 +1972,7 @@ const SuperAdminDashboard = () => {
                                   e.target.value
                                 )
                               }
-                              className="mt-1 w-full rounded-lg bg-white/5 border border-white/10 text-white p-3"
+                              className="mt-1 w-full rounded-lg bg-slate-50 border border-slate-200 text-[#1E40AF] p-3"
                               placeholder="e.g., Holiday promo"
                             />
                           </div>
@@ -1984,7 +1984,7 @@ const SuperAdminDashboard = () => {
                   <div className="flex justify-end">
                     <button
                       onClick={handleDefaultsSave}
-                      className="px-6 py-3 rounded-xl bg-gradient-to-r from-yellow-600 to-orange-600 text-white font-semibold disabled:opacity-50"
+                      className="px-6 py-3 rounded-xl bg-gradient-to-r from-yellow-600 to-orange-600 text-[#1E40AF] font-semibold disabled:opacity-50"
                       disabled={defaultsLoading}
                     >
                       {defaultsLoading ? "Saving..." : "Save Settings"}

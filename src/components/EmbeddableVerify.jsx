@@ -45,7 +45,13 @@ const EmbeddableVerify = () => {
 
     // Notify parent iframe (if embedded) that widget is loaded
     if (window.parent !== window) {
-      window.parent.postMessage({ type: "xertiq-widget-loaded" }, "*");
+      const allowedOrigin = document.referrer
+        ? new URL(document.referrer).origin
+        : window.location.origin;
+      window.parent.postMessage(
+        { type: "xertiq-widget-loaded" },
+        allowedOrigin,
+      );
     }
   }, []);
 
