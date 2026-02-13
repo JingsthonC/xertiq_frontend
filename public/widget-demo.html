@@ -289,8 +289,10 @@
             <code
               >&lt;!-- Widget with auto-verification --&gt; &lt;div
               id="xertiq-verify-widget" data-doc="cert_certificate_Name_123_abc"
-              &gt;&lt;/div&gt; &lt;script
-              src="https://your-domain.com/xertiq-widget.js"&gt;&lt;/script&gt;</code
+              data-key="your_verification_key"&gt; &lt;/div&gt; &lt;script
+              src="https://your-domain.com/xertiq-widget.js"&gt;&lt;/script&gt;
+              &lt;!-- Note: data-key is optional but required for protected
+              documents --&gt;</code
             >
           </div>
         </div>
@@ -306,8 +308,9 @@
               src="https://your-domain.com/xertiq-widget.js"&gt;&lt;/script&gt;
               &lt;script&gt; // Initialize after script loads
               XertiQWidget.init({ container: 'my-verification-widget', docId:
-              'cert_certificate_Name_123_abc', // Optional apiUrl:
-              'https://your-api-domain.com/api' // Optional });
+              'cert_certificate_Name_123_abc', accessKey:
+              'your_verification_key', // Optional but required for protected
+              docs apiUrl: 'https://your-api-domain.com/api' // Optional });
               &lt;/script&gt;</code
             >
           </div>

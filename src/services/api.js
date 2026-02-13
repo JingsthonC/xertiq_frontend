@@ -88,6 +88,16 @@ class ApiService {
     return response.data;
   }
 
+  async verifyEmail(token, email) {
+    const response = await this.api.get(`/auth/verify-email?token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`);
+    return response.data;
+  }
+
+  async resendVerification(email) {
+    const response = await this.api.post("/auth/resend-verification", { email });
+    return response.data;
+  }
+
   // Credits endpoints
   async getCredits() {
     const response = await this.api.get("/credits");
@@ -401,6 +411,25 @@ class ApiService {
     return response.data;
   }
 
+  // Holder visibility management
+  async getDocumentVisibility(docId) {
+    const response = await this.api.get(
+      `/holder/documents/${docId}/visibility`,
+    );
+    return response.data;
+  }
+
+  async toggleDocumentVisibility(docId, isVisible, note = null) {
+    const response = await this.api.patch(
+      `/holder/documents/${docId}/visibility`,
+      {
+        isVisible,
+        note,
+      },
+    );
+    return response.data;
+  }
+
   // Issuer endpoints
   async getIssuerDocuments(params = {}) {
     const { page = 1, limit = 10, batchId, holderEmail } = params;
@@ -513,6 +542,115 @@ class ApiService {
     } else {
       delete this.api.defaults.headers.common["Authorization"];
     }
+  }
+
+  // ==================== API Key Management ====================
+
+  /**
+   * Get all API keys for the authenticated user
+   */
+  async getApiKeys() {
+    const response = await this.api.get("/issuer/api-keys");
+    return response.data;
+  }
+
+  /**
+   * Create a new API key
+   * @param {Object} data - Key configuration
+   * @param {string} data.name - Key name
+   * @param {string[]} data.permissions - Permissions array
+   * @param {string} data.expiresAt - Optional expiration date
+   * @param {string[]} data.ipAllowlist - Optional IP allowlist
+   * @param {number} data.rateLimit - Rate limit (requests per window)
+   * @param {number} data.rateLimitWindow - Rate limit window in ms
+   */
+  async createApiKey(data) {
+    const response = await this.api.post("/issuer/api-keys", data);
+    return response.data;
+  }
+
+  /**
+   * Update an API key
+   * @param {string} keyId - API key ID
+   * @param {Object} data - Updated configuration
+   */
+  async updateApiKey(keyId, data) {
+    const response = await this.api.patch(`/issuer/api-keys/${keyId}`, data);
+    return response.data;
+  }
+
+  /**
+   * Revoke an API key
+   * @param {string} keyId - API key ID
+   */
+  async revokeApiKey(keyId) {
+    const response = await this.api.delete(`/issuer/api-keys/${keyId}`);
+    return response.data;
+  }
+
+  /**
+   * Get API key usage statistics
+   * @param {string} keyId - API key ID
+   * @param {number} days - Number of days to fetch (default 30)
+   */
+  async getApiKeyUsage(keyId, days = 30) {
+    const response = await this.api.get(`/issuer/api-keys/${keyId}/usage`, {
+      params: { days },
+    });
+    return response.data;
+  }
+
+  /**
+   * Configure webhook for an API key
+   * @param {string} keyId - API key ID
+   * @param {Object} data - Webhook configuration
+   * @param {string} data.url - Webhook URL (must be HTTPS)
+   * @param {string[]} data.events - Events to subscribe to
+   */
+  async configureWebhook(keyId, data) {
+    const response = await this.api.post(`/issuer/api-keys/${keyId}/webhook`, data);
+    return response.data;
+  }
+
+  /**
+   * Delete webhook configuration
+   * @param {string} keyId - API key ID
+   */
+  async deleteWebhook(keyId) {
+    const response = await this.api.delete(`/issuer/api-keys/${keyId}/webhook`);
+    return response.data;
+  }
+
+  /**
+   * Get webhook deliveries for an API key
+   * @param {string} keyId - API key ID
+   * @param {Object} params - Query parameters
+   */
+  async getWebhookDeliveries(keyId, params = {}) {
+    const { page = 1, limit = 20, status } = params;
+    const response = await this.api.get(`/issuer/api-keys/${keyId}/webhook/deliveries`, {
+      params: { page, limit, status },
+    });
+    return response.data;
+  }
+
+  /**
+   * Manually retry a failed webhook delivery
+   * @param {string} keyId - API key ID
+   * @param {string} deliveryId - Delivery ID
+   */
+  async retryWebhookDelivery(keyId, deliveryId) {
+    const response = await this.api.post(`/issuer/api-keys/${keyId}/webhook/deliveries/${deliveryId}/retry`);
+    return response.data;
+  }
+
+  /**
+   * Test webhook configuration
+   * @param {string} keyId - API key ID
+   */
+  async testWebhook(keyId) {
+    const response = await this.api.post(`/issuer/api-keys/${keyId}/webhook/test`);
+    return response.data;
   }
 }
 

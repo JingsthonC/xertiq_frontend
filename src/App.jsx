@@ -24,6 +24,7 @@ import SmartTemplateEditor from "./pages/SmartTemplateEditor";
 import HolderDashboard from "./pages/HolderDashboard";
 import IssuerDashboard from "./pages/IssuerDashboard";
 import KeyManagement from "./pages/KeyManagement";
+import ApiKeyManagement from "./pages/ApiKeyManagement";
 import SuperAdminDashboard from "./pages/SuperAdminDashboard";
 import LoadingSpinner from "./components/LoadingSpinner";
 import EmbeddableVerify from "./components/EmbeddableVerify";
@@ -31,6 +32,9 @@ import LandingPage from "./pages/LandingPage";
 import IntegrationGuide from "./pages/IntegrationGuide";
 import TestWidget from "./pages/TestWidget";
 import IframeExamples from "./pages/IframeExamples";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
+import VerifyEmail from "./pages/VerifyEmail";
 
 // Detect if running as Chrome extension
 const isExtension = () => {
@@ -192,6 +196,18 @@ function App() {
       element: <IframeExamples />, // Public route - iframe examples
     },
     {
+      path: "/privacy-policy",
+      element: <PrivacyPolicy />, // Public route - legal
+    },
+    {
+      path: "/terms-of-service",
+      element: <TermsOfService />, // Public route - legal
+    },
+    {
+      path: "/verify-email",
+      element: <VerifyEmail />, // Public route - email verification
+    },
+    {
       path: "/embed/verify",
       element: <EmbeddableVerify />, // Embeddable verification widget
     },
@@ -276,6 +292,14 @@ function App() {
       element: (
         <ProtectedRoute allowedRoles={["ISSUER"]}>
           <KeyManagement />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/api-keys",
+      element: (
+        <ProtectedRoute allowedRoles={["ISSUER"]}>
+          <ApiKeyManagement />
         </ProtectedRoute>
       ),
     },
