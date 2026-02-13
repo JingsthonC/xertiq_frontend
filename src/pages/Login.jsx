@@ -271,7 +271,7 @@ const Login = () => {
   return (
     <div className="min-h-screen flex flex-col lg:flex-row">
       {/* Left Side - Blockchain Network Background */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#3D2D7A] via-[#4A48C4] to-[#352668] relative overflow-hidden items-center justify-center order-1">
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#1E40AF] via-[#3B82F6] to-[#7C3AED] relative overflow-hidden items-center justify-center order-1">
         {/* XERTIQ Logo at top */}
         <div className="absolute top-8 left-1/2 -translate-x-1/2 z--1 flex justify-start space-x-3">
           {/* <div className="w-24 h-24 bg-white rounded-xl flex items-center justify-center shadow-xl p-2"> */}
@@ -478,9 +478,9 @@ const Login = () => {
           <svg className="absolute inset-0 w-full h-full" style={{ zIndex: 5 }}>
             <defs>
               <linearGradient id="lineGlow" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#00E5FF" stopOpacity="0.8" />
-                <stop offset="50%" stopColor="#00B8D4" stopOpacity="0.9" />
-                <stop offset="100%" stopColor="#0097A7" stopOpacity="0.7" />
+                <stop offset="0%" stopColor="#8B5CF6" stopOpacity="0.8" />
+                <stop offset="50%" stopColor="#7C3AED" stopOpacity="0.9" />
+                <stop offset="100%" stopColor="#6D28D9" stopOpacity="0.7" />
               </linearGradient>
               <filter id="glow">
                 <feGaussianBlur stdDeviation="3" result="coloredBlur" />
@@ -654,7 +654,7 @@ const Login = () => {
               cx="12%"
               cy="20%"
               r="5"
-              fill="#00E5FF"
+              fill="#8B5CF6"
               opacity="0.9"
               filter="url(#glow)"
             >
@@ -669,7 +669,7 @@ const Login = () => {
               cx="50%"
               cy="18%"
               r="5"
-              fill="#00E5FF"
+              fill="#8B5CF6"
               opacity="0.9"
               filter="url(#glow)"
             >
@@ -684,7 +684,7 @@ const Login = () => {
               cx="92%"
               cy="20%"
               r="5"
-              fill="#00E5FF"
+              fill="#8B5CF6"
               opacity="0.9"
               filter="url(#glow)"
             >
@@ -699,7 +699,7 @@ const Login = () => {
               cx="50%"
               cy="45%"
               r="5"
-              fill="#00E5FF"
+              fill="#8B5CF6"
               opacity="0.9"
               filter="url(#glow)"
             >
@@ -714,7 +714,7 @@ const Login = () => {
               cx="72%"
               cy="45%"
               r="5"
-              fill="#00E5FF"
+              fill="#8B5CF6"
               opacity="0.9"
               filter="url(#glow)"
             >
@@ -729,7 +729,7 @@ const Login = () => {
               cx="85%"
               cy="72%"
               r="5"
-              fill="#00E5FF"
+              fill="#8B5CF6"
               opacity="0.9"
               filter="url(#glow)"
             >
@@ -792,7 +792,7 @@ const Login = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, email: e.target.value })
                     }
-                    className="w-full pl-12 pr-4 py-3.5 text-base border-2 border-gray-200 rounded-xl focus:border-[#6B5DD3] focus:ring-2 focus:ring-[#6B5DD3]/20 outline-none transition-all text-gray-800 bg-white/80"
+                    className="w-full pl-12 pr-4 py-3.5 text-base border-2 border-gray-200 rounded-xl focus:border-[#3B82F6] focus:ring-2 focus:ring-[#3B82F6]/20 outline-none transition-all text-gray-800 bg-white/80"
                     placeholder="email@example.com"
                     required
                   />
@@ -807,7 +807,7 @@ const Login = () => {
                   </label>
                   <Link
                     to="/forgot-password"
-                    className="text-sm text-[#6B5DD3] hover:text-[#5A4DB8] font-medium"
+                    className="text-sm text-[#3B82F6] hover:text-[#2563EB] font-medium"
                   >
                     Forgot password?
                   </Link>
@@ -823,7 +823,7 @@ const Login = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, password: e.target.value })
                     }
-                    className="w-full pl-12 pr-12 py-3.5 text-base border-2 border-gray-200 rounded-xl focus:border-[#6B5DD3] focus:ring-2 focus:ring-[#6B5DD3]/20 outline-none transition-all text-gray-800 bg-white/80"
+                    className="w-full pl-12 pr-12 py-3.5 text-base border-2 border-gray-200 rounded-xl focus:border-[#3B82F6] focus:ring-2 focus:ring-[#3B82F6]/20 outline-none transition-all text-gray-800 bg-white/80"
                     placeholder="••••••••"
                     required
                   />
@@ -844,7 +844,7 @@ const Login = () => {
                   id="remember"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-4 h-4 text-[#6B5DD3] border-gray-300 rounded focus:ring-[#6B5DD3]"
+                  className="w-4 h-4 text-[#3B82F6] border-gray-300 rounded focus:ring-[#3B82F6]"
                 />
                 <label
                   htmlFor="remember"
@@ -858,7 +858,7 @@ const Login = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-gradient-to-r from-[#6B5DD3] to-[#7C6FDC] hover:from-[#5A4DB8] hover:to-[#6B5DD3] text-white text-lg font-semibold py-4 rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl mt-8"
+                className="w-full bg-gradient-to-r from-[#3B82F6] to-[#8B5CF6] hover:from-[#2563EB] hover:to-[#3B82F6] text-white text-lg font-semibold py-4 rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl mt-8"
               >
                 {isLoading ? (
                   <>
@@ -877,7 +877,7 @@ const Login = () => {
                 Don't have an account?{" "}
                 <Link
                   to="/register"
-                  className="text-[#6B5DD3] hover:text-[#5A4DB8] font-semibold underline"
+                  className="text-[#3B82F6] hover:text-[#2563EB] font-semibold underline"
                 >
                   Sign up
                 </Link>

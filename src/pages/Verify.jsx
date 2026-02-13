@@ -29,6 +29,7 @@ const Verify = () => {
   const [verificationData, setVerificationData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [hiddenDocument, setHiddenDocument] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [copied, setCopied] = useState(false);
   const [showDocumentPreview, setShowDocumentPreview] = useState(false);
@@ -55,6 +56,7 @@ const Verify = () => {
 
     setLoading(true);
     setError("");
+    setHiddenDocument(false);
 
     try {
       const data = await apiService.verifyDocument(query, accessKey);
@@ -67,8 +69,12 @@ const Verify = () => {
     } catch (err) {
       console.error("Verification failed:", err);
 
-      // Check for access denied error
-      if (err.response?.status === 403) {
+      // Check for hidden document response
+      if (err.response?.status === 403 && err.response?.data?.hidden === true) {
+        setHiddenDocument(true);
+        setError("");
+      } else if (err.response?.status === 403) {
+        // Check for access denied error
         setError("Access Denied - Invalid or missing verification key");
       } else if (err.response?.data?.message) {
         setError(err.response.data.message);
@@ -95,24 +101,103 @@ const Verify = () => {
     <div className="relative min-h-screen overflow-x-hidden bg-gradient-to-br from-[#f7fafc] to-[#e6f2ff]">
       {/* Animated Background Elements */}
       <div className="absolute inset-0">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#3834A8]/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#3B82F6]/10 rounded-full blur-3xl animate-pulse"></div>
         <div
-          className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-[#00E5FF]/10 rounded-full blur-3xl animate-pulse"
+          className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-[#8B5CF6]/10 rounded-full blur-3xl animate-pulse"
           style={{ animationDelay: "1s" }}
         ></div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#2A1B5D]/5 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#1E40AF]/5 rounded-full blur-3xl"></div>
         {/* Grid Pattern */}
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgwLDAsMCwwLjAzKSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-30"></div>
       </div>
 
       {/* Main Content */}
       <div className="relative z-10">
+        {/* Hidden Document State */}
+        {hiddenDocument && !loading && (
+          <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12">
+            <div className="max-w-lg w-full">
+              <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl shadow-amber-500/10 border border-amber-200/50 overflow-hidden">
+                {/* Header */}
+                <div className="bg-gradient-to-r from-amber-50 to-orange-50 px-8 py-6 border-b border-amber-100">
+                  <div className="flex items-center justify-center mb-4">
+                    <div className="w-16 h-16 bg-amber-100 rounded-2xl flex items-center justify-center">
+                      <EyeOff className="w-8 h-8 text-amber-600" />
+                    </div>
+                  </div>
+                  <h2 className="text-2xl font-bold text-amber-800 text-center">
+                    Document Not Available
+                  </h2>
+                </div>
+
+                {/* Content */}
+                <div className="p-8">
+                  <div className="text-center mb-6">
+                    <p className="text-gray-600 text-lg mb-4">
+                      This document has been hidden by its holder.
+                    </p>
+                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                      <p className="text-amber-800 text-sm">
+                        <strong>What does this mean?</strong>
+                        <br />
+                        The document holder has chosen to temporarily hide this
+                        document from public verification. The document may still
+                        exist and be valid, but the holder has exercised their
+                        right to control its visibility.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-gray-100 pt-6">
+                    <h3 className="text-sm font-semibold text-gray-700 mb-3">
+                      What you can do:
+                    </h3>
+                    <ul className="space-y-2 text-sm text-gray-600">
+                      <li className="flex items-start gap-2">
+                        <User className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
+                        <span>
+                          Contact the document holder directly to request access
+                        </span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <FileText className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
+                        <span>
+                          Request a new verification link from the holder
+                        </span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div className="mt-8">
+                    <button
+                      onClick={() => {
+                        setHiddenDocument(false);
+                        setSearchQuery("");
+                      }}
+                      className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl font-medium hover:from-amber-600 hover:to-orange-600 transition-all shadow-lg shadow-amber-500/25"
+                    >
+                      <ArrowLeft size={18} />
+                      Try Another Document
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* XertiQ Branding */}
+              <div className="flex items-center justify-center mt-8 gap-2 text-gray-400">
+                <img src={xertiqLogo} alt="XertiQ" className="w-5 h-5" />
+                <span className="text-sm">Powered by XertiQ</span>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Full-Screen Hero - Initial State */}
-        {!verificationData && !loading && (
+        {!verificationData && !loading && !hiddenDocument && (
           <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12">
             {/* Hero Header */}
             <div className="text-center mb-16 space-y-6">
-              <div className="inline-flex items-center justify-center w-28 h-28 bg-white rounded-3xl shadow-2xl shadow-[#3834A8]/30 transform hover:scale-110 hover:rotate-3 transition-all duration-500 p-3">
+              <div className="inline-flex items-center justify-center w-28 h-28 bg-white rounded-3xl shadow-2xl shadow-[#3B82F6]/30 transform hover:scale-110 hover:rotate-3 transition-all duration-500 p-3">
                 <img
                   src={xertiqLogo}
                   alt="XertiQ"
@@ -121,7 +206,7 @@ const Verify = () => {
               </div>
               <div>
                 <h1 className="text-6xl sm:text-7xl lg:text-8xl font-black mb-4">
-                  <span className="bg-gradient-to-r from-[#3834A8] to-[#00E5FF] bg-clip-text text-transparent">
+                  <span className="bg-gradient-to-r from-[#3B82F6] to-[#8B5CF6] bg-clip-text text-transparent">
                     XertiQ
                   </span>
                 </h1>
@@ -140,7 +225,7 @@ const Verify = () => {
                   </span>
                   <span>•</span>
                   <span className="flex items-center space-x-2">
-                    <Lock size={16} className="text-[#00E5FF]" />
+                    <Lock size={16} className="text-[#8B5CF6]" />
                     <span>Tamper-Proof</span>
                   </span>
                 </div>
@@ -151,9 +236,9 @@ const Verify = () => {
             <div className="w-full max-w-7xl mb-16 px-4">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
                 {/* Organization Card */}
-                <div className="group bg-white/80 backdrop-blur-xl rounded-3xl p-8 border border-gray-200 shadow-2xl transform hover:-translate-y-2 hover:shadow-[#3834A8]/20 transition-all duration-500">
+                <div className="group bg-white/80 backdrop-blur-xl rounded-3xl p-8 border border-gray-200 shadow-2xl transform hover:-translate-y-2 hover:shadow-[#3B82F6]/20 transition-all duration-500">
                   <div className="flex flex-col items-center text-center space-y-6 h-full">
-                    <div className="w-20 h-20 bg-gradient-to-br from-[#3834A8] to-[#2A1B5D] rounded-2xl flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform duration-500">
+                    <div className="w-20 h-20 bg-gradient-to-br from-[#3B82F6] to-[#1E40AF] rounded-2xl flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform duration-500">
                       <GraduationCap size={40} className="text-gray-800" />
                     </div>
                     <div>
@@ -203,7 +288,7 @@ const Verify = () => {
                     <div className="w-12 h-1 bg-gradient-to-r from-transparent via-blue-400/50 to-blue-500 rounded-full animate-pulse"></div>
                   </div>
                   <div className="hidden lg:block absolute right-0 top-1/2 -translate-y-1/2 translate-x-12">
-                    <div className="w-12 h-1 bg-gradient-to-r from-[#00E5FF] via-[#00E5FF]/50 to-transparent rounded-full animate-pulse"></div>
+                    <div className="w-12 h-1 bg-gradient-to-r from-[#8B5CF6] via-[#8B5CF6]/50 to-transparent rounded-full animate-pulse"></div>
                   </div>
 
                   {/* Main Card */}
@@ -255,7 +340,7 @@ const Verify = () => {
                 {/* Verification Card */}
                 <div className="group bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl rounded-3xl p-8 border border-gray-200 shadow-2xl transform hover:-translate-y-2 hover:shadow-teal-500/20 transition-all duration-500">
                   <div className="flex flex-col items-center text-center space-y-6 h-full">
-                    <div className="w-20 h-20 bg-gradient-to-br from-[#00E5FF] to-[#00B8D4] rounded-2xl flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform duration-500">
+                    <div className="w-20 h-20 bg-gradient-to-br from-[#8B5CF6] to-[#7C3AED] rounded-2xl flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform duration-500">
                       <CheckCircle size={40} className="text-gray-800" />
                     </div>
                     <div>
@@ -270,7 +355,7 @@ const Verify = () => {
                       <div className="flex items-center space-x-3 bg-gray-50 backdrop-blur-sm rounded-xl p-3 border border-gray-200">
                         <CheckCircle
                           size={18}
-                          className="text-[#00E5FF] flex-shrink-0"
+                          className="text-[#8B5CF6] flex-shrink-0"
                         />
                         <span className="text-sm font-medium text-gray-700">
                           Blockchain Verified
@@ -279,7 +364,7 @@ const Verify = () => {
                       <div className="flex items-center space-x-3 bg-gray-50 backdrop-blur-sm rounded-xl p-3 border border-gray-200">
                         <CheckCircle
                           size={18}
-                          className="text-[#00E5FF] flex-shrink-0"
+                          className="text-[#8B5CF6] flex-shrink-0"
                         />
                         <span className="text-sm font-medium text-gray-700">
                           Merkle Proof Valid
@@ -288,7 +373,7 @@ const Verify = () => {
                       <div className="flex items-center space-x-3 bg-gray-50 backdrop-blur-sm rounded-xl p-3 border border-gray-200">
                         <CheckCircle
                           size={18}
-                          className="text-[#00E5FF] flex-shrink-0"
+                          className="text-[#8B5CF6] flex-shrink-0"
                         />
                         <span className="text-sm font-medium text-gray-700">
                           Authentic Document
@@ -344,12 +429,12 @@ const Verify = () => {
                 {
                   label: "Secure",
                   value: "100%",
-                  gradient: "from-[#3834A8] to-[#2A1B5D]",
+                  gradient: "from-[#3B82F6] to-[#1E40AF]",
                 },
                 {
                   label: "Verification",
                   value: "Instant",
-                  gradient: "from-[#00E5FF] to-[#00B8D4]",
+                  gradient: "from-[#8B5CF6] to-[#7C3AED]",
                 },
                 {
                   label: "No Cost",
@@ -359,7 +444,7 @@ const Verify = () => {
                 {
                   label: "Available",
                   value: "24/7",
-                  gradient: "from-[#3834A8] to-[#2A1B5D]",
+                  gradient: "from-[#3B82F6] to-[#1E40AF]",
                 },
               ].map((stat, idx) => (
                 <div
@@ -385,7 +470,7 @@ const Verify = () => {
           <div className="min-h-screen flex flex-col items-center justify-center px-4">
             <div className="text-center space-y-8">
               <div className="relative w-40 h-40 mx-auto">
-                <div className="absolute inset-0 bg-gradient-to-r from-[#3834A8] to-[#00E5FF] rounded-full animate-ping opacity-50"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-[#3B82F6] to-[#8B5CF6] rounded-full animate-ping opacity-50"></div>
                 <div className="relative bg-gradient-to-br from-blue-600 via-indigo-600 to-teal-600 rounded-full w-40 h-40 flex items-center justify-center shadow-2xl shadow-blue-500/50 border-4 border-white/30">
                   <Shield size={72} className="text-gray-800 animate-pulse" />
                 </div>
@@ -482,7 +567,7 @@ const Verify = () => {
                   {/* Main Certificate Card */}
                   <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-200">
                     {/* Header */}
-                    <div className="bg-gradient-to-r from-[#3834A8] via-[#2A1B5D] to-[#3834A8] p-6 text-white">
+                    <div className="bg-gradient-to-r from-[#3B82F6] via-[#1E40AF] to-[#3B82F6] p-6 text-white">
                       <div className="flex items-center justify-center space-x-3">
                         <CheckCircle size={28} />
                         <h2 className="text-2xl font-bold">
@@ -503,12 +588,12 @@ const Verify = () => {
                             className="w-24 h-24 object-contain"
                           />
                         ) : (
-                          <div className="w-24 h-24 bg-gradient-to-br from-[#3834A8] to-[#2A1B5D] rounded-full flex items-center justify-center shadow-lg">
+                          <div className="w-24 h-24 bg-gradient-to-br from-[#3B82F6] to-[#1E40AF] rounded-full flex items-center justify-center shadow-lg">
                             <GraduationCap size={48} className="text-white" />
                           </div>
                         )}
                         <div>
-                          <h1 className="text-3xl font-bold text-[#2A1B5D]">
+                          <h1 className="text-3xl font-bold text-[#1E40AF]">
                             {verificationData.university?.name ||
                               verificationData.document?.issuer ||
                               verificationData.batch?.issuer ||
@@ -528,10 +613,10 @@ const Verify = () => {
                         {(verificationData.holder?.name ||
                           verificationData.document?.studentName) && (
                           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-                            <p className="text-xs font-semibold text-[#3834A8] uppercase tracking-wide mb-2">
+                            <p className="text-xs font-semibold text-[#3B82F6] uppercase tracking-wide mb-2">
                               Holder Name
                             </p>
-                            <p className="text-lg font-bold text-[#2A1B5D]">
+                            <p className="text-lg font-bold text-[#1E40AF]">
                               {verificationData.holder?.name ||
                                 verificationData.document?.studentName}
                             </p>
@@ -541,10 +626,10 @@ const Verify = () => {
                         {/* Holder Email */}
                         {verificationData.holder?.email && (
                           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-                            <p className="text-xs font-semibold text-[#3834A8] uppercase tracking-wide mb-2">
+                            <p className="text-xs font-semibold text-[#3B82F6] uppercase tracking-wide mb-2">
                               Holder Email
                             </p>
-                            <p className="text-base font-medium text-[#2A1B5D]">
+                            <p className="text-base font-medium text-[#1E40AF]">
                               {verificationData.holder.email}
                             </p>
                           </div>
@@ -555,10 +640,10 @@ const Verify = () => {
                           verificationData.document?.studentNumber ||
                           verificationData.document?.holderNumber) && (
                           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-                            <p className="text-xs font-semibold text-[#3834A8] uppercase tracking-wide mb-2">
+                            <p className="text-xs font-semibold text-[#3B82F6] uppercase tracking-wide mb-2">
                               Student Number
                             </p>
-                            <p className="text-lg font-bold text-[#2A1B5D]">
+                            <p className="text-lg font-bold text-[#1E40AF]">
                               {verificationData.holder?.studentNumber ||
                                 verificationData.document?.studentNumber ||
                                 verificationData.document?.holderNumber}
@@ -569,10 +654,10 @@ const Verify = () => {
                         {/* Position in Batch */}
                         {verificationData.holder?.position && (
                           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-                            <p className="text-xs font-semibold text-[#3834A8] uppercase tracking-wide mb-2">
+                            <p className="text-xs font-semibold text-[#3B82F6] uppercase tracking-wide mb-2">
                               Position in Batch
                             </p>
-                            <p className="text-base font-medium text-[#2A1B5D]">
+                            <p className="text-base font-medium text-[#1E40AF]">
                               Document {verificationData.holder.position.number}{" "}
                               of {verificationData.holder.position.total}
                             </p>
@@ -583,10 +668,10 @@ const Verify = () => {
                         {(verificationData.document?.degree ||
                           verificationData.document?.title) && (
                           <div className="bg-white rounded-xl p-4 shadow-sm sm:col-span-2 border border-gray-100">
-                            <p className="text-xs font-semibold text-[#3834A8] uppercase tracking-wide mb-2">
+                            <p className="text-xs font-semibold text-[#3B82F6] uppercase tracking-wide mb-2">
                               Document Title
                             </p>
-                            <p className="text-lg font-bold text-[#2A1B5D]">
+                            <p className="text-lg font-bold text-[#1E40AF]">
                               {verificationData.document.degree ||
                                 verificationData.document.title}
                             </p>
@@ -596,7 +681,7 @@ const Verify = () => {
                         {/* Document Type */}
                         {verificationData.document?.docType && (
                           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-                            <p className="text-xs font-semibold text-[#3834A8] uppercase tracking-wide mb-2">
+                            <p className="text-xs font-semibold text-[#3B82F6] uppercase tracking-wide mb-2">
                               Document Type
                             </p>
                             <div className="flex items-center gap-2">
@@ -607,7 +692,7 @@ const Verify = () => {
                                   ).icon
                                 }
                               </span>
-                              <p className="text-lg font-bold text-[#2A1B5D]">
+                              <p className="text-lg font-bold text-[#1E40AF]">
                                 {
                                   createDocTypeBadge(
                                     verificationData.document.docType,
@@ -623,7 +708,7 @@ const Verify = () => {
                         {verificationData.docId && (
                           <div className="bg-white rounded-xl p-4 shadow-sm sm:col-span-2 lg:col-span-3 border border-gray-100">
                             <div className="flex items-center justify-between mb-2">
-                              <p className="text-xs font-semibold text-[#3834A8] uppercase tracking-wide">
+                              <p className="text-xs font-semibold text-[#3B82F6] uppercase tracking-wide">
                                 Document ID / Serial Number
                               </p>
                               <button
@@ -635,11 +720,11 @@ const Verify = () => {
                                 {copied ? (
                                   <Check size={14} className="text-green-600" />
                                 ) : (
-                                  <Copy size={14} className="text-[#3834A8]" />
+                                  <Copy size={14} className="text-[#3B82F6]" />
                                 )}
                               </button>
                             </div>
-                            <p className="text-base font-mono text-[#2A1B5D] break-all">
+                            <p className="text-base font-mono text-[#1E40AF] break-all">
                               {verificationData.docId}
                             </p>
                           </div>
@@ -648,10 +733,10 @@ const Verify = () => {
                         {/* Issuer */}
                         {verificationData.document?.issuer && (
                           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-                            <p className="text-xs font-semibold text-[#3834A8] uppercase tracking-wide mb-2">
+                            <p className="text-xs font-semibold text-[#3B82F6] uppercase tracking-wide mb-2">
                               Issuer
                             </p>
-                            <p className="text-lg font-bold text-[#2A1B5D]">
+                            <p className="text-lg font-bold text-[#1E40AF]">
                               {verificationData.document.issuer}
                             </p>
                           </div>
@@ -660,10 +745,10 @@ const Verify = () => {
                         {/* Course */}
                         {verificationData.document?.course && (
                           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-                            <p className="text-xs font-semibold text-[#3834A8] uppercase tracking-wide mb-2">
+                            <p className="text-xs font-semibold text-[#3B82F6] uppercase tracking-wide mb-2">
                               Course
                             </p>
-                            <p className="text-lg font-bold text-[#2A1B5D]">
+                            <p className="text-lg font-bold text-[#1E40AF]">
                               {verificationData.document.course}
                             </p>
                           </div>
@@ -672,10 +757,10 @@ const Verify = () => {
                         {/* Grade */}
                         {verificationData.document?.grade && (
                           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-                            <p className="text-xs font-semibold text-[#3834A8] uppercase tracking-wide mb-2">
+                            <p className="text-xs font-semibold text-[#3B82F6] uppercase tracking-wide mb-2">
                               Grade
                             </p>
-                            <p className="text-lg font-bold text-[#2A1B5D]">
+                            <p className="text-lg font-bold text-[#1E40AF]">
                               {verificationData.document.grade}
                             </p>
                           </div>
@@ -685,10 +770,10 @@ const Verify = () => {
                         {(verificationData.document?.issuedAt ||
                           verificationData.batch?.createdAt) && (
                           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-                            <p className="text-xs font-semibold text-[#3834A8] uppercase tracking-wide mb-2">
+                            <p className="text-xs font-semibold text-[#3B82F6] uppercase tracking-wide mb-2">
                               Issue Date
                             </p>
-                            <p className="text-lg font-bold text-[#2A1B5D]">
+                            <p className="text-lg font-bold text-[#1E40AF]">
                               {new Date(
                                 verificationData.document?.issuedAt ||
                                   verificationData.batch?.createdAt,
@@ -704,10 +789,10 @@ const Verify = () => {
                         {/* Verified At */}
                         {verificationData.verifiedAt && (
                           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-                            <p className="text-xs font-semibold text-[#3834A8] uppercase tracking-wide mb-2">
+                            <p className="text-xs font-semibold text-[#3B82F6] uppercase tracking-wide mb-2">
                               Verified At
                             </p>
-                            <p className="text-base font-medium text-[#2A1B5D]">
+                            <p className="text-base font-medium text-[#1E40AF]">
                               {new Date(
                                 verificationData.verifiedAt,
                               ).toLocaleString("en-US", {
@@ -726,37 +811,37 @@ const Verify = () => {
                     {/* Holder Identity Section */}
                     {verificationData.document?.identity && (
                       <div className="p-8 bg-white border-t border-gray-200">
-                        <h3 className="text-lg font-bold text-[#2A1B5D] mb-4 flex items-center space-x-2">
-                          <User size={20} className="text-[#3834A8]" />
+                        <h3 className="text-lg font-bold text-[#1E40AF] mb-4 flex items-center space-x-2">
+                          <User size={20} className="text-[#3B82F6]" />
                           <span>Holder Identity Information</span>
                         </h3>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                           {verificationData.document.identity.email && (
                             <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-                              <p className="text-xs font-semibold text-[#3834A8] uppercase tracking-wide mb-2">
+                              <p className="text-xs font-semibold text-[#3B82F6] uppercase tracking-wide mb-2">
                                 Email
                               </p>
-                              <p className="text-base font-medium text-[#2A1B5D]">
+                              <p className="text-base font-medium text-[#1E40AF]">
                                 {verificationData.document.identity.email}
                               </p>
                             </div>
                           )}
                           {verificationData.document.identity.birthday && (
                             <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-                              <p className="text-xs font-semibold text-[#3834A8] uppercase tracking-wide mb-2">
+                              <p className="text-xs font-semibold text-[#3B82F6] uppercase tracking-wide mb-2">
                                 Birthday
                               </p>
-                              <p className="text-base font-medium text-[#2A1B5D]">
+                              <p className="text-base font-medium text-[#1E40AF]">
                                 {verificationData.document.identity.birthday}
                               </p>
                             </div>
                           )}
                           {verificationData.document.identity.gender && (
                             <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-                              <p className="text-xs font-semibold text-[#3834A8] uppercase tracking-wide mb-2">
+                              <p className="text-xs font-semibold text-[#3B82F6] uppercase tracking-wide mb-2">
                                 Gender
                               </p>
-                              <p className="text-base font-medium text-[#2A1B5D]">
+                              <p className="text-base font-medium text-[#1E40AF]">
                                 {verificationData.document.identity.gender}
                               </p>
                             </div>
@@ -765,7 +850,7 @@ const Verify = () => {
                             .identityString && (
                             <div className="bg-gray-50 rounded-xl p-4 border border-gray-100 sm:col-span-3">
                               <div className="flex items-center justify-between mb-2">
-                                <p className="text-xs font-semibold text-[#3834A8] uppercase tracking-wide">
+                                <p className="text-xs font-semibold text-[#3B82F6] uppercase tracking-wide">
                                   Identity String (used for hashing)
                                 </p>
                                 <button
@@ -785,15 +870,53 @@ const Verify = () => {
                                   ) : (
                                     <Copy
                                       size={14}
-                                      className="text-[#3834A8]"
+                                      className="text-[#3B82F6]"
                                     />
                                   )}
                                 </button>
                               </div>
-                              <p className="text-sm font-mono text-[#2A1B5D] break-all">
+                              <p className="text-sm font-mono text-[#1E40AF] break-all">
                                 {
                                   verificationData.document.identity
                                     .identityString
+                                }
+                              </p>
+                            </div>
+                          )}
+                          {verificationData.document.identity
+                            .identityHash && (
+                            <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-4 border border-purple-200 sm:col-span-3">
+                              <div className="flex items-center justify-between mb-2">
+                                <p className="text-xs font-semibold text-purple-600 uppercase tracking-wide flex items-center space-x-1">
+                                  <Hash size={12} />
+                                  <span>Identity Hash (SHA-256 — stored on blockchain)</span>
+                                </p>
+                                <button
+                                  onClick={() =>
+                                    copyToClipboard(
+                                      verificationData.document.identity
+                                        .identityHash,
+                                    )
+                                  }
+                                  className="p-1.5 hover:bg-white rounded-lg transition-colors"
+                                >
+                                  {copied ? (
+                                    <Check
+                                      size={14}
+                                      className="text-green-600"
+                                    />
+                                  ) : (
+                                    <Copy
+                                      size={14}
+                                      className="text-purple-600"
+                                    />
+                                  )}
+                                </button>
+                              </div>
+                              <p className="text-sm font-mono text-purple-800 break-all">
+                                {
+                                  verificationData.document.identity
+                                    .identityHash
                                 }
                               </p>
                             </div>
@@ -805,8 +928,8 @@ const Verify = () => {
                     {/* Document Access Links */}
                     {verificationData.access && (
                       <div className="p-8 bg-white border-t border-gray-200">
-                        <h3 className="text-lg font-bold text-[#2A1B5D] mb-4 flex items-center space-x-2">
-                          <FileText size={20} className="text-[#3834A8]" />
+                        <h3 className="text-lg font-bold text-[#1E40AF] mb-4 flex items-center space-x-2">
+                          <FileText size={20} className="text-[#3B82F6]" />
                           <span>Document Access & Links</span>
                         </h3>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -815,23 +938,23 @@ const Verify = () => {
                             !verificationData.access.canonicalDocument.includes(
                               "/null",
                             ) && (
-                              <div className="sm:col-span-2 bg-gradient-to-r from-[#3834A8]/5 to-[#2A1B5D]/5 border border-[#3834A8]/20 rounded-xl overflow-hidden">
+                              <div className="sm:col-span-2 bg-gradient-to-r from-[#3B82F6]/5 to-[#1E40AF]/5 border border-[#3B82F6]/20 rounded-xl overflow-hidden">
                                 {/* Accordion Header */}
                                 <div
                                   onClick={() =>
                                     setShowDocumentPreview(!showDocumentPreview)
                                   }
-                                  className="flex items-center justify-between p-4 cursor-pointer hover:bg-[#3834A8]/10 transition-all"
+                                  className="flex items-center justify-between p-4 cursor-pointer hover:bg-[#3B82F6]/10 transition-all"
                                 >
                                   <div className="flex items-center space-x-3">
-                                    <div className="w-10 h-10 bg-gradient-to-br from-[#3834A8] to-[#2A1B5D] rounded-lg flex items-center justify-center">
+                                    <div className="w-10 h-10 bg-gradient-to-br from-[#3B82F6] to-[#1E40AF] rounded-lg flex items-center justify-center">
                                       <FileText
                                         size={20}
                                         className="text-white"
                                       />
                                     </div>
                                     <div>
-                                      <p className="font-semibold text-[#2A1B5D]">
+                                      <p className="font-semibold text-[#1E40AF]">
                                         Original Document (IPFS)
                                       </p>
                                       <p className="text-xs text-gray-500">
@@ -850,12 +973,12 @@ const Verify = () => {
                                       target="_blank"
                                       rel="noopener noreferrer"
                                       onClick={(e) => e.stopPropagation()}
-                                      className="p-2 hover:bg-[#3834A8]/20 rounded-lg transition-colors"
+                                      className="p-2 hover:bg-[#3B82F6]/20 rounded-lg transition-colors"
                                       title="Open in new tab"
                                     >
                                       <ExternalLink
                                         size={18}
-                                        className="text-[#3834A8]"
+                                        className="text-[#3B82F6]"
                                       />
                                     </a>
                                     <a
@@ -865,24 +988,24 @@ const Verify = () => {
                                       }
                                       download
                                       onClick={(e) => e.stopPropagation()}
-                                      className="p-2 hover:bg-[#3834A8]/20 rounded-lg transition-colors"
+                                      className="p-2 hover:bg-[#3B82F6]/20 rounded-lg transition-colors"
                                       title="Download document"
                                     >
                                       <Download
                                         size={18}
-                                        className="text-[#3834A8]"
+                                        className="text-[#3B82F6]"
                                       />
                                     </a>
                                     <div className="p-2">
                                       {showDocumentPreview ? (
                                         <ChevronUp
                                           size={20}
-                                          className="text-[#3834A8]"
+                                          className="text-[#3B82F6]"
                                         />
                                       ) : (
                                         <ChevronDown
                                           size={20}
-                                          className="text-[#3834A8]"
+                                          className="text-[#3B82F6]"
                                         />
                                       )}
                                     </div>
@@ -891,7 +1014,7 @@ const Verify = () => {
 
                                 {/* Document Preview */}
                                 {showDocumentPreview && (
-                                  <div className="border-t border-[#3834A8]/20">
+                                  <div className="border-t border-[#3B82F6]/20">
                                     {/* PDF Viewer */}
                                     <div className="bg-gray-100 p-4">
                                       <div
@@ -920,7 +1043,7 @@ const Verify = () => {
                                                   .canonicalDocument,
                                               )
                                             }
-                                            className="flex items-center space-x-1 px-3 py-1.5 bg-[#3834A8]/10 hover:bg-[#3834A8]/20 rounded-lg text-sm font-medium text-[#3834A8] transition-colors"
+                                            className="flex items-center space-x-1 px-3 py-1.5 bg-[#3B82F6]/10 hover:bg-[#3B82F6]/20 rounded-lg text-sm font-medium text-[#3B82F6] transition-colors"
                                           >
                                             {copied ? (
                                               <Check size={14} />
@@ -938,7 +1061,7 @@ const Verify = () => {
                                             }
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="flex items-center space-x-1 px-3 py-1.5 bg-[#3834A8] hover:bg-[#2A1B5D] rounded-lg text-sm font-medium text-white transition-colors"
+                                            className="flex items-center space-x-1 px-3 py-1.5 bg-[#3B82F6] hover:bg-[#1E40AF] rounded-lg text-sm font-medium text-white transition-colors"
                                           >
                                             <ExternalLink size={14} />
                                             <span>Open in IPFS</span>
@@ -1283,8 +1406,8 @@ const Verify = () => {
                   {verificationData.verification?.steps &&
                     verificationData.verification.steps.length > 0 && (
                       <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-lg">
-                        <h3 className="text-xl font-bold text-[#2A1B5D] mb-6 flex items-center space-x-2">
-                          <Shield size={24} className="text-[#3834A8]" />
+                        <h3 className="text-xl font-bold text-[#1E40AF] mb-6 flex items-center space-x-2">
+                          <Shield size={24} className="text-[#3B82F6]" />
                           <span>Verification Steps</span>
                         </h3>
                         <div className="space-y-4">
@@ -1346,50 +1469,50 @@ const Verify = () => {
                                       <div className="bg-white/60 rounded-lg p-3 space-y-2 text-sm">
                                         {step.details.identityString && (
                                           <div>
-                                            <span className="font-semibold text-[#3834A8]">
+                                            <span className="font-semibold text-[#3B82F6]">
                                               Identity String:{" "}
                                             </span>
-                                            <span className="font-mono text-[#2A1B5D] text-xs break-all">
+                                            <span className="font-mono text-[#1E40AF] text-xs break-all">
                                               {step.details.identityString}
                                             </span>
                                           </div>
                                         )}
                                         {step.details.ipfsCid && (
                                           <div>
-                                            <span className="font-semibold text-[#3834A8]">
+                                            <span className="font-semibold text-[#3B82F6]">
                                               IPFS CID:{" "}
                                             </span>
-                                            <span className="font-mono text-[#2A1B5D] text-xs break-all">
+                                            <span className="font-mono text-[#1E40AF] text-xs break-all">
                                               {step.details.ipfsCid}
                                             </span>
                                           </div>
                                         )}
                                         {step.details.expected && (
                                           <div>
-                                            <span className="font-semibold text-[#3834A8]">
+                                            <span className="font-semibold text-[#3B82F6]">
                                               Expected Hash:{" "}
                                             </span>
-                                            <span className="font-mono text-[#2A1B5D] text-xs break-all">
+                                            <span className="font-mono text-[#1E40AF] text-xs break-all">
                                               {step.details.expected}
                                             </span>
                                           </div>
                                         )}
                                         {step.details.computed && (
                                           <div>
-                                            <span className="font-semibold text-[#3834A8]">
+                                            <span className="font-semibold text-[#3B82F6]">
                                               Computed Hash:{" "}
                                             </span>
-                                            <span className="font-mono text-[#2A1B5D] text-xs break-all">
+                                            <span className="font-mono text-[#1E40AF] text-xs break-all">
                                               {step.details.computed}
                                             </span>
                                           </div>
                                         )}
                                         {step.details.merkleRoot && (
                                           <div>
-                                            <span className="font-semibold text-[#3834A8]">
+                                            <span className="font-semibold text-[#3B82F6]">
                                               Merkle Root:{" "}
                                             </span>
-                                            <span className="font-mono text-[#2A1B5D] text-xs break-all">
+                                            <span className="font-mono text-[#1E40AF] text-xs break-all">
                                               {step.details.merkleRoot}
                                             </span>
                                           </div>
@@ -1397,30 +1520,30 @@ const Verify = () => {
                                         {step.details.leafIndex !==
                                           undefined && (
                                           <div>
-                                            <span className="font-semibold text-[#3834A8]">
+                                            <span className="font-semibold text-[#3B82F6]">
                                               Leaf Index:{" "}
                                             </span>
-                                            <span className="font-medium text-[#2A1B5D]">
+                                            <span className="font-medium text-[#1E40AF]">
                                               {step.details.leafIndex}
                                             </span>
                                           </div>
                                         )}
                                         {step.details.txSig && (
                                           <div>
-                                            <span className="font-semibold text-[#3834A8]">
+                                            <span className="font-semibold text-[#3B82F6]">
                                               Transaction Signature:{" "}
                                             </span>
-                                            <span className="font-mono text-[#2A1B5D] text-xs break-all">
+                                            <span className="font-mono text-[#1E40AF] text-xs break-all">
                                               {step.details.txSig}
                                             </span>
                                           </div>
                                         )}
                                         {step.details.network && (
                                           <div>
-                                            <span className="font-semibold text-[#3834A8]">
+                                            <span className="font-semibold text-[#3B82F6]">
                                               Network:{" "}
                                             </span>
-                                            <span className="font-medium text-[#2A1B5D]">
+                                            <span className="font-medium text-[#1E40AF]">
                                               {step.details.network}
                                             </span>
                                           </div>
@@ -1436,8 +1559,8 @@ const Verify = () => {
 
                         {/* Verification Summary */}
                         {verificationData.verification.summary && (
-                          <div className="mt-6 bg-gradient-to-r from-[#3834A8]/5 to-[#2A1B5D]/5 rounded-xl p-5 border border-[#3834A8]/20">
-                            <h4 className="font-bold text-[#2A1B5D] mb-3">
+                          <div className="mt-6 bg-gradient-to-r from-[#3B82F6]/5 to-[#1E40AF]/5 rounded-xl p-5 border border-[#3B82F6]/20">
+                            <h4 className="font-bold text-[#1E40AF] mb-3">
                               Verification Summary
                             </h4>
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -1554,15 +1677,15 @@ const Verify = () => {
                   {/* Batch Information */}
                   {verificationData.batch && (
                     <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-lg">
-                      <h3 className="text-xl font-bold text-[#2A1B5D] mb-4 flex items-center space-x-2">
-                        <FileText size={24} className="text-[#3834A8]" />
+                      <h3 className="text-xl font-bold text-[#1E40AF] mb-4 flex items-center space-x-2">
+                        <FileText size={24} className="text-[#3B82F6]" />
                         <span>Batch Information</span>
                       </h3>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {verificationData.batch.batchId && (
                           <div className="bg-gray-50 rounded-xl p-4 border border-gray-100 sm:col-span-2">
                             <div className="flex items-center justify-between mb-2">
-                              <p className="text-sm font-semibold text-[#3834A8]">
+                              <p className="text-sm font-semibold text-[#3B82F6]">
                                 Batch ID
                               </p>
                               <button
@@ -1576,31 +1699,31 @@ const Verify = () => {
                                 {copied ? (
                                   <Check size={14} className="text-green-600" />
                                 ) : (
-                                  <Copy size={14} className="text-[#3834A8]" />
+                                  <Copy size={14} className="text-[#3B82F6]" />
                                 )}
                               </button>
                             </div>
-                            <p className="text-sm font-mono text-[#2A1B5D] break-all">
+                            <p className="text-sm font-mono text-[#1E40AF] break-all">
                               {verificationData.batch.batchId}
                             </p>
                           </div>
                         )}
                         {verificationData.batch.documentCount && (
                           <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-                            <p className="text-sm font-semibold text-[#3834A8] mb-1">
+                            <p className="text-sm font-semibold text-[#3B82F6] mb-1">
                               Documents in Batch
                             </p>
-                            <p className="text-2xl font-bold text-[#2A1B5D]">
+                            <p className="text-2xl font-bold text-[#1E40AF]">
                               {verificationData.batch.documentCount}
                             </p>
                           </div>
                         )}
                         {verificationData.batch.createdAt && (
                           <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-                            <p className="text-sm font-semibold text-[#3834A8] mb-1">
+                            <p className="text-sm font-semibold text-[#3B82F6] mb-1">
                               Batch Created
                             </p>
-                            <p className="text-base font-medium text-[#2A1B5D]">
+                            <p className="text-base font-medium text-[#1E40AF]">
                               {new Date(
                                 verificationData.batch.createdAt,
                               ).toLocaleString("en-US", {
@@ -1616,7 +1739,7 @@ const Verify = () => {
                         {verificationData.batch.merkleRoot && (
                           <div className="bg-gray-50 rounded-xl p-4 border border-gray-100 sm:col-span-2">
                             <div className="flex items-center justify-between mb-2">
-                              <p className="text-sm font-semibold text-[#3834A8]">
+                              <p className="text-sm font-semibold text-[#3B82F6]">
                                 Batch Merkle Root
                               </p>
                               <button
@@ -1630,11 +1753,11 @@ const Verify = () => {
                                 {copied ? (
                                   <Check size={14} className="text-green-600" />
                                 ) : (
-                                  <Copy size={14} className="text-[#3834A8]" />
+                                  <Copy size={14} className="text-[#3B82F6]" />
                                 )}
                               </button>
                             </div>
-                            <p className="text-sm font-mono text-[#2A1B5D] break-all">
+                            <p className="text-sm font-mono text-[#1E40AF] break-all">
                               {verificationData.batch.merkleRoot}
                             </p>
                           </div>
@@ -1646,7 +1769,7 @@ const Verify = () => {
                   {/* Merkle Hashes */}
                   {verificationData.merkleHashes && (
                     <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-lg">
-                      <h3 className="text-xl font-bold text-[#2A1B5D] mb-4 flex items-center space-x-2">
+                      <h3 className="text-xl font-bold text-[#1E40AF] mb-4 flex items-center space-x-2">
                         <Hash size={24} className="text-green-600" />
                         <span>Merkle Proofs</span>
                       </h3>
@@ -1672,7 +1795,7 @@ const Verify = () => {
                                 )}
                               </button>
                             </div>
-                            <p className="text-sm font-mono text-[#2A1B5D] break-all">
+                            <p className="text-sm font-mono text-[#1E40AF] break-all">
                               {verificationData.merkleHashes.personal}
                             </p>
                           </div>
@@ -1699,7 +1822,7 @@ const Verify = () => {
                                 )}
                               </button>
                             </div>
-                            <p className="text-sm font-mono text-[#2A1B5D] break-all">
+                            <p className="text-sm font-mono text-[#1E40AF] break-all">
                               {verificationData.merkleHashes.root}
                             </p>
                           </div>
@@ -1727,7 +1850,7 @@ const Verify = () => {
                                 )}
                               </button>
                             </div>
-                            <p className="text-sm font-mono text-[#2A1B5D] break-all">
+                            <p className="text-sm font-mono text-[#1E40AF] break-all">
                               {verificationData.merkleHashes.computedMerkleHash}
                             </p>
                           </div>
@@ -1739,7 +1862,7 @@ const Verify = () => {
                   {/* Technical Details */}
                   {verificationData.technical && (
                     <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-lg">
-                      <h3 className="text-xl font-bold text-[#2A1B5D] mb-4 flex items-center space-x-2">
+                      <h3 className="text-xl font-bold text-[#1E40AF] mb-4 flex items-center space-x-2">
                         <Lock size={24} className="text-amber-600" />
                         <span>Technical Details</span>
                       </h3>
@@ -1765,7 +1888,7 @@ const Verify = () => {
                                 )}
                               </button>
                             </div>
-                            <p className="text-sm font-mono text-[#2A1B5D] break-all">
+                            <p className="text-sm font-mono text-[#1E40AF] break-all">
                               {verificationData.technical.identityString}
                             </p>
                           </div>
@@ -1792,7 +1915,7 @@ const Verify = () => {
                                 )}
                               </button>
                             </div>
-                            <p className="text-sm font-mono text-[#2A1B5D] break-all">
+                            <p className="text-sm font-mono text-[#1E40AF] break-all">
                               {verificationData.technical.merkleHash}
                             </p>
                           </div>
@@ -1819,7 +1942,7 @@ const Verify = () => {
                                 )}
                               </button>
                             </div>
-                            <p className="text-sm font-mono text-[#2A1B5D] break-all">
+                            <p className="text-sm font-mono text-[#1E40AF] break-all">
                               {verificationData.technical.merkleRoot}
                             </p>
                           </div>
@@ -1830,7 +1953,7 @@ const Verify = () => {
                             <p className="text-sm font-semibold text-amber-600 mb-1">
                               Leaf Index
                             </p>
-                            <p className="text-2xl font-bold text-[#2A1B5D]">
+                            <p className="text-2xl font-bold text-[#1E40AF]">
                               {verificationData.technical.leafIndex}
                             </p>
                           </div>
@@ -1857,7 +1980,7 @@ const Verify = () => {
                                 )}
                               </button>
                             </div>
-                            <p className="text-sm font-mono text-[#2A1B5D] break-all">
+                            <p className="text-sm font-mono text-[#1E40AF] break-all">
                               {verificationData.technical.canonicalCid}
                             </p>
                           </div>
@@ -1884,7 +2007,7 @@ const Verify = () => {
                                 )}
                               </button>
                             </div>
-                            <p className="text-sm font-mono text-[#2A1B5D] break-all">
+                            <p className="text-sm font-mono text-[#1E40AF] break-all">
                               {verificationData.technical.displayCid}
                             </p>
                           </div>
@@ -1911,7 +2034,7 @@ const Verify = () => {
                                 )}
                               </button>
                             </div>
-                            <p className="text-sm font-mono text-[#2A1B5D] break-all">
+                            <p className="text-sm font-mono text-[#1E40AF] break-all">
                               {verificationData.technical.txSig}
                             </p>
                           </div>
@@ -1939,7 +2062,7 @@ const Verify = () => {
                                 )}
                               </button>
                             </div>
-                            <p className="text-sm font-mono text-[#2A1B5D] break-all">
+                            <p className="text-sm font-mono text-[#1E40AF] break-all">
                               {verificationData.technical.verificationEndpoint}
                             </p>
                           </div>
@@ -1957,9 +2080,9 @@ const Verify = () => {
       {/* Footer */}
       <div className="relative z-10 text-center py-8">
         <div className="inline-flex items-center justify-center space-x-3 bg-gray-50 backdrop-blur-xl rounded-full px-6 py-3 border border-gray-200 mb-2">
-          <Shield size={18} className="text-[#00E5FF]" />
+          <Shield size={18} className="text-[#8B5CF6]" />
           <span className="text-sm font-medium text-gray-700">Powered by</span>
-          <span className="text-sm font-bold bg-gradient-to-r from-[#3834A8] to-[#00E5FF] bg-clip-text text-transparent">
+          <span className="text-sm font-bold bg-gradient-to-r from-[#3B82F6] to-[#8B5CF6] bg-clip-text text-transparent">
             XertiQ
           </span>
         </div>

@@ -29,6 +29,7 @@ const Register = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   // Password strength validation
   const passwordValidations = {
@@ -122,11 +123,11 @@ const Register = () => {
         {/* Left side - Branding */}
         <div className="hidden lg:block">
           <div className="space-y-6">
-            <div className="inline-flex w-20 h-20 bg-gradient-to-r from-[#3834A8] to-[#2A1B5D] rounded-2xl items-center justify-center shadow-lg">
+            <div className="inline-flex w-20 h-20 bg-gradient-to-r from-[#3B82F6] to-[#1E40AF] rounded-2xl items-center justify-center shadow-lg">
               <UserPlus size={40} className="text-white" />
             </div>
             <div>
-              <h1 className="text-5xl font-bold text-[#2A1B5D] mb-4">
+              <h1 className="text-5xl font-bold text-[#1E40AF] mb-4">
                 Join XertiQ
               </h1>
               <p className="text-lg text-gray-600 leading-relaxed">
@@ -141,10 +142,10 @@ const Register = () => {
         <div className="w-full">
           {/* Mobile header */}
           <div className="text-center mb-6 lg:hidden">
-            <div className="inline-flex w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-r from-[#3834A8] to-[#2A1B5D] rounded-2xl items-center justify-center mb-4 shadow-lg">
+            <div className="inline-flex w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-r from-[#3B82F6] to-[#1E40AF] rounded-2xl items-center justify-center mb-4 shadow-lg">
               <UserPlus size={32} className="text-white sm:w-10 sm:h-10" />
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-[#2A1B5D] mb-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-[#1E40AF] mb-2">
               Join XertiQ
             </h1>
             <p className="text-sm sm:text-base text-gray-600">
@@ -236,8 +237,8 @@ const Register = () => {
                     onClick={() => setFormData({ ...formData, role: "USER" })}
                     className={`relative p-4 rounded-xl border-2 transition-all duration-200 ${
                       formData.role === "USER"
-                        ? "border-[#00B8D4] bg-[#00B8D4]/10"
-                        : "border-gray-200 bg-white hover:border-[#00B8D4]/50"
+                        ? "border-[#8B5CF6] bg-[#8B5CF6]/10"
+                        : "border-gray-200 bg-white hover:border-[#8B5CF6]/50"
                     }`}
                     disabled={isLoading}
                   >
@@ -246,14 +247,14 @@ const Register = () => {
                         size={24}
                         className={
                           formData.role === "USER"
-                            ? "text-[#00B8D4]"
+                            ? "text-[#8B5CF6]"
                             : "text-gray-500"
                         }
                       />
                       <span
                         className={`text-sm font-medium ${
                           formData.role === "USER"
-                            ? "text-[#00B8D4]"
+                            ? "text-[#8B5CF6]"
                             : "text-gray-600"
                         }`}
                       >
@@ -265,7 +266,7 @@ const Register = () => {
                     </div>
                     {formData.role === "USER" && (
                       <div className="absolute top-2 right-2">
-                        <Check size={16} className="text-[#00B8D4]" />
+                        <Check size={16} className="text-[#8B5CF6]" />
                       </div>
                     )}
                   </button>
@@ -275,8 +276,8 @@ const Register = () => {
                     onClick={() => setFormData({ ...formData, role: "ISSUER" })}
                     className={`relative p-4 rounded-xl border-2 transition-all duration-200 ${
                       formData.role === "ISSUER"
-                        ? "border-[#3834A8] bg-[#3834A8]/10"
-                        : "border-gray-200 bg-white hover:border-[#3834A8]/50"
+                        ? "border-[#3B82F6] bg-[#3B82F6]/10"
+                        : "border-gray-200 bg-white hover:border-[#3B82F6]/50"
                     }`}
                     disabled={isLoading}
                   >
@@ -285,14 +286,14 @@ const Register = () => {
                         size={24}
                         className={
                           formData.role === "ISSUER"
-                            ? "text-[#3834A8]"
+                            ? "text-[#3B82F6]"
                             : "text-gray-500"
                         }
                       />
                       <span
                         className={`text-sm font-medium ${
                           formData.role === "ISSUER"
-                            ? "text-[#3834A8]"
+                            ? "text-[#3B82F6]"
                             : "text-gray-600"
                         }`}
                       >
@@ -304,7 +305,7 @@ const Register = () => {
                     </div>
                     {formData.role === "ISSUER" && (
                       <div className="absolute top-2 right-2">
-                        <Check size={16} className="text-[#3834A8]" />
+                        <Check size={16} className="text-[#3B82F6]" />
                       </div>
                     )}
                   </button>
@@ -346,7 +347,7 @@ const Register = () => {
                           organizationName: e.target.value,
                         })
                       }
-                      className="w-full bg-white border-2 border-gray-200 rounded-xl pl-12 pr-4 py-3 text-gray-800 placeholder-gray-500 focus:outline-none focus:border-[#3834A8] transition-all duration-200"
+                      className="w-full bg-white border-2 border-gray-200 rounded-xl pl-12 pr-4 py-3 text-gray-800 placeholder-gray-500 focus:outline-none focus:border-[#3B82F6] transition-all duration-200"
                       placeholder="e.g., Harvard University, Tech Corp"
                       disabled={isLoading}
                     />
@@ -370,14 +371,14 @@ const Register = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, password: e.target.value })
                     }
-                    className="w-full bg-gray-50 border-2 border-gray-200 rounded-xl px-4 py-3 pr-12 text-gray-800 placeholder-gray-500 focus:outline-none focus:border-[#3834A8] transition-all duration-200"
+                    className="w-full bg-gray-50 border-2 border-gray-200 rounded-xl px-4 py-3 pr-12 text-gray-800 placeholder-gray-500 focus:outline-none focus:border-[#3B82F6] transition-all duration-200"
                     placeholder="Create a strong password"
                     disabled={isLoading}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-[#3834A8] transition-colors"
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-[#3B82F6] transition-colors"
                   >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
@@ -434,7 +435,7 @@ const Register = () => {
                         ? passwordsMatch
                           ? "border-green-500 focus:border-green-600"
                           : "border-red-500 focus:border-red-600"
-                        : "border-gray-200 focus:border-[#3834A8]"
+                        : "border-gray-200 focus:border-[#3B82F6]"
                     }`}
                     placeholder="Confirm your password"
                     disabled={isLoading}
@@ -451,14 +452,48 @@ const Register = () => {
                 </div>
               </div>
 
+              {/* Terms and Privacy Consent */}
+              <div className="space-y-3 pt-2">
+                <div className="flex items-start space-x-3">
+                  <input
+                    type="checkbox"
+                    id="agreeTerms"
+                    checked={agreedToTerms}
+                    onChange={(e) => setAgreedToTerms(e.target.checked)}
+                    className="w-4 h-4 mt-1 text-[#3B82F6] border-gray-300 rounded focus:ring-[#3B82F6] cursor-pointer"
+                    disabled={isLoading}
+                  />
+                  <label htmlFor="agreeTerms" className="text-sm text-gray-600 leading-relaxed cursor-pointer">
+                    I agree to the{" "}
+                    <Link
+                      to="/terms-of-service"
+                      target="_blank"
+                      className="text-[#3B82F6] hover:text-[#1E40AF] font-medium underline"
+                    >
+                      Terms of Service
+                    </Link>{" "}
+                    and{" "}
+                    <Link
+                      to="/privacy-policy"
+                      target="_blank"
+                      className="text-[#3B82F6] hover:text-[#1E40AF] font-medium underline"
+                    >
+                      Privacy Policy
+                    </Link>
+                    . I understand that document data anchored to the blockchain is permanent.
+                  </label>
+                </div>
+              </div>
+
               <button
                 type="submit"
                 disabled={
                   isLoading ||
                   !passwordsMatch ||
-                  !Object.values(passwordValidations).every((v) => v)
+                  !Object.values(passwordValidations).every((v) => v) ||
+                  !agreedToTerms
                 }
-                className="w-full bg-gradient-to-r from-[#3834A8] to-[#2A1B5D] hover:from-[#2A1B5D] hover:to-[#1F1449] disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg transform hover:scale-[1.01] active:scale-[0.99]"
+                className="w-full bg-gradient-to-r from-[#3B82F6] to-[#1E40AF] hover:from-[#1E40AF] hover:to-[#1E3A8A] disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg transform hover:scale-[1.01] active:scale-[0.99]"
               >
                 {isLoading ? (
                   <>
@@ -490,7 +525,7 @@ const Register = () => {
             <button
               type="button"
               onClick={() => navigate("/login")}
-              className="inline-flex items-center space-x-2 text-[#3834A8] hover:text-[#2A1B5D] font-semibold transition-colors duration-200 group"
+              className="inline-flex items-center space-x-2 text-[#3B82F6] hover:text-[#1E40AF] font-semibold transition-colors duration-200 group"
             >
               <span>Sign in to your wallet</span>
               <UserPlus
@@ -504,7 +539,7 @@ const Register = () => {
           <div className="text-center mt-4">
             <Link
               to="/"
-              className="text-gray-600 hover:text-[#3834A8] text-sm font-medium transition-colors"
+              className="text-gray-600 hover:text-[#3B82F6] text-sm font-medium transition-colors"
             >
               ← Back to Home
             </Link>
