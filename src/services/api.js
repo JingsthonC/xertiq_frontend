@@ -62,6 +62,15 @@ class ApiService {
             console.error("Failed to clear auth state:", err);
           }
         }
+        // Handle 403 verification/approval codes
+        if (error.response?.status === 403) {
+          const code = error.response.data?.code;
+          if (code === "EMAIL_NOT_VERIFIED" && window.location.pathname !== "/verify-pending") {
+            window.location.href = "/verify-pending";
+          } else if (code === "ISSUER_NOT_APPROVED" && window.location.pathname !== "/approval-pending") {
+            window.location.href = "/approval-pending";
+          }
+        }
         return Promise.reject(error);
       },
     );
@@ -522,6 +531,24 @@ class ApiService {
         reason,
       },
     );
+    return response.data;
+  }
+
+  async getSuperAdminPendingIssuers(params = {}) {
+    const { page = 1, limit = 20 } = params;
+    const response = await this.api.get("/super-admin/pending-issuers", {
+      params: { page, limit },
+    });
+    return response.data;
+  }
+
+  async approveSuperAdminIssuer(userId) {
+    const response = await this.api.patch(`/super-admin/issuers/${userId}/approve`);
+    return response.data;
+  }
+
+  async rejectSuperAdminIssuer(userId, reason) {
+    const response = await this.api.patch(`/super-admin/issuers/${userId}/reject`, { reason });
     return response.data;
   }
 

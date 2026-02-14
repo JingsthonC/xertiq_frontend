@@ -75,25 +75,13 @@ const Register = () => {
 
       console.log("Registration successful:", response);
 
-      // Show success notification
+      // Show success notification with verification message
       setSuccess(true);
 
-      // Clear form after successful registration
+      // Redirect to login after a delay so user sees the message
       setTimeout(() => {
-        setFormData({
-          firstName: "",
-          lastName: "",
-          email: "",
-          password: "",
-          confirmPassword: "",
-          role: "USER",
-          organizationName: "",
-          organizationLogo: "",
-        });
-        setSuccess(false);
         navigate("/login");
-        // You can add navigation here: navigate('/dashboard') or navigate('/login')
-      }, 1000);
+      }, 5000);
     } catch (err) {
       console.error("Registration failed:", err);
       setError(
@@ -167,11 +155,21 @@ const Register = () => {
 
               {success && (
                 <div className="bg-green-50 border border-green-200 rounded-xl p-3 sm:p-4">
-                  <div className="flex items-center space-x-2">
-                    <Check size={16} className="text-success" />
-                    <p className="text-success text-sm font-medium">
-                      Registration successful! Redirecting...
-                    </p>
+                  <div className="flex items-start space-x-2">
+                    <Check size={16} className="text-success mt-0.5" />
+                    <div>
+                      <p className="text-success text-sm font-medium">
+                        Registration successful! Please check your email to verify your account.
+                      </p>
+                      {formData.role === "ISSUER" && (
+                        <p className="text-green-600 text-xs mt-1">
+                          After email verification, your issuer account will be reviewed by our team.
+                        </p>
+                      )}
+                      <p className="text-green-500 text-xs mt-1">
+                        Redirecting to login...
+                      </p>
+                    </div>
                   </div>
                 </div>
               )}

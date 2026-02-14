@@ -35,6 +35,8 @@ import IframeExamples from "./pages/IframeExamples";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import VerifyEmail from "./pages/VerifyEmail";
+import VerifyPending from "./pages/VerifyPending";
+import ApprovalPending from "./pages/ApprovalPending";
 
 // Detect if running as Chrome extension
 const isExtension = () => {
@@ -64,6 +66,16 @@ const ProtectedRoute = ({ children, allowedRoles = null }) => {
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
+  }
+
+  // Verification gate — all users must verify email
+  if (!user?.isVerified) {
+    return <Navigate to="/verify-pending" replace />;
+  }
+
+  // Issuer approval gate — ISSUERs need admin approval
+  if (normalizedRole === "ISSUER" && !user?.isApproved) {
+    return <Navigate to="/approval-pending" replace />;
   }
 
   // SUPER_ADMIN can ONLY access /super-admin routes
@@ -97,6 +109,14 @@ const PublicRoute = ({ children }) => {
   const isSuperAdmin = normalizedRole === "SUPER_ADMIN";
 
   if (isAuthenticated) {
+    // If not verified, send to verify-pending instead of dashboard
+    if (!user?.isVerified) {
+      return <Navigate to="/verify-pending" replace />;
+    }
+    // If issuer not approved, send to approval-pending
+    if (normalizedRole === "ISSUER" && !user?.isApproved) {
+      return <Navigate to="/approval-pending" replace />;
+    }
     // Redirect SUPER_ADMIN to super admin dashboard, others to regular dashboard
     return (
       <Navigate to={isSuperAdmin ? "/super-admin" : "/dashboard"} replace />
@@ -113,6 +133,12 @@ const RootRedirect = () => {
   const isSuperAdmin = normalizedRole === "SUPER_ADMIN";
 
   if (isAuthenticated) {
+    if (!user?.isVerified) {
+      return <Navigate to="/verify-pending" replace />;
+    }
+    if (normalizedRole === "ISSUER" && !user?.isApproved) {
+      return <Navigate to="/approval-pending" replace />;
+    }
     return (
       <Navigate to={isSuperAdmin ? "/super-admin" : "/dashboard"} replace />
     );
@@ -210,6 +236,14 @@ function App() {
     {
       path: "/embed/verify",
       element: <EmbeddableVerify />, // Embeddable verification widget
+    },
+    {
+      path: "/verify-pending",
+      element: <VerifyPending />, // Logged in but unverified
+    },
+    {
+      path: "/approval-pending",
+      element: <ApprovalPending />, // Verified but unapproved issuer
     },
     {
       path: "/dashboard",

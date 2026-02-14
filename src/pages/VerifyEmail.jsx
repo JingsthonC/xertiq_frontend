@@ -36,6 +36,9 @@ const VerifyEmail = () => {
         if (response.alreadyVerified) {
           setStatus("success");
           setMessage("Your email is already verified. You can log in now.");
+        } else if (response.issuerPending) {
+          setStatus("success");
+          setMessage("Email verified! Your issuer account is pending admin approval. You will receive an email once approved.");
         } else {
           setStatus("success");
           setMessage("Email verified successfully! You can now log in.");
