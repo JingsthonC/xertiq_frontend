@@ -44,6 +44,7 @@ const BatchUpload = () => {
   const [documentTypes, setDocumentTypes] = useState([])
   const [requiredFields, setRequiredFields] = useState([])
   const [showSuccessNotification, setShowSuccessNotification] = useState(false)
+  const [successCount, setSuccessCount] = useState(0)
   const [progressToast, setProgressToast] = useState(null)
 
   // Fetch document types on mount
@@ -377,6 +378,7 @@ const BatchUpload = () => {
       progressData.successfulDocuments > 0
     ) {
       setProgressToast(null)
+      setSuccessCount(progressData.successfulDocuments) // Store count before showing notification
       setShowSuccessNotification(true)
       // Auto-hide after 5 seconds
       setTimeout(() => {
@@ -672,8 +674,7 @@ const BatchUpload = () => {
                 Batch Complete!
               </p>
               <p className="text-sm text-gray-600 mt-0.5">
-                {uploadResult?.successfulDocuments || 0} certificate(s)
-                processed successfully
+                {successCount} certificate(s) processed successfully
               </p>
             </div>
             <button
