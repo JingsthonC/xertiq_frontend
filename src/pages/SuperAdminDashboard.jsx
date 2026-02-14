@@ -66,6 +66,12 @@ const SuperAdminDashboard = () => {
   const [packages, setPackages] = useState([]);
   const [editingPackage, setEditingPackage] = useState(null);
   const [packagesLoading, setPackagesLoading] = useState(false);
+  const [pendingIssuers, setPendingIssuers] = useState([]);
+  const [pendingIssuersCount, setPendingIssuersCount] = useState(0);
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [rejectingUserId, setRejectingUserId] = useState(null);
+  const [rejectReason, setRejectReason] = useState("");
+  const [approvalLoading, setApprovalLoading] = useState(null);
   const [pagination, setPagination] = useState({
     users: { page: 1, limit: 50, total: 0 },
     issuers: { page: 1, limit: 20, total: 0 },
@@ -84,6 +90,14 @@ const SuperAdminDashboard = () => {
   const loadData = async () => {
     setLoading(true);
     try {
+      // Always fetch pending issuers count for the badge
+      try {
+        const pendingRes = await apiService.getSuperAdminPendingIssuers({ limit: 1 });
+        setPendingIssuersCount(pendingRes.data.pagination.total);
+      } catch {
+        // Non-critical, ignore
+      }
+
       if (activeTab === "overview") {
         const [statsRes, analyticsRes] = await Promise.all([
           apiService.getSuperAdminStats(),
@@ -91,6 +105,10 @@ const SuperAdminDashboard = () => {
         ]);
         setStats(statsRes.data);
         setAnalytics(analyticsRes.data);
+      } else if (activeTab === "approvals") {
+        const pendingRes = await apiService.getSuperAdminPendingIssuers();
+        setPendingIssuers(pendingRes.data.issuers);
+        setPendingIssuersCount(pendingRes.data.pagination.total);
       } else if (activeTab === "revenue") {
         const revenueRes = await apiService.getSuperAdminRevenue();
         setRevenue(revenueRes.data);
@@ -320,6 +338,7 @@ const SuperAdminDashboard = () => {
 
   const tabs = [
     { id: "overview", label: "Platform Overview", icon: BarChart3, url: "platform-overview" },
+    { id: "approvals", label: "Pending Approvals", icon: UserCheck, url: "pending-approvals" },
     { id: "revenue", label: "Revenue Analytics", icon: DollarSign, url: "revenue-analytics" },
     { id: "users", label: "All Users", icon: Users, url: "all-users" },
     { id: "issuers", label: "Issuers", icon: Building2, url: "issuers" },
@@ -348,6 +367,41 @@ const SuperAdminDashboard = () => {
     const tab = tabs.find(t => t.id === tabId);
     if (tab) {
       navigate(`/super-admin/${tab.url}`, { replace: true });
+    }
+  };
+
+  const handleApproveIssuer = async (userId) => {
+    setApprovalLoading(userId);
+    try {
+      await apiService.approveSuperAdminIssuer(userId);
+      showToast.success("Issuer approved successfully");
+      setPendingIssuers((prev) => prev.filter((i) => i.id !== userId));
+      setPendingIssuersCount((prev) => Math.max(0, prev - 1));
+    } catch (error) {
+      showToast.error("Failed to approve issuer: " + (error.response?.data?.error || error.message));
+    } finally {
+      setApprovalLoading(null);
+    }
+  };
+
+  const handleRejectIssuer = async () => {
+    if (!rejectReason.trim()) {
+      showToast.warning("Please provide a rejection reason");
+      return;
+    }
+    setApprovalLoading(rejectingUserId);
+    try {
+      await apiService.rejectSuperAdminIssuer(rejectingUserId, rejectReason.trim());
+      showToast.success("Issuer rejected");
+      setPendingIssuers((prev) => prev.filter((i) => i.id !== rejectingUserId));
+      setPendingIssuersCount((prev) => Math.max(0, prev - 1));
+      setShowRejectModal(false);
+      setRejectingUserId(null);
+      setRejectReason("");
+    } catch (error) {
+      showToast.error("Failed to reject issuer: " + (error.response?.data?.error || error.message));
+    } finally {
+      setApprovalLoading(null);
     }
   };
 
@@ -387,6 +441,11 @@ const SuperAdminDashboard = () => {
               >
                 <tab.icon size={18} />
                 <span>{tab.label}</span>
+                {tab.id === "approvals" && pendingIssuersCount > 0 && (
+                  <span className="ml-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                    {pendingIssuersCount}
+                  </span>
+                )}
               </button>
             ))}
           </div>
@@ -640,6 +699,73 @@ const SuperAdminDashboard = () => {
                       )}
                     </div>
                   </div>
+                </div>
+              )}
+
+              {/* Pending Approvals Tab */}
+              {activeTab === "approvals" && (
+                <div className="space-y-6 animate-in fade-in duration-300">
+                  <h2 className="text-xl font-semibold text-slate-800">Pending Issuer Approvals</h2>
+                  {pendingIssuers.length === 0 ? (
+                    <div className="bg-white rounded-xl border border-slate-200 p-12 text-center">
+                      <UserCheck size={48} className="mx-auto text-green-400 mb-4" />
+                      <h3 className="text-lg font-semibold text-slate-700">No Pending Approvals</h3>
+                      <p className="text-slate-500 mt-1">All issuer applications have been reviewed.</p>
+                    </div>
+                  ) : (
+                    <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                      <table className="w-full">
+                        <thead className="bg-slate-50 border-b border-slate-200">
+                          <tr>
+                            <th className="text-left p-4 text-sm font-semibold text-slate-600">Name</th>
+                            <th className="text-left p-4 text-sm font-semibold text-slate-600">Email</th>
+                            <th className="text-left p-4 text-sm font-semibold text-slate-600">Organization</th>
+                            <th className="text-left p-4 text-sm font-semibold text-slate-600">Registered</th>
+                            <th className="text-right p-4 text-sm font-semibold text-slate-600">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          {pendingIssuers.map((issuer) => (
+                            <tr key={issuer.id} className="hover:bg-slate-50 transition-colors">
+                              <td className="p-4 text-sm text-slate-800 font-medium">
+                                {issuer.firstName} {issuer.lastName}
+                              </td>
+                              <td className="p-4 text-sm text-slate-600">{issuer.email}</td>
+                              <td className="p-4 text-sm text-slate-600">
+                                <span className="flex items-center gap-1">
+                                  <Building2 size={14} className="text-slate-400" />
+                                  {issuer.organizationName || "N/A"}
+                                </span>
+                              </td>
+                              <td className="p-4 text-sm text-slate-500">
+                                {new Date(issuer.createdAt).toLocaleDateString()}
+                              </td>
+                              <td className="p-4 text-right space-x-2">
+                                <button
+                                  onClick={() => handleApproveIssuer(issuer.id)}
+                                  disabled={approvalLoading === issuer.id}
+                                  className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+                                >
+                                  {approvalLoading === issuer.id ? "..." : "Approve"}
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setRejectingUserId(issuer.id);
+                                    setRejectReason("");
+                                    setShowRejectModal(true);
+                                  }}
+                                  disabled={approvalLoading === issuer.id}
+                                  className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+                                >
+                                  Reject
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -1996,6 +2122,48 @@ const SuperAdminDashboard = () => {
           )}
         </div>
       </div>
+
+      {/* Reject Modal */}
+      {showRejectModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-slate-800">Reject Issuer Application</h3>
+              <button
+                onClick={() => { setShowRejectModal(false); setRejectingUserId(null); setRejectReason(""); }}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <p className="text-sm text-slate-600 mb-4">
+              Please provide a reason for rejection. This will be sent to the applicant via email.
+            </p>
+            <textarea
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              placeholder="Enter rejection reason..."
+              rows={4}
+              className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-red-500 focus:ring-2 focus:ring-red-500/20 outline-none transition-all resize-none"
+            />
+            <div className="flex justify-end gap-3 mt-4">
+              <button
+                onClick={() => { setShowRejectModal(false); setRejectingUserId(null); setRejectReason(""); }}
+                className="px-4 py-2 border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleRejectIssuer}
+                disabled={!rejectReason.trim() || approvalLoading === rejectingUserId}
+                className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg transition-colors disabled:opacity-50"
+              >
+                {approvalLoading === rejectingUserId ? "Rejecting..." : "Reject"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

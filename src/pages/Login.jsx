@@ -253,7 +253,17 @@ const Login = () => {
         setAuth(response.user, response.token);
         apiService.setAuthToken(response.token);
         console.log("Login successful:", response);
-        navigate("/dashboard", { replace: true });
+
+        // Check verification/approval status and redirect accordingly
+        if (!response.user.isVerified) {
+          navigate("/verify-pending", { replace: true });
+        } else if (response.user.role === "ISSUER" && !response.user.isApproved) {
+          navigate("/approval-pending", { replace: true });
+        } else if (response.user.role === "SUPER_ADMIN") {
+          navigate("/super-admin", { replace: true });
+        } else {
+          navigate("/dashboard", { replace: true });
+        }
       } else {
         setError("Invalid response from server");
       }
