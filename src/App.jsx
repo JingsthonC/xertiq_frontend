@@ -35,6 +35,8 @@ import IframeExamples from "./pages/IframeExamples";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import VerifyEmail from "./pages/VerifyEmail";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import VerifyPending from "./pages/VerifyPending";
 import ApprovalPending from "./pages/ApprovalPending";
 
@@ -232,6 +234,18 @@ function App() {
     {
       path: "/verify-email",
       element: <VerifyEmail />, // Public route - email verification
+    },
+    {
+      path: "/forgot-password",
+      element: (
+        <PublicRoute>
+          <ForgotPassword />
+        </PublicRoute>
+      ),
+    },
+    {
+      path: "/reset-password",
+      element: <ResetPassword />, // Not PublicRoute - email link must work regardless of auth state
     },
     {
       path: "/embed/verify",

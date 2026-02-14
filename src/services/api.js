@@ -107,6 +107,16 @@ class ApiService {
     return response.data;
   }
 
+  async forgotPassword(email) {
+    const response = await this.api.post("/auth/forgot-password", { email });
+    return response.data;
+  }
+
+  async resetPassword(token, email, newPassword) {
+    const response = await this.api.post("/auth/reset-password", { token, email, newPassword });
+    return response.data;
+  }
+
   // Credits endpoints
   async getCredits() {
     const response = await this.api.get("/credits");
