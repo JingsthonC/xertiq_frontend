@@ -1,5 +1,5 @@
-import { useState, useCallback, useEffect } from "react";
-import { useDropzone } from "react-dropzone";
+import { useState, useCallback, useEffect } from "react"
+import { useDropzone } from "react-dropzone"
 import {
   Upload,
   FileText,
@@ -14,11 +14,11 @@ import {
   AlertTriangle,
   FileCheck,
   Download,
-} from "lucide-react";
-import apiService from "../services/api";
-import Header from "../components/Header";
-import NavigationHeader from "../components/NavigationHeader";
-import BatchProgressModal from "../components/BatchProgressModal";
+} from "lucide-react"
+import apiService from "../services/api"
+import Header from "../components/Header"
+import NavigationHeader from "../components/NavigationHeader"
+import BatchProgressModal from "../components/BatchProgressModal"
 
 // Detect if running as Chrome extension
 const isExtension = () => {
@@ -27,73 +27,73 @@ const isExtension = () => {
     typeof window.chrome !== "undefined" &&
     window.chrome.runtime &&
     window.chrome.runtime.id
-  );
-};
+  )
+}
 
 const BatchUpload = () => {
-  const [pdfFiles, setPdfFiles] = useState([]);
-  const [csvFile, setCsvFile] = useState(null);
-  const [csvData, setCsvData] = useState([]);
-  const [comparison, setComparison] = useState(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadResult, setUploadResult] = useState(null);
-  const [error, setError] = useState("");
-  const [sessionId, setSessionId] = useState(null);
-  const [showProgress, setShowProgress] = useState(false);
-  const [selectedDocType, setSelectedDocType] = useState("DIPLOMA");
-  const [documentTypes, setDocumentTypes] = useState([]);
-  const [requiredFields, setRequiredFields] = useState([]);
+  const [pdfFiles, setPdfFiles] = useState([])
+  const [csvFile, setCsvFile] = useState(null)
+  const [csvData, setCsvData] = useState([])
+  const [comparison, setComparison] = useState(null)
+  const [isUploading, setIsUploading] = useState(false)
+  const [uploadResult, setUploadResult] = useState(null)
+  const [error, setError] = useState("")
+  const [sessionId, setSessionId] = useState(null)
+  const [showProgress, setShowProgress] = useState(false)
+  const [selectedDocType, setSelectedDocType] = useState("DIPLOMA")
+  const [documentTypes, setDocumentTypes] = useState([])
+  const [requiredFields, setRequiredFields] = useState([])
+  const [showSuccessNotification, setShowSuccessNotification] = useState(false)
+  const [progressToast, setProgressToast] = useState(null)
 
   // Fetch document types on mount
   useEffect(() => {
-    fetchDocumentTypes();
-  }, []);
+    fetchDocumentTypes()
+  }, [])
 
   const fetchDocumentTypes = async () => {
     try {
-      const response = await apiService.getDocumentTypes();
-      setDocumentTypes(response.documentTypes || []);
+      const response = await apiService.getDocumentTypes()
+      setDocumentTypes(response || [])
 
       // Set initial required fields
-      if (response.documentTypes && response.documentTypes.length > 0) {
-        const selected = response.documentTypes.find(
-          (t) => t.value === selectedDocType,
-        );
+      if (response && response.length > 0) {
+        const selected = response.find((t) => t.value === selectedDocType)
         if (selected) {
-          setRequiredFields(selected.requiredFields || []);
+          setRequiredFields(selected.requiredFields || [])
         }
       }
     } catch (error) {
-      console.error("Failed to fetch document types:", error);
+      console.error("Failed to fetch document types:", error)
     }
-  };
+  }
 
   const handleDocTypeChange = (docType) => {
-    setSelectedDocType(docType);
-    const selected = documentTypes.find((t) => t.value === docType);
+    setSelectedDocType(docType)
+    const selected = documentTypes.find((t) => t.value === docType)
     if (selected) {
-      setRequiredFields(selected.requiredFields || []);
+      setRequiredFields(selected.requiredFields || [])
     }
-  };
+  }
 
   const downloadSampleCsv = async () => {
     try {
-      const csvContent = await apiService.downloadSampleCsv(selectedDocType);
+      const csvContent = await apiService.downloadSampleCsv(selectedDocType)
       // Trigger download
-      const blob = new Blob([csvContent], { type: "text/csv" });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `sample_${selectedDocType.toLowerCase()}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+      const blob = new Blob([csvContent], { type: "text/csv" })
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = `sample_${selectedDocType.toLowerCase()}.csv`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
     } catch (error) {
-      console.error("Failed to download sample CSV:", error);
-      setError("Failed to download sample CSV");
+      console.error("Failed to download sample CSV:", error)
+      setError("Failed to download sample CSV")
     }
-  };
+  }
 
   // Dropzone for PDF files
   const onDropPdf = useCallback(
@@ -104,87 +104,85 @@ const BatchUpload = () => {
         name: file.name,
         size: file.size,
         type: "pdf",
-      }));
-      const updatedPdfFiles = [...pdfFiles, ...newFiles];
-      setPdfFiles(updatedPdfFiles);
+      }))
+      const updatedPdfFiles = [...pdfFiles, ...newFiles]
+      setPdfFiles(updatedPdfFiles)
 
       // If we have CSV data, immediately compare
       if (csvData.length > 0) {
-        const comparisonResult = compareFilesWithCsv(updatedPdfFiles, csvData);
-        setComparison(comparisonResult);
+        const comparisonResult = compareFilesWithCsv(updatedPdfFiles, csvData)
+        setComparison(comparisonResult)
       }
     },
     [pdfFiles, csvData],
-  );
+  )
 
   // CSV Parser function
   const parseCsvFile = (file) => {
     return new Promise((resolve, reject) => {
-      const reader = new FileReader();
+      const reader = new FileReader()
       reader.onload = (e) => {
         try {
-          const text = e.target.result;
-          const lines = text.split("\n").filter((line) => line.trim() !== "");
+          const text = e.target.result
+          const lines = text.split("\n").filter((line) => line.trim() !== "")
 
           if (lines.length < 2) {
             reject(
               new Error(
                 "CSV file must have at least a header and one data row",
               ),
-            );
-            return;
+            )
+            return
           }
 
-          const headers = lines[0]
-            .split(",")
-            .map((h) => h.trim().toLowerCase());
+          const headers = lines[0].split(",").map((h) => h.trim().toLowerCase())
 
           // Only require filename column
           if (!headers.includes("filename")) {
-            reject(new Error(`CSV must contain a 'filename' column`));
-            return;
+            reject(new Error(`CSV must contain a 'filename' column`))
+            return
           }
 
           const data = lines.slice(1).map((line, index) => {
-            const values = line.split(",").map((v) => v.trim());
-            const row = {};
+            const values = line.split(",").map((v) => v.trim())
+            const row = {}
             headers.forEach((header, i) => {
-              row[header] = values[i] || "";
-            });
-            row.rowIndex = index + 1;
-            return row;
-          });
+              row[header] = values[i] || ""
+            })
+            row.rowIndex = index + 1
+            return row
+          })
 
-          resolve(data);
+          resolve(data)
         } catch (error) {
-          reject(new Error("Failed to parse CSV file: " + error.message));
+          reject(new Error("Failed to parse CSV file: " + error.message))
         }
-      };
-      reader.onerror = () => reject(new Error("Failed to read CSV file"));
-      reader.readAsText(file);
-    });
-  };
+      }
+      reader.onerror = () => reject(new Error("Failed to read CSV file"))
+      reader.readAsText(file)
+    })
+  }
 
   // Compare PDF files with CSV data - simplified to only check if PDF filenames exist in CSV
   const compareFilesWithCsv = (pdfFiles, csvData) => {
-    const pdfFilenames = pdfFiles.map((file) => file.name);
+    const pdfFilenames = pdfFiles.map((file) => file.name)
 
-    const matched = [];
-    const missingInCsv = [];
+    const matched = []
+    const missingInCsv = []
 
     // Only check if PDF filenames exist in CSV
     pdfFilenames.forEach((pdfFilename) => {
-      const csvMatch = csvData.find((row) => row.filename === pdfFilename);
+      const csvMatch = csvData.find((row) => row.filename === pdfFilename)
       if (csvMatch) {
         matched.push({
           filename: pdfFilename,
           csvData: csvMatch,
           pdfFile: pdfFiles.find((f) => f.name === pdfFilename),
-        });
+        })
       } else {
-        missingInCsv.push(pdfFilename);
+        missingInCsv.push(pdfFilename)
       }
-    });
+    })
 
     return {
       matched,
@@ -192,40 +190,40 @@ const BatchUpload = () => {
       totalPdfs: pdfFilenames.length,
       totalCsvRows: csvData.length,
       isValid: missingInCsv.length === 0,
-    };
-  };
+    }
+  }
 
   // Dropzone for CSV file
   const onDropCsv = useCallback(
     async (acceptedFiles) => {
       if (acceptedFiles.length > 0) {
-        const file = acceptedFiles[0];
+        const file = acceptedFiles[0]
         setCsvFile({
           id: `csv-${Date.now()}`,
           file: file,
           name: file.name,
           size: file.size,
           type: "csv",
-        });
+        })
 
         try {
-          const data = await parseCsvFile(file);
-          setCsvData(data);
+          const data = await parseCsvFile(file)
+          setCsvData(data)
 
           // If we have PDF files, immediately compare
           if (pdfFiles.length > 0) {
-            const comparisonResult = compareFilesWithCsv(pdfFiles, data);
-            setComparison(comparisonResult);
+            const comparisonResult = compareFilesWithCsv(pdfFiles, data)
+            setComparison(comparisonResult)
           }
         } catch (error) {
-          setError(`CSV parsing error: ${error.message}`);
-          setCsvData([]);
-          setComparison(null);
+          setError(`CSV parsing error: ${error.message}`)
+          setCsvData([])
+          setComparison(null)
         }
       }
     },
     [pdfFiles],
-  );
+  )
 
   const {
     getRootProps: getPdfRootProps,
@@ -237,7 +235,7 @@ const BatchUpload = () => {
       "application/pdf": [".pdf"],
     },
     multiple: true,
-  });
+  })
 
   const {
     getRootProps: getCsvRootProps,
@@ -250,118 +248,156 @@ const BatchUpload = () => {
       "application/vnd.ms-excel": [".csv"],
     },
     multiple: false,
-  });
+  })
 
   const removePdfFile = (fileId) => {
-    const updatedFiles = pdfFiles.filter((f) => f.id !== fileId);
-    setPdfFiles(updatedFiles);
+    const updatedFiles = pdfFiles.filter((f) => f.id !== fileId)
+    setPdfFiles(updatedFiles)
 
     // Update comparison if CSV data exists
     if (csvData.length > 0) {
-      const comparisonResult = compareFilesWithCsv(updatedFiles, csvData);
-      setComparison(comparisonResult);
+      const comparisonResult = compareFilesWithCsv(updatedFiles, csvData)
+      setComparison(comparisonResult)
     } else if (updatedFiles.length === 0) {
-      setComparison(null);
+      setComparison(null)
     }
-  };
+  }
 
   const removeCsvFile = () => {
-    setCsvFile(null);
-    setCsvData([]);
-    setComparison(null);
-  };
+    setCsvFile(null)
+    setCsvData([])
+    setComparison(null)
+  }
 
   const handleBatchUpload = async () => {
     if (pdfFiles.length === 0) {
-      setError("Please add PDF certificate files before uploading");
-      return;
+      setError("Please add PDF certificate files before uploading")
+      return
     }
 
     if (!csvFile) {
-      setError("Please upload a CSV metadata file");
-      return;
+      setError("Please upload a CSV metadata file")
+      return
     }
 
     if (comparison && !comparison.isValid) {
-      setError("Please resolve all file comparison issues before uploading");
-      return;
+      setError("Please resolve all file comparison issues before uploading")
+      return
     }
 
-    setIsUploading(true);
-    setError("");
-    setUploadResult(null);
+    setIsUploading(true)
+    setError("")
+    setUploadResult(null)
 
     try {
-      const formData = new FormData();
+      const formData = new FormData()
 
       // Add document type
-      formData.append("docType", selectedDocType);
+      formData.append("docType", selectedDocType)
 
       // Add PDF certificate files
       pdfFiles.forEach((fileData) => {
-        formData.append("certificates", fileData.file);
-      });
+        formData.append("certificates", fileData.file)
+      })
 
       // Add CSV metadata file
-      formData.append("metadata", csvFile.file);
+      formData.append("metadata", csvFile.file)
 
       // Get session ID from backend
-      const response = await apiService.createBatch(formData);
+      const response = await apiService.createBatch(formData)
 
       // Backend now returns sessionId immediately
       if (response.sessionId) {
-        setSessionId(response.sessionId);
-        setShowProgress(true);
+        setSessionId(response.sessionId)
+        setShowProgress(true)
+        // Initialize progress toast
+        setProgressToast({
+          processedDocuments: 0,
+          totalDocuments: pdfFiles.length,
+          percentage: 0,
+          currentMessage: "Starting batch processing...",
+        })
       } else {
         // Fallback for old response format
-        setUploadResult(response);
-        setPdfFiles([]);
-        setCsvFile(null);
-        setCsvData([]);
-        setComparison(null);
+        setUploadResult(response)
+        setPdfFiles([])
+        setCsvFile(null)
+        setCsvData([])
+        setComparison(null)
       }
     } catch (err) {
-      console.error("Batch upload failed:", err);
-      setError(
-        err.response?.data?.message || "Upload failed. Please try again.",
-      );
+      console.error("Batch upload failed:", err)
+      const errorMsg =
+        err.response?.data?.message || "Upload failed. Please try again."
+      setError(errorMsg)
+      setProgressToast(null) // Clear progress toast on error
+
+      // Auto-clear error after 5 seconds
+      setTimeout(() => {
+        setError("")
+      }, 5000)
     } finally {
-      setIsUploading(false);
+      setIsUploading(false)
     }
-  };
+  }
+
+  const handleProgressUpdate = (progressData) => {
+    // Update toast with real-time progress
+    if (progressData && progressData.totalDocuments > 0) {
+      const percentage = Math.round(
+        (progressData.processedDocuments / progressData.totalDocuments) * 100,
+      )
+      setProgressToast({
+        processedDocuments: progressData.processedDocuments || 0,
+        totalDocuments: progressData.totalDocuments || 0,
+        percentage,
+        currentMessage: progressData.currentMessage || "Processing...",
+      })
+    }
+  }
 
   const handleProgressComplete = (progressData) => {
-    // Progress data contains: { status, totalDocuments, successfulDocuments, failedDocuments, documents, finalResult }
-    // The finalResult contains the actual batch result from backend
-    console.log("Progress complete:", progressData);
+    // Progress data from SSE already has all the fields at root level
+    console.log("✅ Progress complete:", progressData)
 
-    if (progressData.finalResult) {
-      // Use the final result from backend which has the proper structure
-      setUploadResult(progressData.finalResult);
-    } else {
-      // Fallback: construct from progress data
-      setUploadResult({
-        batchId: progressData.batchId || "N/A",
-        documentCount: progressData.successfulDocuments || 0,
-        totalDocuments: progressData.totalDocuments || 0,
-        failedDocuments: progressData.failedDocuments || 0,
-        documents: progressData.documents || [],
-      });
+    // The SSE sends data with all fields at root level, not nested under finalResult
+    setUploadResult({
+      batchId: progressData.batchId || "N/A",
+      documentCount: progressData.successfulDocuments || 0,
+      totalDocuments: progressData.totalDocuments || 0,
+      failedDocuments: progressData.failedDocuments || 0,
+      documents: progressData.documents || [],
+      status: progressData.status,
+      duration: progressData.duration,
+    })
+
+    // Show success notification and hide progress toast
+    if (
+      progressData.status === "completed" &&
+      progressData.successfulDocuments > 0
+    ) {
+      setProgressToast(null)
+      setShowSuccessNotification(true)
+      // Auto-hide after 5 seconds
+      setTimeout(() => {
+        setShowSuccessNotification(false)
+      }, 5000)
     }
 
-    setShowProgress(false);
-    setPdfFiles([]);
-    setCsvFile(null);
-    setCsvData([]);
-    setComparison(null);
-  };
+    setShowProgress(false)
+    setPdfFiles([])
+    setCsvFile(null)
+    setCsvData([])
+    setComparison(null)
+  }
 
   const handleProgressClose = () => {
-    setShowProgress(false);
-    setSessionId(null);
-  };
+    setShowProgress(false)
+    setSessionId(null)
+    setProgressToast(null) // Clear progress toast when modal closes
+  }
 
-  const isExt = isExtension();
+  const isExt = isExtension()
 
   if (isExt) {
     return (
@@ -616,13 +652,101 @@ const BatchUpload = () => {
           )}
         </div>
       </div>
-    );
+    )
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#f7fafc] to-[#e6f2ff]">
       <Header />
       <NavigationHeader title="Batch Upload" />
+
+      {/* Success Toast Notification */}
+      {showSuccessNotification && (
+        <div className="fixed top-6 right-6 z-50 transition-all duration-300 ease-out">
+          <div className="bg-white border border-green-200 shadow-lg rounded-lg px-5 py-4 flex items-start space-x-3 max-w-md">
+            <div className="flex-shrink-0 w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+              <CheckCircle size={20} className="text-green-600" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-gray-900 text-sm">
+                Batch Complete!
+              </p>
+              <p className="text-sm text-gray-600 mt-0.5">
+                {uploadResult?.successfulDocuments || 0} certificate(s)
+                processed successfully
+              </p>
+            </div>
+            <button
+              onClick={() => setShowSuccessNotification(false)}
+              className="flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors"
+              aria-label="Close"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Progress Toast Notification */}
+      {progressToast && (
+        <div className="fixed top-6 right-6 z-50 transition-all duration-300 ease-out">
+          <div className="bg-white border border-blue-200 shadow-lg rounded-lg px-5 py-4 max-w-md">
+            <div className="flex items-start space-x-3">
+              <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                <Loader size={20} className="text-blue-600 animate-spin" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-gray-900 text-sm">
+                  Processing Documents
+                </p>
+                <p className="text-sm text-gray-600 mt-0.5">
+                  {progressToast.processedDocuments} of{" "}
+                  {progressToast.totalDocuments} documents
+                </p>
+                {progressToast.currentMessage && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    {progressToast.currentMessage}
+                  </p>
+                )}
+                {/* Progress Bar */}
+                <div className="mt-2 bg-gray-200 rounded-full h-2 w-full overflow-hidden">
+                  <div
+                    className="bg-blue-600 h-full transition-all duration-300 ease-out"
+                    style={{ width: `${progressToast.percentage}%` }}
+                  ></div>
+                </div>
+                <p className="text-xs text-gray-500 mt-1 text-right">
+                  {progressToast.percentage}%
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Error Toast Notification */}
+      {error && (
+        <div className="fixed top-6 right-6 z-50 transition-all duration-300 ease-out">
+          <div className="bg-white border border-red-200 shadow-lg rounded-lg px-5 py-4 flex items-start space-x-3 max-w-md">
+            <div className="flex-shrink-0 w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+              <AlertCircle size={20} className="text-red-600" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-gray-900 text-sm">
+                Upload Failed
+              </p>
+              <p className="text-sm text-gray-600 mt-0.5">{error}</p>
+            </div>
+            <button
+              onClick={() => setError("")}
+              className="flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors"
+              aria-label="Close"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="p-8">
         <div className="max-w-6xl mx-auto">
@@ -1126,11 +1250,12 @@ const BatchUpload = () => {
             sessionId={sessionId}
             onClose={handleProgressClose}
             onComplete={handleProgressComplete}
+            onProgressUpdate={handleProgressUpdate}
           />
         )}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default BatchUpload;
+export default BatchUpload

@@ -1,7 +1,16 @@
-import { useEffect, useState, useRef } from "react";
-import { CheckCircle, XCircle, Loader, Clock } from "lucide-react";
+import { useEffect, useState, useRef } from "react"
+import { CheckCircle, XCircle, Loader, Clock } from "lucide-react"
+import useWalletStore from "../store/wallet"
 
-const BatchProgressModal = ({ sessionId, onClose, onComplete }) => {
+const BatchProgressModal = ({
+  sessionId,
+  onClose,
+  onComplete,
+  onProgressUpdate,
+}) => {
+  // Get token from Zustand store
+  const walletStore = useWalletStore()
+  const token = walletStore.token
   const [progress, setProgress] = useState({
     totalDocuments: 0,
     processedDocuments: 0,
@@ -11,104 +20,183 @@ const BatchProgressModal = ({ sessionId, onClose, onComplete }) => {
     status: "processing",
     currentStep: 0,
     currentMessage: "",
-  });
-  const [isConnected, setIsConnected] = useState(false);
-  const eventSourceRef = useRef(null);
+  })
+  const [isConnected, setIsConnected] = useState(false)
+  const eventSourceRef = useRef(null)
+  const isCompletedRef = useRef(false) // Track if batch completed successfully
 
   useEffect(() => {
-    if (!sessionId) return;
+    if (!sessionId) return
 
-    let cancelled = false;
+    // Reset completion flag
+    isCompletedRef.current = false
+
+    // Debug logging
+    console.log("🔍 BatchProgressModal Debug:")
+    console.log("  Session ID:", sessionId)
+    console.log(
+      "  Token from store:",
+      token ? `${token.substring(0, 20)}...` : "undefined",
+    )
+    console.log("  Store state:", walletStore)
+
+    if (!token) {
+      console.error("❌ No authentication token available")
+      console.log("💡 Try logging in again at /login")
+      setProgress((prev) => ({
+        ...prev,
+        status: "failed",
+        currentMessage: "Not logged in. Please refresh and login again.",
+      }))
+      return
+    }
+
+    let cancelled = false
 
     // Fetch short-lived SSE token, then open EventSource
     const connectSSE = async () => {
-      let sseToken;
+      let sseToken
       try {
-        const authToken = localStorage.getItem("token");
-        const resp = await fetch(
-          `${import.meta.env.VITE_API_URL}/api/batch/sse-token`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${authToken}`,
-            },
+        const apiBaseUrl =
+          import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api"
+        console.log("📡 Fetching SSE token...")
+        console.log("  API URL:", `${apiBaseUrl}/batch/sse-token`)
+        console.log(
+          "  Auth token:",
+          token ? `${token.substring(0, 20)}...` : "undefined",
+        )
+
+        const resp = await fetch(`${apiBaseUrl}/batch/sse-token`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
-        );
-        const data = await resp.json();
-        sseToken = data.token;
-      } catch {
-        // Fallback: use the main token if SSE token endpoint fails
-        sseToken = localStorage.getItem("token");
-      }
+        })
 
-      if (cancelled) return;
+        console.log("  Response status:", resp.status)
+        const data = await resp.json()
+        console.log("  Response data:", data)
 
-      const eventSource = new EventSource(
-        `${import.meta.env.VITE_API_URL}/api/batch/progress/${sessionId}?token=${sseToken}`,
-      );
-      eventSourceRef.current = eventSource;
-
-    eventSource.onopen = () => {
-      console.log("SSE connection opened");
-      setIsConnected(true);
-    };
-
-    eventSource.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        console.log("Progress update:", data);
-
-        if (data.type === "connected") {
-          setIsConnected(true);
-        } else if (data.type === "progress" && data.data) {
-          setProgress(data.data);
-        } else if (data.type === "complete" && data.data) {
-          setProgress(data.data);
-          if (onComplete) {
-            onComplete(data.data);
-          }
-        } else if (data.type === "error") {
-          console.error("Progress error:", data.message);
+        if (!resp.ok) {
+          throw new Error(data.message || `HTTP ${resp.status}`)
         }
+
+        sseToken = data.token
+        console.log("✅ SSE token obtained successfully")
       } catch (error) {
-        console.error("Error parsing SSE data:", error);
+        console.error("❌ Failed to get SSE token:", error)
+        // Fallback: use the main token if SSE token endpoint fails
+        sseToken = token
+        console.log("⚠️ Using main token as fallback")
       }
-    };
 
-    eventSource.onerror = (error) => {
-      console.error("SSE error:", error);
-      setIsConnected(false);
-      eventSource.close();
-    };
-    };
+      if (cancelled) return
 
-    connectSSE();
+      const apiBaseUrl =
+        import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api"
+      const eventSource = new EventSource(
+        `${apiBaseUrl}/batch/progress/${sessionId}?token=${sseToken}`,
+      )
+      eventSourceRef.current = eventSource
+
+      eventSource.onopen = () => {
+        console.log("SSE connection opened")
+        setIsConnected(true)
+      }
+
+      eventSource.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data)
+          console.log("Progress update:", data)
+
+          if (data.type === "connected") {
+            setIsConnected(true)
+          } else if (data.type === "progress" && data.data) {
+            setProgress(data.data)
+            // Notify parent component of progress update
+            if (onProgressUpdate) {
+              onProgressUpdate(data.data)
+            }
+          } else if (data.type === "complete" && data.data) {
+            console.log("✅ Batch processing completed!", data.data)
+            isCompletedRef.current = true // Mark as completed
+            setProgress(data.data)
+            if (onComplete) {
+              onComplete(data.data)
+            }
+            // Close the EventSource connection
+            if (eventSourceRef.current) {
+              eventSourceRef.current.close()
+            }
+            // Auto-close modal after 3 seconds on successful completion
+            if (data.data.status === "completed") {
+              setTimeout(() => {
+                if (onClose) {
+                  onClose()
+                }
+              }, 3000)
+            }
+          } else if (data.type === "error") {
+            console.error("Progress error:", data.message)
+          }
+        } catch (error) {
+          console.error("Error parsing SSE data:", error)
+        }
+      }
+
+      eventSource.onerror = (error) => {
+        // Don't log error if we already completed successfully
+        if (isCompletedRef.current) {
+          console.log("✅ SSE connection closed after completion (normal)")
+        } else {
+          console.error("❌ SSE connection error:", error)
+        }
+        setIsConnected(false)
+        eventSource.close()
+      }
+    }
+
+    connectSSE()
 
     // Cleanup on unmount
     return () => {
-      cancelled = true;
+      cancelled = true
       if (eventSourceRef.current) {
-        eventSourceRef.current.close();
+        eventSourceRef.current.close()
       }
-    };
-  }, [sessionId, onComplete]);
+    }
+  }, [sessionId, token, walletStore, onComplete, onClose, onProgressUpdate])
 
   const progressPercentage =
     progress.totalDocuments > 0
       ? (progress.processedDocuments / progress.totalDocuments) * 100
-      : 0;
+      : 0
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
         {/* Header */}
-        <div className="bg-gradient-to-r from-purple-600 to-blue-600 p-6 text-white">
-          <h2 className="text-2xl font-bold">Processing Batch Upload</h2>
+        <div
+          className={`p-6 text-white ${progress.status === "completed" ? "bg-gradient-to-r from-green-600 to-emerald-600" : progress.status === "failed" ? "bg-gradient-to-r from-red-600 to-rose-600" : "bg-gradient-to-r from-purple-600 to-blue-600"}`}
+        >
+          <h2 className="text-2xl font-bold">
+            {progress.status === "completed"
+              ? "✅ Batch Completed Successfully!"
+              : progress.status === "failed"
+                ? "❌ Batch Processing Failed"
+                : "Processing Batch Upload"}
+          </h2>
           <p className="text-purple-100 mt-1">
-            {isConnected ? "Connected" : "Connecting..."}
+            {progress.status === "completed"
+              ? `Successfully processed ${progress.successfulDocuments} documents`
+              : progress.status === "failed"
+                ? "Some documents failed to process"
+                : isConnected
+                  ? "Connected"
+                  : "Connecting..."}
           </p>
-          {progress.currentStep > 0 && (
+          {progress.currentStep > 0 && progress.status === "processing" && (
             <p className="text-sm text-purple-200 mt-2">
               Step {progress.currentStep}/8:{" "}
               {progress.currentMessage || "Processing..."}
@@ -230,15 +318,21 @@ const BatchProgressModal = ({ sessionId, onClose, onComplete }) => {
             progress.status === "failed") && (
             <button
               onClick={onClose}
-              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:from-purple-700 hover:to-blue-700 transition-colors"
+              className={`w-full py-3 px-4 rounded-lg font-semibold transition-colors ${
+                progress.status === "completed"
+                  ? "bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                  : "bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+              } text-white`}
             >
-              {progress.status === "completed" ? "Done" : "Close"}
+              {progress.status === "completed"
+                ? "Done (closing in 3s...)"
+                : "Close"}
             </button>
           )}
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default BatchProgressModal;
+export default BatchProgressModal
