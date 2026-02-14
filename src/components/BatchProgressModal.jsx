@@ -18,12 +18,36 @@ const BatchProgressModal = ({ sessionId, onClose, onComplete }) => {
   useEffect(() => {
     if (!sessionId) return;
 
-    // Create EventSource for SSE
-    const token = localStorage.getItem("token");
-    const eventSource = new EventSource(
-      `${import.meta.env.VITE_API_URL}/api/batch/progress/${sessionId}?token=${token}`,
-    );
-    eventSourceRef.current = eventSource;
+    let cancelled = false;
+
+    // Fetch short-lived SSE token, then open EventSource
+    const connectSSE = async () => {
+      let sseToken;
+      try {
+        const authToken = localStorage.getItem("token");
+        const resp = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/batch/sse-token`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${authToken}`,
+            },
+          },
+        );
+        const data = await resp.json();
+        sseToken = data.token;
+      } catch {
+        // Fallback: use the main token if SSE token endpoint fails
+        sseToken = localStorage.getItem("token");
+      }
+
+      if (cancelled) return;
+
+      const eventSource = new EventSource(
+        `${import.meta.env.VITE_API_URL}/api/batch/progress/${sessionId}?token=${sseToken}`,
+      );
+      eventSourceRef.current = eventSource;
 
     eventSource.onopen = () => {
       console.log("SSE connection opened");
@@ -57,9 +81,13 @@ const BatchProgressModal = ({ sessionId, onClose, onComplete }) => {
       setIsConnected(false);
       eventSource.close();
     };
+    };
+
+    connectSSE();
 
     // Cleanup on unmount
     return () => {
+      cancelled = true;
       if (eventSourceRef.current) {
         eventSourceRef.current.close();
       }
