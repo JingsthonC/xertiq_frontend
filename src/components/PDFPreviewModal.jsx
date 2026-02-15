@@ -1,10 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { X, Download, ExternalLink, AlertCircle, Loader2 } from "lucide-react";
+import useFocusTrap from "../hooks/useFocusTrap";
+import useEscapeKey from "../hooks/useEscapeKey";
 
 const PDFPreviewModal = ({ isOpen, onClose, pdfUrl, title, docId }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [pdfBlobUrl, setPdfBlobUrl] = useState(null);
+  const trapRef = useFocusTrap(isOpen);
+  const handleClose = useCallback(() => onClose(), [onClose]);
+  useEscapeKey(handleClose, isOpen);
 
   useEffect(() => {
     if (isOpen && pdfUrl) {
@@ -89,11 +94,11 @@ const PDFPreviewModal = ({ isOpen, onClose, pdfUrl, title, docId }) => {
       />
 
       {/* Modal */}
-      <div className="relative w-full h-full max-w-6xl max-h-[90vh] bg-gray-900 rounded-2xl shadow-2xl flex flex-col m-4">
+      <div ref={trapRef} role="dialog" aria-modal="true" aria-labelledby="pdf-preview-title" className="relative w-full h-full max-w-6xl max-h-[90vh] bg-gray-900 rounded-2xl shadow-2xl flex flex-col m-4">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-white/10 bg-gray-800/50 rounded-t-2xl">
           <div className="flex-1">
-            <h2 className="text-xl font-bold text-white mb-1">
+            <h2 id="pdf-preview-title" className="text-xl font-bold text-white mb-1">
               {title || "PDF Preview"}
             </h2>
             {docId && (
@@ -105,6 +110,7 @@ const PDFPreviewModal = ({ isOpen, onClose, pdfUrl, title, docId }) => {
               <>
                 <button
                   onClick={handleDownload}
+                  aria-label="Download PDF"
                   className="flex items-center gap-2 px-4 py-2 bg-green-500/20 hover:bg-green-500/30 border border-green-500/30 rounded-xl text-green-400 transition-all"
                 >
                   <Download size={16} />
@@ -114,6 +120,7 @@ const PDFPreviewModal = ({ isOpen, onClose, pdfUrl, title, docId }) => {
                   href={displayUrl}
                   target="_blank"
                   rel="noopener noreferrer"
+                  aria-label="Open PDF in new tab"
                   className="flex items-center gap-2 px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/30 rounded-xl text-blue-400 transition-all"
                 >
                   <ExternalLink size={16} />
@@ -123,6 +130,7 @@ const PDFPreviewModal = ({ isOpen, onClose, pdfUrl, title, docId }) => {
             )}
             <button
               onClick={onClose}
+              aria-label="Close PDF preview"
               className="p-2 hover:bg-white/10 rounded-xl transition-all"
             >
               <X size={20} className="text-gray-400 hover:text-white" />

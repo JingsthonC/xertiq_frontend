@@ -19,6 +19,7 @@ import apiService from "../services/api"
 import Header from "../components/Header"
 import NavigationHeader from "../components/NavigationHeader"
 import BatchProgressModal from "../components/BatchProgressModal"
+import SEOHead from "../components/SEOHead"
 
 // Detect if running as Chrome extension
 const isExtension = () => {
@@ -659,6 +660,7 @@ const BatchUpload = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#f7fafc] to-[#e6f2ff]">
+      <SEOHead title="Batch Upload" noindex />
       <Header />
       <NavigationHeader title="Batch Upload" />
 

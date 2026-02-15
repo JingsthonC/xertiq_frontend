@@ -1,6 +1,8 @@
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState, useRef, useCallback } from "react"
 import { CheckCircle, XCircle, Loader, Clock } from "lucide-react"
 import useWalletStore from "../store/wallet"
+import useFocusTrap from "../hooks/useFocusTrap"
+import useEscapeKey from "../hooks/useEscapeKey"
 
 const BatchProgressModal = ({
   sessionId,
@@ -24,6 +26,10 @@ const BatchProgressModal = ({
   const [isConnected, setIsConnected] = useState(false)
   const eventSourceRef = useRef(null)
   const isCompletedRef = useRef(false) // Track if batch completed successfully
+  const isCloseable = progress.status === "completed" || progress.status === "failed"
+  const trapRef = useFocusTrap(isCloseable)
+  const handleEscapeClose = useCallback(() => { if (isCloseable && onClose) onClose() }, [isCloseable, onClose])
+  useEscapeKey(handleEscapeClose, isCloseable)
 
   useEffect(() => {
     if (!sessionId) return
@@ -175,12 +181,12 @@ const BatchProgressModal = ({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
+      <div ref={trapRef} role="dialog" aria-modal="true" aria-labelledby="batch-progress-title" className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
         {/* Header */}
         <div
           className={`p-6 text-white ${progress.status === "completed" ? "bg-gradient-to-r from-green-600 to-emerald-600" : progress.status === "failed" ? "bg-gradient-to-r from-red-600 to-rose-600" : "bg-gradient-to-r from-purple-600 to-blue-600"}`}
         >
-          <h2 className="text-2xl font-bold">
+          <h2 id="batch-progress-title" className="text-2xl font-bold">
             {progress.status === "completed"
               ? "✅ Batch Completed Successfully!"
               : progress.status === "failed"
@@ -214,12 +220,16 @@ const BatchProgressModal = ({
               </span>
               <span>{Math.round(progressPercentage)}%</span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+            <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden" role="progressbar" aria-valuenow={Math.round(progressPercentage)} aria-valuemin={0} aria-valuemax={100} aria-label="Batch processing progress">
               <div
                 className="bg-gradient-to-r from-purple-600 to-blue-600 h-full transition-all duration-300 ease-out"
                 style={{ width: `${progressPercentage}%` }}
               />
             </div>
+          </div>
+
+          <div aria-live="polite" className="sr-only">
+            {progress.processedDocuments} of {progress.totalDocuments} documents processed. {progress.currentMessage}
           </div>
 
           {/* Status Summary */}

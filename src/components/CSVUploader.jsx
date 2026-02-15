@@ -174,6 +174,7 @@ const CSVUploader = ({ onDataLoaded, onError }) => {
               </div>
               <button
                 onClick={clearFile}
+                aria-label="Remove uploaded file"
                 className="p-2 hover:bg-white/10 rounded-lg transition-colors"
               >
                 <X size={20} className="text-gray-400" />
@@ -251,7 +252,7 @@ const CSVUploader = ({ onDataLoaded, onError }) => {
 
       {/* Error Message */}
       {error && (
-        <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4">
+        <div role="alert" className="bg-red-500/10 border border-red-500/20 rounded-xl p-4">
           <div className="flex items-center space-x-2">
             <AlertCircle size={20} className="text-red-400" />
             <p className="text-red-400 text-sm">{error}</p>

@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { createPortal } from "react-dom";
 import { X, Coins, AlertTriangle, CheckCircle, ArrowRight } from "lucide-react";
 import { CREDIT_COSTS } from "../services/api";
+import useFocusTrap from "../hooks/useFocusTrap";
+import useEscapeKey from "../hooks/useEscapeKey";
 
 const CreditConfirmationModal = ({
   isOpen,
@@ -12,6 +14,10 @@ const CreditConfirmationModal = ({
   currentBalance,
   loading = false,
 }) => {
+  const trapRef = useFocusTrap(isOpen);
+  const handleEscapeClose = useCallback(() => { if (!loading) onClose(); }, [loading, onClose]);
+  useEscapeKey(handleEscapeClose, isOpen);
+
   if (!isOpen) return null;
 
   const operationLabels = {
@@ -46,6 +52,10 @@ const CreditConfirmationModal = ({
       }}
     >
       <div
+        ref={trapRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="credit-confirm-title"
         className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 max-h-[90vh] flex flex-col"
         style={{
           position: "relative",
@@ -54,12 +64,13 @@ const CreditConfirmationModal = ({
       >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
-          <h3 className="text-lg font-semibold text-gray-900">
+          <h3 id="credit-confirm-title" className="text-lg font-semibold text-gray-900">
             Confirm Credit Usage
           </h3>
           <button
             onClick={onClose}
             disabled={loading}
+            aria-label="Close confirmation"
             className="text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
           >
             <X className="w-5 h-5" />

@@ -60,6 +60,7 @@ const CreditBalance = ({ showDetails = false, size = "md" }) => {
         onClick={() => navigate("/purchase-credits")}
         className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all cursor-pointer ${badgeStyles}`}
         title="Click to buy more credits"
+        aria-label="Credit balance, click to buy more"
       >
         <Coins className="w-4 h-4" />
         <span className="font-semibold">{creditsValue}</span>
@@ -72,6 +73,7 @@ const CreditBalance = ({ showDetails = false, size = "md" }) => {
         disabled={creditsLoading}
         className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50"
         title="Refresh credit balance"
+        aria-label="Refresh credit balance"
       >
         <RefreshCw
           className={`w-4 h-4 ${creditsLoading ? "animate-spin" : ""}`}
@@ -84,6 +86,7 @@ const CreditBalance = ({ showDetails = false, size = "md" }) => {
           onClick={() => navigate("/purchase-credits")}
           className="p-1.5 rounded-lg bg-blue-500 hover:bg-blue-600 text-white transition-colors"
           title="Purchase more credits"
+          aria-label="Purchase more credits"
         >
           <Plus className="w-4 h-4" />
         </button>

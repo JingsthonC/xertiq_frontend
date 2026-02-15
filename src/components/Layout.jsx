@@ -22,7 +22,8 @@ const Layout = ({ children }) => {
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 flex flex-col w-[380px] h-[600px] overflow-hidden">
       <Header />
       <StatusIndicators />
-      <main className="flex-1 overflow-auto">
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[9999] focus:bg-primary-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-lg">Skip to main content</a>
+      <main id="main-content" className="flex-1 overflow-auto">
         {children}
       </main>
     </div>
