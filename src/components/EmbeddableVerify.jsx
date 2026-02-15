@@ -31,16 +31,19 @@ const EmbeddableVerify = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [accessKeyInput, setAccessKeyInput] = useState("");
 
   useEffect(() => {
     // Check URL parameters for auto-verification
     const urlParams = new URLSearchParams(window.location.search);
     const docId = urlParams.get("doc");
     const hash = urlParams.get("hash");
+    const key = urlParams.get("key");
 
     if (docId || hash) {
-      handleVerification(docId || hash);
+      handleVerification(docId || hash, key);
       setSearchQuery(docId || hash);
+      if (key) setAccessKeyInput(key);
     }
 
     // Notify parent iframe (if embedded) that widget is loaded
@@ -55,7 +58,7 @@ const EmbeddableVerify = () => {
     }
   }, []);
 
-  const handleVerification = async (query) => {
+  const handleVerification = async (query, accessKey = null) => {
     if (!query) {
       setError("Please enter a document ID or hash");
       return;
@@ -65,7 +68,7 @@ const EmbeddableVerify = () => {
     setError("");
 
     try {
-      const data = await apiService.verifyDocument(query);
+      const data = await apiService.verifyDocument(query, accessKey);
 
       if (data.valid) {
         setVerificationData(data);
@@ -82,7 +85,7 @@ const EmbeddableVerify = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    handleVerification(searchQuery);
+    handleVerification(searchQuery, accessKeyInput || null);
   };
 
   return (
@@ -113,34 +116,45 @@ const EmbeddableVerify = () => {
                 <label className="block text-sm font-medium text-dark mb-2">
                   Document ID or Hash
                 </label>
-                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="flex-1 bg-lightest border-2 border-light rounded-lg px-3 py-2 text-gray-900 placeholder-medium focus:ring-2 focus:ring-dark/40 focus:border-dark outline-none text-sm"
-                    placeholder="Enter document ID or hash..."
-                    disabled={loading}
-                  />
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="bg-dark hover:bg-darker text-lightest px-4 py-2 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 min-w-[120px]"
-                  >
-                    {loading ? (
-                      <>
-                        <Loader size={16} className="animate-spin" />
-                        <span className="text-sm">Verifying...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Search size={16} />
-                        <span className="text-sm">Verify</span>
-                      </>
-                    )}
-                  </button>
-                </div>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-lightest border-2 border-light rounded-lg px-3 py-2 text-gray-900 placeholder-medium focus:ring-2 focus:ring-dark/40 focus:border-dark outline-none text-sm"
+                  placeholder="Enter document ID or hash..."
+                  disabled={loading}
+                />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-dark mb-2">
+                  Access Key
+                </label>
+                <input
+                  type="text"
+                  value={accessKeyInput}
+                  onChange={(e) => setAccessKeyInput(e.target.value)}
+                  className="w-full bg-lightest border-2 border-light rounded-lg px-3 py-2 text-gray-900 placeholder-medium focus:ring-2 focus:ring-dark/40 focus:border-dark outline-none text-sm"
+                  placeholder="Enter access key..."
+                  disabled={loading}
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full sm:w-auto bg-dark hover:bg-darker text-lightest px-4 py-2 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 min-w-[120px]"
+              >
+                {loading ? (
+                  <>
+                    <Loader size={16} className="animate-spin" />
+                    <span className="text-sm">Verifying...</span>
+                  </>
+                ) : (
+                  <>
+                    <Search size={16} />
+                    <span className="text-sm">Verify</span>
+                  </>
+                )}
+              </button>
             </form>
           </div>
         )}
@@ -290,6 +304,7 @@ const EmbeddableVerify = () => {
                     onClick={() => {
                       setVerificationData(null);
                       setSearchQuery("");
+                      setAccessKeyInput("");
                       setError("");
                     }}
                     className="w-full bg-dark/10 hover:bg-dark/20 border border-dark/40 rounded-lg px-4 py-2 text-darker transition-colors text-sm font-medium"
