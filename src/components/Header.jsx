@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
+import useEscapeKey from "../hooks/useEscapeKey";
 import {
   LogOut,
   Settings,
@@ -18,6 +19,8 @@ import favico from "/icons/xertiq_favico.png";
 const Header = () => {
   const { user, userRole, setUserRole, logout, credits } = useWalletStore();
   const [showMenu, setShowMenu] = useState(false);
+  const closeMenu = useCallback(() => setShowMenu(false), []);
+  useEscapeKey(closeMenu, showMenu);
   const navigate = useNavigate();
 
   // Normalize role for comparison
@@ -69,6 +72,9 @@ const Header = () => {
         <div className="relative z-50">
           <button
             onClick={() => setShowMenu(!showMenu)}
+            aria-label="Open user menu"
+            aria-expanded={showMenu}
+            aria-haspopup="true"
             className="flex items-center space-x-3 bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded-xl px-4 py-2 transition-all duration-200 group"
           >
             <div className="w-8 h-8 bg-gradient-to-r from-[#3834A8] to-[#2A1B5D] rounded-lg flex items-center justify-center">
@@ -99,7 +105,7 @@ const Header = () => {
               ></div>
 
               {/* Menu */}
-              <div className="absolute right-0 top-full mt-2 w-64 bg-white border border-gray-200 rounded-2xl shadow-2xl z-[9999] overflow-hidden">
+              <div role="menu" className="absolute right-0 top-full mt-2 w-64 bg-white border border-gray-200 rounded-2xl shadow-2xl z-[9999] overflow-hidden">
                 {/* User Info Section */}
                 <div className="p-4 border-b border-gray-200">
                   <div className="flex items-center space-x-3">

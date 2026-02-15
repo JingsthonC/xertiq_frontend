@@ -24,6 +24,7 @@ import {
 import apiService from "../services/api";
 import xertiqLogo from "../assets/xertiq_logo.png";
 import { createDocTypeBadge } from "../utils/documentTypeConfig";
+import SEOHead from "../components/SEOHead";
 
 const Verify = () => {
   const [verificationData, setVerificationData] = useState(null);
@@ -99,8 +100,10 @@ const Verify = () => {
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-gradient-to-br from-[#f7fafc] to-[#e6f2ff]">
+      <SEOHead title="Verify Document" />
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[9999] focus:bg-primary-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-lg">Skip to main content</a>
       {/* Animated Background Elements */}
-      <div className="absolute inset-0">
+      <div className="absolute inset-0" aria-hidden="true">
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#3B82F6]/10 rounded-full blur-3xl animate-pulse"></div>
         <div
           className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-[#8B5CF6]/10 rounded-full blur-3xl animate-pulse"
@@ -112,7 +115,7 @@ const Verify = () => {
       </div>
 
       {/* Main Content */}
-      <div className="relative z-10">
+      <div id="main-content" className="relative z-10">
         {/* Hidden Document State */}
         {hiddenDocument && !loading && (
           <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12">
@@ -413,7 +416,7 @@ const Verify = () => {
 
               {/* Error Display */}
               {error && (
-                <div className="mt-6 bg-red-500/20 backdrop-blur-xl border-2 border-red-400/50 rounded-xl p-5 flex items-center space-x-4">
+                <div role="alert" className="mt-6 bg-red-500/20 backdrop-blur-xl border-2 border-red-400/50 rounded-xl p-5 flex items-center space-x-4">
                   <AlertCircle
                     size={28}
                     className="text-red-300 flex-shrink-0"

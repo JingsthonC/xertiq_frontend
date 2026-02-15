@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import apiService from "../services/api";
 import { useNavigate, Link } from "react-router-dom";
+import SEOHead from "../components/SEOHead";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -107,9 +108,11 @@ const Register = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#f7fafc] to-[#e6f2ff] flex items-center justify-center p-3 sm:p-4 md:p-6 lg:p-8">
+      <SEOHead title="Create Account" />
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[9999] focus:bg-primary-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-lg">Skip to main content</a>
       <div className="w-full max-w-7xl mx-auto grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
         {/* Left side - Branding */}
-        <div className="hidden lg:block">
+        <div className="hidden lg:block" aria-hidden="true">
           <div className="space-y-6">
             <div className="inline-flex w-20 h-20 bg-gradient-to-r from-[#3B82F6] to-[#1E40AF] rounded-2xl items-center justify-center shadow-lg">
               <UserPlus size={40} className="text-white" />
@@ -127,7 +130,7 @@ const Register = () => {
         </div>
 
         {/* Right side - Registration Form */}
-        <div className="w-full">
+        <div id="main-content" className="w-full">
           {/* Mobile header */}
           <div className="text-center mb-6 lg:hidden">
             <div className="inline-flex w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-r from-[#3B82F6] to-[#1E40AF] rounded-2xl items-center justify-center mb-4 shadow-lg">
@@ -145,7 +148,7 @@ const Register = () => {
           <div className="bg-white/90 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-xl border border-gray-200">
             <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
               {error && (
-                <div className="bg-red-50 border border-red-200 rounded-xl p-3 sm:p-4">
+                <div role="alert" className="bg-red-50 border border-red-200 rounded-xl p-3 sm:p-4">
                   <div className="flex items-center space-x-2">
                     <div className="w-2 h-2 bg-red-600 rounded-full"></div>
                     <p className="text-red-600 text-sm font-medium">{error}</p>
@@ -175,10 +178,11 @@ const Register = () => {
               )}
 
               <div className="space-y-1 sm:space-y-2">
-                <label className="block text-sm font-medium text-[#000000]">
+                <label htmlFor="reg-firstName" className="block text-sm font-medium text-[#000000]">
                   First Name
                 </label>
                 <input
+                  id="reg-firstName"
                   type="text"
                   required
                   value={formData.firstName}
@@ -192,10 +196,11 @@ const Register = () => {
               </div>
 
               <div className="space-y-1 sm:space-y-2">
-                <label className="block text-sm font-medium text-[#000000]">
+                <label htmlFor="reg-lastName" className="block text-sm font-medium text-[#000000]">
                   Last Name
                 </label>
                 <input
+                  id="reg-lastName"
                   type="text"
                   required
                   value={formData.lastName}
@@ -209,10 +214,11 @@ const Register = () => {
               </div>
 
               <div className="space-y-1 sm:space-y-2">
-                <label className="block text-sm font-medium text-[#000000]">
+                <label htmlFor="reg-email" className="block text-sm font-medium text-[#000000]">
                   Email Address
                 </label>
                 <input
+                  id="reg-email"
                   type="email"
                   required
                   value={formData.email}
@@ -358,11 +364,12 @@ const Register = () => {
               </div>
 
               <div className="space-y-1 sm:space-y-2">
-                <label className="block text-sm font-medium text-[#000000]">
+                <label htmlFor="reg-password" className="block text-sm font-medium text-[#000000]">
                   Password
                 </label>
                 <div className="relative">
                   <input
+                    id="reg-password"
                     type={showPassword ? "text" : "password"}
                     required
                     value={formData.password}
@@ -376,6 +383,7 @@ const Register = () => {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
                     className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-[#3B82F6] transition-colors"
                   >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -414,13 +422,16 @@ const Register = () => {
               </div>
 
               <div className="space-y-1 sm:space-y-2">
-                <label className="block text-sm font-medium text-[#000000]">
+                <label htmlFor="reg-confirmPassword" className="block text-sm font-medium text-[#000000]">
                   Confirm Password
                 </label>
                 <div className="relative">
                   <input
+                    id="reg-confirmPassword"
                     type="password"
                     required
+                    aria-invalid={formData.confirmPassword && !passwordsMatch ? "true" : undefined}
+                    aria-describedby="confirm-password-error"
                     value={formData.confirmPassword}
                     onChange={(e) =>
                       setFormData({

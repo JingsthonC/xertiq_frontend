@@ -1,0 +1,16 @@
+User-agent: *
+Allow: /
+Allow: /verify
+Allow: /login
+Allow: /register
+Allow: /integration-guide
+Allow: /privacy-policy
+Allow: /terms-of-service
+
+Disallow: /dashboard
+Disallow: /holder
+Disallow: /batch
+Disallow: /purchase
+Disallow: /api/
+
+Sitemap: https://xertiq.com/sitemap.xml

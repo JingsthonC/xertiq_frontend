@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, Shield, Code, Copy, CheckCircle } from "lucide-react";
 import { useState } from "react";
 import xertiqLogo from "../assets/xertiq_logo.png";
+import SEOHead from "../components/SEOHead";
 
 const IntegrationGuide = () => {
   const [activeTab, setActiveTab] = useState("javascript");
@@ -58,6 +59,7 @@ const IntegrationGuide = () => {
 
   return (
     <div className="min-h-screen bg-[#f7fafc]">
+      <SEOHead title="Integration Guide" />
       {/* Header */}
       <div className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-5 py-6">

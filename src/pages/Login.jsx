@@ -228,6 +228,7 @@ import {
 import apiService from "../services/api";
 import useWalletStore from "../store/wallet";
 import xertiqLogo from "../assets/xertiq_logo.png";
+import SEOHead from "../components/SEOHead";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -280,8 +281,10 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row">
+      <SEOHead title="Log In" />
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[9999] focus:bg-primary-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-lg">Skip to main content</a>
       {/* Left Side - Blockchain Network Background */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#1E40AF] via-[#3B82F6] to-[#7C3AED] relative overflow-hidden items-center justify-center order-1">
+      <div aria-hidden="true" className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#1E40AF] via-[#3B82F6] to-[#7C3AED] relative overflow-hidden items-center justify-center order-1">
         {/* XERTIQ Logo at top */}
         <div className="absolute top-8 left-1/2 -translate-x-1/2 z--1 flex justify-start space-x-3">
           {/* <div className="w-24 h-24 bg-white rounded-xl flex items-center justify-center shadow-xl p-2"> */}
@@ -769,7 +772,7 @@ const Login = () => {
       </div>
 
       {/* Right Side - Login Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center px-8 lg:px-16 py-24 relative z-10 bg-white order-2">
+      <div id="main-content" className="w-full lg:w-1/2 flex items-center justify-center px-8 lg:px-16 py-24 relative z-10 bg-white order-2">
         <div className="w-full max-w-xl">
           <div className="bg-white rounded-3xl shadow-2xl p-8 lg:p-12 border border-gray-100">
             <h2 className="text-3xl lg:text-4xl font-bold text-gray-800 mb-4">
@@ -780,7 +783,7 @@ const Login = () => {
             </p>
 
             {error && (
-              <div className="mb-6 bg-red-50 border border-red-200 rounded-xl p-3 text-sm text-red-600">
+              <div role="alert" className="mb-6 bg-red-50 border border-red-200 rounded-xl p-3 text-sm text-red-600">
                 {error}
               </div>
             )}
@@ -788,7 +791,7 @@ const Login = () => {
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Email Address */}
               <div>
-                <label className="block text-base font-semibold text-gray-700 mb-2">
+                <label htmlFor="login-email" className="block text-base font-semibold text-gray-700 mb-2">
                   Email address
                 </label>
                 <div className="relative">
@@ -797,6 +800,7 @@ const Login = () => {
                     size={20}
                   />
                   <input
+                    id="login-email"
                     type="email"
                     value={formData.email}
                     onChange={(e) =>
@@ -812,7 +816,7 @@ const Login = () => {
               {/* Password */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="block text-base font-semibold text-gray-700">
+                  <label htmlFor="login-password" className="block text-base font-semibold text-gray-700">
                     Password
                   </label>
                   <Link
@@ -828,6 +832,7 @@ const Login = () => {
                     size={20}
                   />
                   <input
+                    id="login-password"
                     type={showPassword ? "text" : "password"}
                     value={formData.password}
                     onChange={(e) =>
@@ -840,6 +845,7 @@ const Login = () => {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
                     className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                   >
                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}

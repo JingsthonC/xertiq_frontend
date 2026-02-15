@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
+import useEscapeKey from "../hooks/useEscapeKey";
 import {
   ArrowLeft,
   Home,
@@ -21,6 +22,8 @@ const NavigationHeader = ({ title, showBack = true }) => {
   const location = useLocation();
   const { userRole, user } = useWalletStore();
   const [showSideNav, setShowSideNav] = useState(false);
+  const closeSideNav = useCallback(() => setShowSideNav(false), []);
+  useEscapeKey(closeSideNav, showSideNav);
 
   // Normalize role for comparison
   const normalizedRole =
@@ -138,6 +141,7 @@ const NavigationHeader = ({ title, showBack = true }) => {
             {showBack && location.pathname !== "/dashboard" && (
               <button
                 onClick={handleBack}
+                aria-label="Go back"
                 className="flex items-center justify-center w-8 h-8 bg-white/10 hover:bg-white/15 border border-white/20 rounded-lg transition-all duration-200"
               >
                 <ArrowLeft size={16} className="text-gray-300" />
@@ -181,6 +185,9 @@ const NavigationHeader = ({ title, showBack = true }) => {
 
             <button
               onClick={() => setShowSideNav(true)}
+              aria-label="Open navigation menu"
+              aria-expanded={showSideNav}
+              aria-haspopup="true"
               className="flex items-center justify-center w-8 h-8 bg-white/10 hover:bg-white/15 border border-white/20 rounded-lg transition-all duration-200"
             >
               <Menu size={16} className="text-gray-300" />
@@ -206,6 +213,7 @@ const NavigationHeader = ({ title, showBack = true }) => {
                 <h2 className="text-lg font-bold text-white">Navigation</h2>
                 <button
                   onClick={() => setShowSideNav(false)}
+                  aria-label="Close navigation menu"
                   className="w-8 h-8 bg-white/10 hover:bg-white/15 border border-white/20 rounded-lg flex items-center justify-center transition-all duration-200"
                 >
                   <X size={16} className="text-gray-300" />
@@ -213,7 +221,7 @@ const NavigationHeader = ({ title, showBack = true }) => {
               </div>
 
               {/* Navigation Items */}
-              <div className="space-y-2">
+              <nav aria-label="Site navigation" className="space-y-2">
                 {menuItems
                   .filter((item) => item.visible)
                   .map((item) => (
@@ -223,6 +231,7 @@ const NavigationHeader = ({ title, showBack = true }) => {
                         navigate(item.path);
                         setShowSideNav(false);
                       }}
+                      aria-current={location.pathname === item.path ? "page" : undefined}
                       className={`w-full flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 ${
                         location.pathname === item.path
                           ? "bg-[#3834A8]/20 border border-[#00E5FF]/30 text-[#00E5FF]"
@@ -250,7 +259,7 @@ const NavigationHeader = ({ title, showBack = true }) => {
                       )}
                     </button>
                   ))}
-              </div>
+              </nav>
 
               {/* Role Info */}
               {!isSuperAdmin && (

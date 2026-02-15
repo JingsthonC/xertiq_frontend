@@ -9,11 +9,12 @@ const LoadingSpinner = ({ size = 'md', text = 'Loading...', className = '' }) =>
   };
 
   return (
-    <div className={`flex flex-col items-center justify-center space-y-2 ${className}`}>
+    <div role="status" aria-busy="true" className={`flex flex-col items-center justify-center space-y-2 ${className}`}>
       <Loader2 className={`${sizeClasses[size]} animate-spin text-blue-500`} />
       {text && (
         <p className="text-sm text-gray-400 animate-pulse">{text}</p>
       )}
+      <span className="sr-only">{text || "Loading"}</span>
     </div>
   );
 };

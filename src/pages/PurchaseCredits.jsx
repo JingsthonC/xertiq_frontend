@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import useWalletStore from "../store/wallet";
 import NavigationHeader from "../components/NavigationHeader";
 import usePayMongoPurchase from "../hooks/usePayMongoPurchase";
+import SEOHead from "../components/SEOHead";
 
 const PurchaseCredits = () => {
   const navigate = useNavigate();
@@ -165,6 +166,7 @@ const PurchaseCredits = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#f7fafc] to-[#e6f2ff]">
+      <SEOHead title="Purchase Credits" noindex />
       <NavigationHeader title="Purchase Credits" showBack={true} />
 
       <div className="max-w-6xl mx-auto px-4 py-8">

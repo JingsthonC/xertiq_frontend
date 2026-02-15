@@ -26,6 +26,7 @@ import ExtensionHeader from "../components/ExtensionHeader";
 import NavigationHeader from "../components/NavigationHeader";
 import PDFPreviewModal from "../components/PDFPreviewModal";
 import { createDocTypeBadge } from "../utils/documentTypeConfig";
+import SEOHead from "../components/SEOHead";
 
 const isExtension = () => {
   return (
@@ -187,10 +188,12 @@ const HolderDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50">
+      <SEOHead title="My Documents" noindex />
       {isExt ? <ExtensionHeader /> : <Header />}
       {!isExt && <NavigationHeader />}
 
       <div className="container mx-auto px-4 py-8 max-w-7xl">
+        <h1 className="sr-only">My Documents</h1>
         {/* Stats Section */}
         {stats && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">

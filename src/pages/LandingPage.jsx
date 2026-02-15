@@ -18,6 +18,7 @@ import {
 import { useState } from "react";
 import xertiqLogo from "../assets/xertiq_logo.png";
 import xertiqJumbotron from "../assets/xertiq_jumbotron.png";
+import SEOHead from "../components/SEOHead";
 
 const LandingPage = () => {
   const [activeFaq, setActiveFaq] = useState(null);
@@ -167,8 +168,19 @@ const LandingPage = () => {
 
   return (
     <div className="min-h-screen bg-white">
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[9999] focus:bg-primary-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-lg">Skip to main content</a>
+      <SEOHead
+        description="Blockchain-powered document verification and certificate issuance platform. Issue, manage, and verify digital certificates anchored on the Solana blockchain."
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          "name": "XertiQ",
+          "applicationCategory": "BusinessApplication",
+          "description": "Blockchain-powered document verification and certificate issuance platform."
+        }}
+      />
       {/* Navigation */}
-      <nav className="sticky top-0 z-50 bg-white shadow-md">
+      <nav aria-label="Main navigation" className="sticky top-0 z-50 bg-white shadow-md">
         <div className="max-w-7xl mx-auto px-5 py-4 flex justify-between items-center">
           <a
             href="#"
@@ -213,6 +225,7 @@ const LandingPage = () => {
 
       {/* Hero Section */}
       <section
+        id="main-content"
         className="bg-gradient-to-br from-[#3B82F6] to-[#8B5CF6] text-white py-24 px-5 text-center relative overflow-hidden"
         style={{
           backgroundImage: `linear-gradient(rgba(102, 126, 234, 0.85), rgba(118, 75, 162, 0.85)), url(${xertiqJumbotron})`,
@@ -371,6 +384,8 @@ const LandingPage = () => {
               >
                 <button
                   onClick={() => toggleFaq(index)}
+                  aria-expanded={activeFaq === index}
+                  aria-controls={`faq-answer-${index}`}
                   className="w-full p-6 text-left flex items-center justify-between hover:bg-[#edf2f7] transition-colors"
                 >
                   <span className="font-semibold text-[#2d3748] pr-4">
@@ -384,7 +399,7 @@ const LandingPage = () => {
                   />
                 </button>
                 {activeFaq === index && (
-                  <div className="px-6 pb-6">
+                  <div id={`faq-answer-${index}`} role="region" className="px-6 pb-6">
                     <p className="text-[#4a5568] leading-relaxed">
                       {faq.answer}
                     </p>
@@ -425,6 +440,7 @@ const LandingPage = () => {
             <input
               type="email"
               placeholder="Enter your email"
+              aria-label="Email address for newsletter"
               className="flex-1 px-4 py-3 rounded-lg border-2 border-[#e2e8f0] focus:border-[#3B82F6] focus:outline-none"
             />
             <button className="bg-[#3B82F6] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#2563EB] transition-all whitespace-nowrap">

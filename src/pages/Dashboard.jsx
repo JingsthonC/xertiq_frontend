@@ -19,6 +19,7 @@ import Header from "../components/Header";
 import ExtensionHeader from "../components/ExtensionHeader";
 import NavigationHeader from "../components/NavigationHeader";
 import { useNavigate } from "react-router-dom";
+import SEOHead from "../components/SEOHead";
 
 // Detect if running as Chrome extension
 const isExtension = () => {
@@ -158,6 +159,7 @@ const Dashboard = () => {
       <div className="h-full bg-[#f7fafc] text-gray-800 overflow-hidden flex flex-col">
         <ExtensionHeader />
         <NavigationHeader title="Dashboard" showBack={false} />
+        <h1 className="sr-only">Dashboard</h1>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {/* Quick Stats */}
@@ -281,6 +283,7 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-primary-50">
+      <SEOHead title="Dashboard" noindex />
       <Header />
       <NavigationHeader title="Dashboard" showBack={false} />
 
