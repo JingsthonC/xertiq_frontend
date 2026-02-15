@@ -82,8 +82,8 @@ class ApiService {
   }
 
   // Auth endpoints
-  async login(email, password) {
-    const response = await this.api.post("/auth/login", { email, password });
+  async login(email, password, turnstileToken = null) {
+    const response = await this.api.post("/auth/login", { email, password, turnstileToken });
     return response.data;
   }
 

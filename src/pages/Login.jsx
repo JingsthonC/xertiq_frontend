@@ -225,6 +225,7 @@ import {
   FileSearch,
   BadgeCheck,
 } from "lucide-react";
+import { Turnstile } from "@marsidev/react-turnstile";
 import apiService from "../services/api";
 import useWalletStore from "../store/wallet";
 import xertiqLogo from "../assets/xertiq_logo.png";
@@ -238,6 +239,7 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -248,6 +250,7 @@ const Login = () => {
       const response = await apiService.login(
         formData.email,
         formData.password,
+        turnstileToken,
       );
 
       if (response.success && response.token && response.user) {
@@ -870,10 +873,21 @@ const Login = () => {
                 </label>
               </div>
 
+              {import.meta.env.VITE_TURNSTILE_SITE_KEY && (
+                <div className="flex justify-center">
+                  <Turnstile
+                    siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+                    onSuccess={(token) => setTurnstileToken(token)}
+                    onExpire={() => setTurnstileToken("")}
+                    onError={() => setTurnstileToken("")}
+                  />
+                </div>
+              )}
+
               {/* Login Button */}
               <button
                 type="submit"
-                disabled={isLoading}
+                disabled={isLoading || (import.meta.env.VITE_TURNSTILE_SITE_KEY && !turnstileToken)}
                 className="w-full bg-gradient-to-r from-[#3B82F6] to-[#8B5CF6] hover:from-[#2563EB] hover:to-[#3B82F6] text-white text-lg font-semibold py-4 rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl mt-8"
               >
                 {isLoading ? (
