@@ -10,6 +10,7 @@ import {
   Building2,
   User,
 } from "lucide-react";
+import { Turnstile } from "@marsidev/react-turnstile";
 import apiService from "../services/api";
 import { useNavigate, Link } from "react-router-dom";
 import SEOHead from "../components/SEOHead";
@@ -31,6 +32,7 @@ const Register = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState("");
 
   // Password strength validation
   const passwordValidations = {
@@ -72,6 +74,7 @@ const Register = () => {
         role: formData.role,
         organizationName: formData.organizationName || null,
         organizationLogo: formData.organizationLogo || null,
+        turnstileToken,
       });
 
       console.log("Registration successful:", response);
@@ -494,13 +497,25 @@ const Register = () => {
                 </div>
               </div>
 
+              {import.meta.env.VITE_TURNSTILE_SITE_KEY && (
+                <div className="flex justify-center">
+                  <Turnstile
+                    siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+                    onSuccess={(token) => setTurnstileToken(token)}
+                    onExpire={() => setTurnstileToken("")}
+                    onError={() => setTurnstileToken("")}
+                  />
+                </div>
+              )}
+
               <button
                 type="submit"
                 disabled={
                   isLoading ||
                   !passwordsMatch ||
                   !Object.values(passwordValidations).every((v) => v) ||
-                  !agreedToTerms
+                  !agreedToTerms ||
+                  (import.meta.env.VITE_TURNSTILE_SITE_KEY && !turnstileToken)
                 }
                 className="w-full bg-gradient-to-r from-[#3B82F6] to-[#1E40AF] hover:from-[#1E40AF] hover:to-[#1E3A8A] disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg transform hover:scale-[1.01] active:scale-[0.99]"
               >
