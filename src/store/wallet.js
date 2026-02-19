@@ -9,6 +9,7 @@ const useWalletStore = create(
       isAuthenticated: false,
       user: null,
       token: null,
+      refreshToken: null,
       userRole: "user", // Default role, will be set from login response
 
       // Wallet data
@@ -36,20 +37,24 @@ const useWalletStore = create(
       error: null,
 
       // Actions
-      setAuth: (user, token) =>
+      setAuth: (user, token, refreshToken = null) =>
         set({
           isAuthenticated: true,
           user,
           token,
+          refreshToken,
           userRole: (user?.role || "USER").toLowerCase(), // Normalize role to lowercase
           error: null,
         }),
+
+      setToken: (token) => set({ token }),
 
       logout: () =>
         set({
           isAuthenticated: false,
           user: null,
           token: null,
+          refreshToken: null,
           documents: [],
           certificates: [],
           credits: 0,
@@ -138,6 +143,7 @@ const useWalletStore = create(
         isAuthenticated: state.isAuthenticated,
         user: state.user,
         token: state.token,
+        refreshToken: state.refreshToken,
         userRole: state.userRole, // Persist userRole across page reloads
         activeTab: state.activeTab,
       }),
