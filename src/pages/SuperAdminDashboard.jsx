@@ -30,6 +30,8 @@ import {
   Server,
   X,
   Package,
+  Lock,
+  Clock,
 } from "lucide-react";
 import apiService from "../services/api";
 import useWalletStore from "../store/wallet";
@@ -55,6 +57,9 @@ const SuperAdminDashboard = () => {
   const [creditDefaults, setCreditDefaults] = useState(null);
   const [defaultsForm, setDefaultsForm] = useState(null);
   const [defaultsLoading, setDefaultsLoading] = useState(false);
+  const [authConfig, setAuthConfig] = useState(null);
+  const [authConfigForm, setAuthConfigForm] = useState(null);
+  const [authConfigLoading, setAuthConfigLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
   const [selectedUser, setSelectedUser] = useState(null);
@@ -164,10 +169,15 @@ const SuperAdminDashboard = () => {
         setLoading(false);
       } else if (activeTab === "credits") {
         setDefaultsLoading(true);
-        const defaultsRes = await apiService.getCreditDefaults();
+        const [defaultsRes, authConfigRes] = await Promise.all([
+          apiService.getCreditDefaults(),
+          apiService.getSuperAdminAuthConfig(),
+        ]);
         const defaults = defaultsRes.data;
         setCreditDefaults(defaults);
         setDefaultsForm(defaults);
+        setAuthConfig(authConfigRes.data);
+        setAuthConfigForm(authConfigRes.data);
         setDefaultsLoading(false);
       }
     } catch (error) {
@@ -280,6 +290,25 @@ const SuperAdminDashboard = () => {
       cursor[segments[0]] = value;
       return updated;
     });
+  };
+
+  const handleAuthConfigSave = async () => {
+    if (!authConfigForm) return;
+    try {
+      setAuthConfigLoading(true);
+      const payload = {
+        accessTokenExpiresInMinutes: Number(authConfigForm.accessTokenExpiresInMinutes),
+        refreshTokenExpiresInHours: Number(authConfigForm.refreshTokenExpiresInHours),
+      };
+      const res = await apiService.updateSuperAdminAuthConfig(payload);
+      setAuthConfig(res.data);
+      setAuthConfigForm(res.data);
+      showToast.success("Token settings updated. Applies to all new tokens immediately.");
+    } catch (error) {
+      showToast.error(error.response?.data?.error || "Failed to update token settings");
+    } finally {
+      setAuthConfigLoading(false);
+    }
   };
 
   const handleDefaultsSave = async () => {
@@ -2115,6 +2144,89 @@ const SuperAdminDashboard = () => {
                     >
                       {defaultsLoading ? "Saving..." : "Save Settings"}
                     </button>
+                  </div>
+
+                  {/* Token Security Configuration */}
+                  <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="p-2 bg-blue-100 rounded-lg">
+                        <Lock size={20} className="text-[#1E40AF]" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-slate-800">Token Security</h3>
+                        <p className="text-sm text-slate-500">Control how long JWT access tokens and refresh tokens remain valid. Changes apply to all new tokens immediately — existing tokens keep their original expiry.</p>
+                      </div>
+                    </div>
+
+                    {authConfigLoading || !authConfigForm ? (
+                      <div className="flex justify-center py-8">
+                        <LoadingSpinner size="md" />
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Access Token */}
+                        <div className="bg-slate-50 rounded-xl p-5">
+                          <div className="flex items-center gap-2 mb-3">
+                            <Clock size={16} className="text-[#3B82F6]" />
+                            <label className="text-sm font-semibold text-slate-700">Access Token Lifetime</label>
+                          </div>
+                          <p className="text-xs text-slate-500 mb-3">How long a JWT access token is valid after login or refresh. Shorter = more secure.</p>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="number"
+                              min="1"
+                              max="1440"
+                              value={authConfigForm.accessTokenExpiresInMinutes || 60}
+                              onChange={(e) => setAuthConfigForm((f) => ({ ...f, accessTokenExpiresInMinutes: Number(e.target.value) }))}
+                              className="w-24 rounded-lg bg-white border border-slate-200 text-[#1E40AF] p-2 text-center font-semibold"
+                            />
+                            <span className="text-sm text-slate-500">minutes</span>
+                            <span className="ml-auto text-xs text-slate-400 italic">
+                              ({authConfigForm.accessTokenExpiresInMinutes >= 60
+                                ? `${(authConfigForm.accessTokenExpiresInMinutes / 60).toFixed(1)}h`
+                                : `${authConfigForm.accessTokenExpiresInMinutes}m`})
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate-400 mt-2">Range: 1 – 1440 min (1 day max)</p>
+                        </div>
+
+                        {/* Refresh Token */}
+                        <div className="bg-slate-50 rounded-xl p-5">
+                          <div className="flex items-center gap-2 mb-3">
+                            <Clock size={16} className="text-[#3B82F6]" />
+                            <label className="text-sm font-semibold text-slate-700">Refresh Token Lifetime</label>
+                          </div>
+                          <p className="text-xs text-slate-500 mb-3">How long a refresh token is valid before the user must log in again. Tokens rotate on each use.</p>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="number"
+                              min="1"
+                              max="168"
+                              value={authConfigForm.refreshTokenExpiresInHours || 24}
+                              onChange={(e) => setAuthConfigForm((f) => ({ ...f, refreshTokenExpiresInHours: Number(e.target.value) }))}
+                              className="w-24 rounded-lg bg-white border border-slate-200 text-[#1E40AF] p-2 text-center font-semibold"
+                            />
+                            <span className="text-sm text-slate-500">hours</span>
+                            <span className="ml-auto text-xs text-slate-400 italic">
+                              ({authConfigForm.refreshTokenExpiresInHours >= 24
+                                ? `${(authConfigForm.refreshTokenExpiresInHours / 24).toFixed(1)} day(s)`
+                                : `${authConfigForm.refreshTokenExpiresInHours}h`})
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate-400 mt-2">Range: 1 – 168 h (7 days max)</p>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex justify-end mt-5">
+                      <button
+                        onClick={handleAuthConfigSave}
+                        disabled={authConfigLoading || !authConfigForm}
+                        className="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold disabled:opacity-50"
+                      >
+                        {authConfigLoading ? "Saving..." : "Save Token Settings"}
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}

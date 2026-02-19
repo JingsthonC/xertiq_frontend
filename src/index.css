@@ -91,7 +91,9 @@
 body {
   background: var(--color-neutral-50);
   color: var(--color-neutral-800);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -142,7 +144,8 @@ body {
 }
 
 @keyframes pulse-soft {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -181,26 +184,47 @@ body {
 
 /* Gradient Utilities */
 .gradient-primary {
-  background: linear-gradient(135deg, var(--color-primary-500) 0%, var(--color-secondary-500) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-primary-500) 0%,
+    var(--color-secondary-500) 100%
+  );
 }
 
 .gradient-primary-hover {
-  background: linear-gradient(135deg, var(--color-primary-600) 0%, var(--color-secondary-600) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-primary-600) 0%,
+    var(--color-secondary-600) 100%
+  );
 }
 
 .gradient-primary-text {
-  background: linear-gradient(135deg, var(--color-primary-500) 0%, var(--color-secondary-500) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-primary-500) 0%,
+    var(--color-secondary-500) 100%
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .gradient-primary-subtle {
-  background: linear-gradient(135deg, var(--color-primary-50) 0%, var(--color-secondary-50) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-primary-50) 0%,
+    var(--color-secondary-50) 100%
+  );
 }
 
 .gradient-primary-border {
-  border-image: linear-gradient(135deg, var(--color-primary-500) 0%, var(--color-secondary-500) 100%) 1;
+  border-image: linear-gradient(
+      135deg,
+      var(--color-primary-500) 0%,
+      var(--color-secondary-500) 100%
+    )
+    1;
 }
 
 /* Glass Effect for Modern Cards */
@@ -223,18 +247,26 @@ body {
   background: white;
   border-radius: 12px;
   border: 1px solid var(--color-neutral-200);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.05),
+    0 1px 2px rgba(0, 0, 0, 0.03);
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
 
 .card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.08),
+    0 2px 4px rgba(0, 0, 0, 0.04);
 }
 
 .card-elevated {
   background: white;
   border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.08),
+    0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 /* Button Base Styles */
@@ -264,13 +296,21 @@ body {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--color-primary-500) 0%, var(--color-secondary-500) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-primary-500) 0%,
+    var(--color-secondary-500) 100%
+  );
   color: white;
   box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: linear-gradient(135deg, var(--color-primary-600) 0%, var(--color-secondary-600) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-primary-600) 0%,
+    var(--color-secondary-600) 100%
+  );
   box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
   transform: translateY(-1px);
 }
@@ -328,7 +368,9 @@ body {
   background: white;
   border: 1px solid var(--color-neutral-300);
   border-radius: 8px;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .input:focus {
@@ -432,7 +474,12 @@ body {
 
 /* Loading Skeleton */
 .skeleton {
-  background: linear-gradient(90deg, var(--color-neutral-200) 25%, var(--color-neutral-100) 50%, var(--color-neutral-200) 75%);
+  background: linear-gradient(
+    90deg,
+    var(--color-neutral-200) 25%,
+    var(--color-neutral-100) 50%,
+    var(--color-neutral-200) 75%
+  );
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   border-radius: 4px;
@@ -469,7 +516,11 @@ input[type="range"].flex-1::-webkit-slider-thumb {
   appearance: none !important;
   width: 16px !important;
   height: 16px !important;
-  background: linear-gradient(135deg, var(--color-primary-500) 0%, var(--color-secondary-500) 100%) !important;
+  background: linear-gradient(
+    135deg,
+    var(--color-primary-500) 0%,
+    var(--color-secondary-500) 100%
+  ) !important;
   border-radius: 50% !important;
   cursor: pointer !important;
   transition: all 0.2s ease !important;
@@ -505,7 +556,11 @@ input[type="range"].w-full::-moz-range-thumb,
 input[type="range"].flex-1::-moz-range-thumb {
   width: 16px !important;
   height: 16px !important;
-  background: linear-gradient(135deg, var(--color-primary-500) 0%, var(--color-secondary-500) 100%) !important;
+  background: linear-gradient(
+    135deg,
+    var(--color-primary-500) 0%,
+    var(--color-secondary-500) 100%
+  ) !important;
   border-radius: 50% !important;
   cursor: pointer !important;
   border: 2px solid white !important;
@@ -608,7 +663,11 @@ input[type="range"].flex-1:hover::-moz-range-track {
 
 /* Text Utilities */
 .text-gradient {
-  background: linear-gradient(135deg, var(--color-primary-500) 0%, var(--color-secondary-500) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-primary-500) 0%,
+    var(--color-secondary-500) 100%
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -641,7 +700,11 @@ input[type="range"].flex-1:hover::-moz-range-track {
 }
 
 /* Smooth transitions for interactive elements */
-a, button, input, select, textarea {
+a,
+button,
+input,
+select,
+textarea {
   transition: all 0.15s ease;
 }
 
@@ -693,7 +756,11 @@ a, button, input, select, textarea {
 
 .progress-bar-fill {
   height: 100%;
-  background: linear-gradient(135deg, var(--color-primary-500) 0%, var(--color-secondary-500) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-primary-500) 0%,
+    var(--color-secondary-500) 100%
+  );
   border-radius: 4px;
   transition: width 0.3s ease;
 }
@@ -717,7 +784,9 @@ a, button, input, select, textarea {
   white-space: nowrap;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.2s ease, visibility 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    visibility 0.2s ease;
   margin-bottom: 8px;
   z-index: 50;
 }
@@ -808,13 +877,15 @@ a, button, input, select, textarea {
 
 /* Accessibility: Reduce motion for users who prefer it */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-  
+
   .spinner-circle {
     animation: none;
     stroke-dasharray: 90, 150;

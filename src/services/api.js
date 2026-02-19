@@ -47,21 +47,83 @@ class ApiService {
       (error) => Promise.reject(error),
     );
 
-    // Add response interceptor for error handling
+    // Track ongoing refresh to avoid parallel refresh calls
+    this._refreshing = false;
+    this._refreshQueue = [];
+
+    // Add response interceptor for error handling + silent token refresh
     this.api.interceptors.response.use(
       (response) => response,
-      (error) => {
-        if (error.response?.status === 401) {
-          // Clear auth state on 401
+      async (error) => {
+        const originalRequest = error.config;
+
+        // Attempt silent refresh on 401 "Token expired" (but not on the refresh endpoint itself)
+        if (
+          error.response?.status === 401 &&
+          error.response?.data?.message === "Token expired" &&
+          !originalRequest._retried &&
+          !originalRequest.url.includes("/auth/refresh")
+        ) {
+          originalRequest._retried = true;
+
+          // If a refresh is already in flight, queue this request
+          if (this._refreshing) {
+            return new Promise((resolve, reject) => {
+              this._refreshQueue.push({ resolve, reject });
+            }).then((newToken) => {
+              originalRequest.headers.Authorization = `Bearer ${newToken}`;
+              return this.api(originalRequest);
+            });
+          }
+
+          this._refreshing = true;
+
           try {
-            if (getWalletStore) {
-              const store = getWalletStore();
-              store.getState().logout();
+            const store = getWalletStore?.()?.getState();
+            const storedRefreshToken = store?.refreshToken;
+
+            if (!storedRefreshToken) {
+              throw new Error("No refresh token available");
             }
-          } catch (err) {
-            console.error("Failed to clear auth state:", err);
+
+            const response = await this.api.post("/auth/refresh", {
+              refreshToken: storedRefreshToken,
+            });
+
+            const { token: newAccessToken, refreshToken: newRefreshToken } = response.data;
+
+            // Update store with new tokens
+            store.setToken(newAccessToken);
+            if (newRefreshToken) {
+              store.setAuth(store.user, newAccessToken, newRefreshToken);
+            }
+
+            // Flush queued requests
+            this._refreshQueue.forEach(({ resolve }) => resolve(newAccessToken));
+            this._refreshQueue = [];
+
+            originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+            return this.api(originalRequest);
+          } catch (refreshError) {
+            // Refresh failed — force logout
+            this._refreshQueue.forEach(({ reject }) => reject(refreshError));
+            this._refreshQueue = [];
+            try {
+              getWalletStore?.()?.getState().logout();
+            } catch {}
+            return Promise.reject(refreshError);
+          } finally {
+            this._refreshing = false;
           }
         }
+
+        // Non-recoverable 401 — clear auth state
+        if (error.response?.status === 401 && !originalRequest._retried) {
+          try {
+            getWalletStore?.()?.getState().logout();
+          } catch {}
+        }
+
         // Handle 403 verification/approval codes
         if (error.response?.status === 403) {
           const code = error.response.data?.code;
@@ -71,6 +133,7 @@ class ApiService {
             window.location.href = "/approval-pending";
           }
         }
+
         return Promise.reject(error);
       },
     );
@@ -92,8 +155,9 @@ class ApiService {
     return response.data;
   }
 
-  async logout() {
-    const response = await this.api.post("/auth/logout");
+  async logout(refreshToken = null) {
+    const body = refreshToken ? { refreshToken } : {};
+    const response = await this.api.post("/auth/logout", body);
     return response.data;
   }
 
@@ -569,6 +633,16 @@ class ApiService {
 
   async updateSuperAdminPackages(packages) {
     const response = await this.api.put("/super-admin/packages", { packages });
+    return response.data;
+  }
+
+  async getSuperAdminAuthConfig() {
+    const response = await this.api.get("/super-admin/auth-config");
+    return response.data;
+  }
+
+  async updateSuperAdminAuthConfig(config) {
+    const response = await this.api.put("/super-admin/auth-config", config);
     return response.data;
   }
 

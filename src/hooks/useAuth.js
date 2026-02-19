@@ -11,6 +11,7 @@ export const useAuth = () => {
     isAuthenticated,
     user,
     token,
+    refreshToken,
     setAuth,
     logout: storeLogout,
     setError: setStoreError,
@@ -42,14 +43,15 @@ export const useAuth = () => {
       const response = await apiService.login(email, password);
       
       if (response.success && response.token && response.user) {
-        setAuth(response.user, response.token);
-        
+        setAuth(response.user, response.token, response.refreshToken || null);
+
         // Store in Chrome storage for persistence
         await chromeService.setStorage('xertiq-wallet-storage', {
           state: {
             isAuthenticated: true,
             user: response.user,
-            token: response.token
+            token: response.token,
+            refreshToken: response.refreshToken || null,
           }
         });
 
@@ -101,9 +103,9 @@ export const useAuth = () => {
 
   const logout = async () => {
     setIsLoading(true);
-    
+
     try {
-      await apiService.logout();
+      await apiService.logout(refreshToken);
     } catch (error) {
       console.error('Logout API call failed:', error);
       // Continue with local logout even if API fails
