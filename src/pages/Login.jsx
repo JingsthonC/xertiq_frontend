@@ -254,7 +254,7 @@ const Login = () => {
       );
 
       if (response.success && response.token && response.user) {
-        setAuth(response.user, response.token);
+        setAuth(response.user, response.token, response.refreshToken || null);
         apiService.setAuthToken(response.token);
         console.log("Login successful:", response);
 
