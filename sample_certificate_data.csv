@@ -1,3 +1,2 @@
-name,email,birthday,course,date,supervisor,hours,certificateId,holder_number,gender
-Jingsthon Castillo,castillojingsthon@gmail.com,18-Oct-90,Web Development Fundamentals,October 16 2025,Dr. Sarah Johnson,240,CERT-2025-001,SN-2026-01,male
-Zarah Castillo,zarapoc@gmail.com,27-Jun-91,Advanced Data Science,October 16 2025,Dr. Sarah Johnson,240,CERT-2025-002,SN-2026-02,female
+name,email,birthday,course,graduation_date,adviser,hours,certificateId,holder_number,gender
+Jewel Mabunga,precios.mabunga@gmail.com,3-Oct-02,Bachelor of Science in Computer Science,SEPTEMBER 16 2025,Ms. Julie Lontoc,,2021010404,,female

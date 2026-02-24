@@ -181,6 +181,16 @@ class ApiService {
     return response.data;
   }
 
+  async validatePreSignupToken(token) {
+    const response = await this.api.get(`/auth/pre-signup/validate?token=${encodeURIComponent(token)}`);
+    return response.data;
+  }
+
+  async completePreSignup(data) {
+    const response = await this.api.post("/auth/pre-signup", data);
+    return response.data;
+  }
+
   // Credits endpoints
   async getCredits() {
     const response = await this.api.get("/credits");
