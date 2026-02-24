@@ -26,6 +26,7 @@ import IssuerDashboard from "./pages/IssuerDashboard";
 import KeyManagement from "./pages/KeyManagement";
 import ApiKeyManagement from "./pages/ApiKeyManagement";
 import SuperAdminDashboard from "./pages/SuperAdminDashboard";
+import PreSignup from "./pages/PreSignup";
 import LoadingSpinner from "./components/LoadingSpinner";
 import EmbeddableVerify from "./components/EmbeddableVerify";
 import LandingPage from "./pages/LandingPage";
@@ -246,6 +247,10 @@ function App() {
     {
       path: "/reset-password",
       element: <ResetPassword />, // Not PublicRoute - email link must work regardless of auth state
+    },
+    {
+      path: "/pre-signup",
+      element: <PreSignup />, // Public - email link for certificate holders to create account
     },
     {
       path: "/embed/verify",
