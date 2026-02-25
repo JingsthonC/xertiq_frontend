@@ -28,6 +28,7 @@ import ApiKeyManagement from "./pages/ApiKeyManagement";
 import SuperAdminDashboard from "./pages/SuperAdminDashboard";
 import PreSignup from "./pages/PreSignup";
 import LoadingSpinner from "./components/LoadingSpinner";
+import ChatbotWidget from "./components/ChatbotWidget";
 import EmbeddableVerify from "./components/EmbeddableVerify";
 import LandingPage from "./pages/LandingPage";
 import IntegrationGuide from "./pages/IntegrationGuide";
@@ -152,7 +153,7 @@ const RootRedirect = () => {
 
 function App() {
   const [isInitializing, setIsInitializing] = useState(true);
-  const { isAuthenticated, setAuth } = useWalletStore();
+  const { isAuthenticated, user, setAuth } = useWalletStore();
 
   useEffect(() => {
     // Set store reference in API service
@@ -398,6 +399,7 @@ function App() {
   return (
     <div className={getContainerClass()}>
       <RouterProvider router={router} />
+      {isAuthenticated && user?.isVerified && <ChatbotWidget />}
       <ToastContainer
         position="top-right"
         autoClose={3000}

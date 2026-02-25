@@ -665,6 +665,89 @@ class ApiService {
     }
   }
 
+  // ==================== Chat / FAQ / Tickets ====================
+
+  async getChatConversations() {
+    const response = await this.api.get("/chat/conversations");
+    return response.data;
+  }
+
+  async createChatConversation(title) {
+    const response = await this.api.post("/chat/conversations", { title });
+    return response.data;
+  }
+
+  async getChatConversation(id) {
+    const response = await this.api.get(`/chat/conversations/${id}`);
+    return response.data;
+  }
+
+  async deleteChatConversation(id) {
+    const response = await this.api.delete(`/chat/conversations/${id}`);
+    return response.data;
+  }
+
+  async sendChatMessage(conversationId, content) {
+    const response = await this.api.post(
+      `/chat/conversations/${conversationId}/messages`,
+      { content }
+    );
+    return response.data;
+  }
+
+  async getFaqs() {
+    const response = await this.api.get("/faqs");
+    return response.data;
+  }
+
+  async getFaqCategories() {
+    const response = await this.api.get("/faqs/categories");
+    return response.data;
+  }
+
+  async getAdminFaqs() {
+    const response = await this.api.get("/faqs/admin");
+    return response.data;
+  }
+
+  async createFaq(data) {
+    const response = await this.api.post("/faqs/admin", data);
+    return response.data;
+  }
+
+  async updateFaq(id, data) {
+    const response = await this.api.put(`/faqs/admin/${id}`, data);
+    return response.data;
+  }
+
+  async deleteFaq(id) {
+    const response = await this.api.delete(`/faqs/admin/${id}`);
+    return response.data;
+  }
+
+  async createTicket(data) {
+    const response = await this.api.post("/tickets", data);
+    return response.data;
+  }
+
+  async getMyTickets() {
+    const response = await this.api.get("/tickets");
+    return response.data;
+  }
+
+  async getAdminTickets(params = {}) {
+    const { page = 1, limit = 20, status } = params;
+    const response = await this.api.get("/tickets/admin", {
+      params: { page, limit, status },
+    });
+    return response.data;
+  }
+
+  async updateTicket(id, data) {
+    const response = await this.api.patch(`/tickets/admin/${id}`, data);
+    return response.data;
+  }
+
   // ==================== API Key Management ====================
 
   /**
