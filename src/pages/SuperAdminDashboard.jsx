@@ -32,6 +32,11 @@ import {
   Package,
   Lock,
   Clock,
+  HelpCircle,
+  Ticket,
+  Plus,
+  CheckCircle,
+  MessageSquare,
 } from "lucide-react";
 import apiService from "../services/api";
 import useWalletStore from "../store/wallet";
@@ -77,12 +82,24 @@ const SuperAdminDashboard = () => {
   const [rejectingUserId, setRejectingUserId] = useState(null);
   const [rejectReason, setRejectReason] = useState("");
   const [approvalLoading, setApprovalLoading] = useState(null);
+  // FAQ management state
+  const [adminFaqs, setAdminFaqs] = useState([]);
+  const [faqModal, setFaqModal] = useState(null); // null | 'create' | faqObject
+  const [faqForm, setFaqForm] = useState({ question: "", answer: "", category: "", sortOrder: 0, isPublished: true });
+  const [faqLoading, setFaqLoading] = useState(false);
+  // Ticket management state
+  const [adminTickets, setAdminTickets] = useState([]);
+  const [ticketStatusFilter, setTicketStatusFilter] = useState("");
+  const [selectedTicket, setSelectedTicket] = useState(null);
+  const [ticketUpdateForm, setTicketUpdateForm] = useState({ status: "", adminNotes: "", priority: "" });
+  const [ticketLoading, setTicketLoading] = useState(false);
   const [pagination, setPagination] = useState({
     users: { page: 1, limit: 50, total: 0 },
     issuers: { page: 1, limit: 20, total: 0 },
     holders: { page: 1, limit: 20, total: 0 },
     documents: { page: 1, limit: 50, total: 0 },
     activity: { page: 1, limit: 50, total: 0 },
+    tickets: { page: 1, limit: 20, total: 0 },
   });
 
   useEffect(() => {
@@ -179,6 +196,24 @@ const SuperAdminDashboard = () => {
         setAuthConfig(authConfigRes.data);
         setAuthConfigForm(authConfigRes.data);
         setDefaultsLoading(false);
+      } else if (activeTab === "faqs") {
+        setFaqLoading(true);
+        const faqsRes = await apiService.getAdminFaqs();
+        setAdminFaqs(faqsRes.data);
+        setFaqLoading(false);
+      } else if (activeTab === "tickets") {
+        setTicketLoading(true);
+        const ticketsRes = await apiService.getAdminTickets({
+          page: pagination.tickets.page,
+          limit: pagination.tickets.limit,
+          status: ticketStatusFilter || undefined,
+        });
+        setAdminTickets(ticketsRes.data.tickets);
+        setPagination((prev) => ({
+          ...prev,
+          tickets: ticketsRes.data.pagination,
+        }));
+        setTicketLoading(false);
       }
     } catch (error) {
       console.error("Failed to load super admin data:", error);
@@ -375,6 +410,8 @@ const SuperAdminDashboard = () => {
     { id: "documents", label: "All Documents", icon: FileText, url: "all-documents" },
     { id: "packages", label: "Packages Config", icon: Package, url: "packages-config" },
     { id: "credits", label: "System Config", icon: Settings, url: "system-config" },
+    { id: "faqs", label: "FAQ Management", icon: HelpCircle, url: "faq-management" },
+    { id: "tickets", label: "Support Tickets", icon: Ticket, url: "support-tickets" },
   ];
 
   // Update active tab when URL changes
@@ -2232,8 +2269,389 @@ const SuperAdminDashboard = () => {
               )}
             </div>
           )}
+
+          {/* FAQ Management Tab */}
+          {activeTab === "faqs" && (
+            <div className="space-y-6 animate-in fade-in duration-300">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold text-slate-800">FAQ Management</h2>
+                <button
+                  onClick={() => {
+                    setFaqForm({ question: "", answer: "", category: "", sortOrder: 0, isPublished: true });
+                    setFaqModal("create");
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                >
+                  <Plus size={16} /> Add FAQ
+                </button>
+              </div>
+
+              {faqLoading ? (
+                <div className="flex justify-center py-12">
+                  <LoadingSpinner />
+                </div>
+              ) : adminFaqs.length === 0 ? (
+                <div className="text-center py-12 text-slate-400">
+                  <HelpCircle size={48} className="mx-auto mb-3 opacity-50" />
+                  <p>No FAQs yet. Create your first one!</p>
+                </div>
+              ) : (
+                <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+                  <table className="w-full">
+                    <thead className="bg-slate-50 border-b border-slate-200">
+                      <tr>
+                        <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase">Question</th>
+                        <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase">Category</th>
+                        <th className="text-center px-4 py-3 text-xs font-semibold text-slate-500 uppercase">Order</th>
+                        <th className="text-center px-4 py-3 text-xs font-semibold text-slate-500 uppercase">Published</th>
+                        <th className="text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {adminFaqs.map((faq) => (
+                        <tr key={faq.id} className="hover:bg-slate-50">
+                          <td className="px-4 py-3 text-sm text-slate-700 max-w-xs truncate">{faq.question}</td>
+                          <td className="px-4 py-3">
+                            <span className="text-xs px-2 py-1 bg-slate-100 text-slate-600 rounded-full">{faq.category}</span>
+                          </td>
+                          <td className="px-4 py-3 text-sm text-slate-500 text-center">{faq.sortOrder}</td>
+                          <td className="px-4 py-3 text-center">
+                            <button
+                              onClick={async () => {
+                                try {
+                                  await apiService.updateFaq(faq.id, { isPublished: !faq.isPublished });
+                                  setAdminFaqs((prev) => prev.map((f) => f.id === faq.id ? { ...f, isPublished: !f.isPublished } : f));
+                                } catch {
+                                  showToast.error("Failed to toggle FAQ");
+                                }
+                              }}
+                              className={`text-xs px-2 py-1 rounded-full font-medium ${faq.isPublished ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-500"}`}
+                            >
+                              {faq.isPublished ? "Published" : "Draft"}
+                            </button>
+                          </td>
+                          <td className="px-4 py-3 text-right space-x-2">
+                            <button
+                              onClick={() => {
+                                setFaqForm({
+                                  question: faq.question,
+                                  answer: faq.answer,
+                                  category: faq.category,
+                                  sortOrder: faq.sortOrder,
+                                  isPublished: faq.isPublished,
+                                });
+                                setFaqModal(faq);
+                              }}
+                              className="text-blue-500 hover:text-blue-700 text-xs font-medium"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={async () => {
+                                if (!confirm("Delete this FAQ?")) return;
+                                try {
+                                  await apiService.deleteFaq(faq.id);
+                                  setAdminFaqs((prev) => prev.filter((f) => f.id !== faq.id));
+                                  showToast.success("FAQ deleted");
+                                } catch {
+                                  showToast.error("Failed to delete FAQ");
+                                }
+                              }}
+                              className="text-red-500 hover:text-red-700 text-xs font-medium"
+                            >
+                              Delete
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Support Tickets Tab */}
+          {activeTab === "tickets" && (
+            <div className="space-y-6 animate-in fade-in duration-300">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold text-slate-800">Support Tickets</h2>
+                <div className="flex items-center gap-2">
+                  <select
+                    value={ticketStatusFilter}
+                    onChange={(e) => {
+                      setTicketStatusFilter(e.target.value);
+                      setTimeout(() => loadData(), 0);
+                    }}
+                    className="text-sm border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500"
+                  >
+                    <option value="">All Statuses</option>
+                    <option value="OPEN">Open</option>
+                    <option value="IN_PROGRESS">In Progress</option>
+                    <option value="RESOLVED">Resolved</option>
+                    <option value="CLOSED">Closed</option>
+                  </select>
+                </div>
+              </div>
+
+              {ticketLoading ? (
+                <div className="flex justify-center py-12">
+                  <LoadingSpinner />
+                </div>
+              ) : adminTickets.length === 0 ? (
+                <div className="text-center py-12 text-slate-400">
+                  <Ticket size={48} className="mx-auto mb-3 opacity-50" />
+                  <p>No tickets found</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {adminTickets.map((ticket) => (
+                    <div
+                      key={ticket.id}
+                      className="bg-white border border-slate-200 rounded-2xl p-4 hover:shadow-sm transition-shadow cursor-pointer"
+                      onClick={() => {
+                        setSelectedTicket(selectedTicket?.id === ticket.id ? null : ticket);
+                        setTicketUpdateForm({
+                          status: ticket.status,
+                          adminNotes: ticket.adminNotes || "",
+                          priority: ticket.priority,
+                        });
+                      }}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h4 className="text-sm font-semibold text-slate-800">{ticket.subject}</h4>
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
+                              ticket.status === "OPEN" ? "bg-green-100 text-green-700" :
+                              ticket.status === "IN_PROGRESS" ? "bg-yellow-100 text-yellow-700" :
+                              ticket.status === "RESOLVED" ? "bg-blue-100 text-blue-700" :
+                              "bg-slate-100 text-slate-600"
+                            }`}>
+                              {ticket.status.replace("_", " ")}
+                            </span>
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
+                              ticket.priority === "URGENT" ? "bg-red-100 text-red-600" :
+                              ticket.priority === "HIGH" ? "bg-orange-100 text-orange-600" :
+                              ticket.priority === "MEDIUM" ? "bg-blue-100 text-blue-600" :
+                              "bg-slate-100 text-slate-600"
+                            }`}>
+                              {ticket.priority}
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate-500 mb-1">
+                            By: {ticket.user?.email || "Unknown"} | {new Date(ticket.createdAt).toLocaleString()}
+                          </p>
+                          <p className="text-sm text-slate-600 line-clamp-2">{ticket.description}</p>
+                        </div>
+                      </div>
+
+                      {/* Expanded ticket detail */}
+                      {selectedTicket?.id === ticket.id && (
+                        <div
+                          className="mt-4 pt-4 border-t border-slate-200 space-y-3"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <div className="text-sm text-slate-700 whitespace-pre-wrap bg-slate-50 rounded-lg p-3">
+                            {ticket.description}
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-xs font-medium text-slate-500 mb-1">Status</label>
+                              <select
+                                value={ticketUpdateForm.status}
+                                onChange={(e) => setTicketUpdateForm({ ...ticketUpdateForm, status: e.target.value })}
+                                className="w-full text-sm border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500"
+                              >
+                                <option value="OPEN">Open</option>
+                                <option value="IN_PROGRESS">In Progress</option>
+                                <option value="RESOLVED">Resolved</option>
+                                <option value="CLOSED">Closed</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-slate-500 mb-1">Priority</label>
+                              <select
+                                value={ticketUpdateForm.priority}
+                                onChange={(e) => setTicketUpdateForm({ ...ticketUpdateForm, priority: e.target.value })}
+                                className="w-full text-sm border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500"
+                              >
+                                <option value="LOW">Low</option>
+                                <option value="MEDIUM">Medium</option>
+                                <option value="HIGH">High</option>
+                                <option value="URGENT">Urgent</option>
+                              </select>
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="block text-xs font-medium text-slate-500 mb-1">Admin Notes</label>
+                            <textarea
+                              value={ticketUpdateForm.adminNotes}
+                              onChange={(e) => setTicketUpdateForm({ ...ticketUpdateForm, adminNotes: e.target.value })}
+                              rows={3}
+                              className="w-full text-sm border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 resize-none"
+                              placeholder="Internal notes..."
+                            />
+                          </div>
+
+                          <div className="flex justify-end">
+                            <button
+                              onClick={async () => {
+                                try {
+                                  const res = await apiService.updateTicket(ticket.id, ticketUpdateForm);
+                                  setAdminTickets((prev) =>
+                                    prev.map((t) => (t.id === ticket.id ? res.data : t))
+                                  );
+                                  setSelectedTicket(null);
+                                  showToast.success("Ticket updated");
+                                } catch {
+                                  showToast.error("Failed to update ticket");
+                                }
+                              }}
+                              className="px-4 py-2 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600 transition-colors"
+                            >
+                              Update Ticket
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+
+                  {/* Pagination */}
+                  {pagination.tickets.totalPages > 1 && (
+                    <div className="flex justify-center gap-2 mt-4">
+                      {Array.from({ length: pagination.tickets.totalPages }, (_, i) => (
+                        <button
+                          key={i}
+                          onClick={() => {
+                            setPagination((prev) => ({
+                              ...prev,
+                              tickets: { ...prev.tickets, page: i + 1 },
+                            }));
+                            loadData();
+                          }}
+                          className={`px-3 py-1 text-sm rounded ${
+                            pagination.tickets.page === i + 1
+                              ? "bg-blue-500 text-white"
+                              : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                          }`}
+                        >
+                          {i + 1}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
+
+      {/* FAQ Create/Edit Modal */}
+      {faqModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-slate-800">
+                {faqModal === "create" ? "Create FAQ" : "Edit FAQ"}
+              </h3>
+              <button onClick={() => setFaqModal(null)} className="text-slate-400 hover:text-slate-600">
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-medium text-slate-500 mb-1">Question</label>
+                <input
+                  type="text"
+                  value={faqForm.question}
+                  onChange={(e) => setFaqForm({ ...faqForm, question: e.target.value })}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
+                  placeholder="Enter the question..."
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-500 mb-1">Answer</label>
+                <textarea
+                  value={faqForm.answer}
+                  onChange={(e) => setFaqForm({ ...faqForm, answer: e.target.value })}
+                  rows={4}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500 text-sm resize-none"
+                  placeholder="Enter the answer..."
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Category</label>
+                  <input
+                    type="text"
+                    value={faqForm.category}
+                    onChange={(e) => setFaqForm({ ...faqForm, category: e.target.value })}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
+                    placeholder="e.g., Verification"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Sort Order</label>
+                  <input
+                    type="number"
+                    value={faqForm.sortOrder}
+                    onChange={(e) => setFaqForm({ ...faqForm, sortOrder: parseInt(e.target.value) || 0 })}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
+                    min={0}
+                  />
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="faqPublished"
+                  checked={faqForm.isPublished}
+                  onChange={(e) => setFaqForm({ ...faqForm, isPublished: e.target.checked })}
+                  className="rounded border-slate-300"
+                />
+                <label htmlFor="faqPublished" className="text-sm text-slate-600">Published</label>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 mt-5">
+              <button
+                onClick={() => setFaqModal(null)}
+                className="px-4 py-2 border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  try {
+                    if (faqModal === "create") {
+                      const res = await apiService.createFaq(faqForm);
+                      setAdminFaqs((prev) => [...prev, res.data]);
+                      showToast.success("FAQ created");
+                    } else {
+                      const res = await apiService.updateFaq(faqModal.id, faqForm);
+                      setAdminFaqs((prev) => prev.map((f) => f.id === faqModal.id ? res.data : f));
+                      showToast.success("FAQ updated");
+                    }
+                    setFaqModal(null);
+                  } catch {
+                    showToast.error("Failed to save FAQ");
+                  }
+                }}
+                disabled={!faqForm.question.trim() || !faqForm.answer.trim() || !faqForm.category.trim()}
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50"
+              >
+                {faqModal === "create" ? "Create" : "Update"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Reject Modal */}
       {showRejectModal && (
