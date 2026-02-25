@@ -50,7 +50,18 @@ function ChatTab() {
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
-    loadConversations();
+    const init = async () => {
+      await loadConversations();
+      // Auto-create a conversation if none exists so welcome message shows immediately
+      const state = useChatStore.getState();
+      if (!state.activeConversationId && state.conversations.length === 0) {
+        await startNewConversation();
+      } else if (!state.activeConversationId && state.conversations.length > 0) {
+        // Resume most recent conversation
+        await selectConversation(state.conversations[0].id);
+      }
+    };
+    init();
   }, []);
 
   useEffect(() => {
